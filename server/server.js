@@ -6,8 +6,11 @@ require('dotenv').config();
 const connectDB = require('./src/config/db');
 
 // Routes
+const authRoutes = require('./src/routes/authRoutes');
 const companyRoutes = require('./src/routes/companyRoutes');
 const notificationRoutes = require('./src/routes/notificationRoutes');
+const trainerRoutes = require('./src/routes/trainerRoutes');
+const projectRoutes = require('./src/routes/projectRoutes');
 
 const app = express();
 
@@ -19,8 +22,11 @@ app.use(cors());
 app.use(express.json());
 
 // Route Middleware
+app.use('/api/auth', authRoutes); 
 app.use('/api/company', companyRoutes);
 app.use('/api/notifications', notificationRoutes);
+app.use('/api/trainer', trainerRoutes);
+app.use('/api/projects', projectRoutes);
 
 // Test Route
 app.get('/', (req, res) => {
