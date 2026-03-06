@@ -210,18 +210,50 @@ exports.postProject = async (req, res) => {
 // ===============================
 // GET PROJECTS OF COMPANY
 // ===============================
+// exports.getCompanyProjects = async (req, res) => {
+//   try {
+//     const company = await CompanyProfile.findById(req.params.id);
+//     if (!company) {
+//       return res.status(404).json({ success: false, message: 'Company not found' });
+//     }
+
+//     const projects = await Project.find({ company: company._id }).sort({ createdAt: -1 });
+//     res.status(200).json({ success: true, data: projects });
+
+//   } catch (error) {
+//     res.status(500).json({ success: false, message: error.message });
+//   }
+// };
+
+// ===============================
+// GET PROJECTS OF COMPANY
+// ===============================
 exports.getCompanyProjects = async (req, res) => {
   try {
-    const company = await CompanyProfile.findById(req.params.id);
+
+    const company = await CompanyProfile.findById(req.params.companyId);
+
     if (!company) {
-      return res.status(404).json({ success: false, message: 'Company not found' });
+      return res.status(404).json({
+        success: false,
+        message: "Company not found"
+      });
     }
 
-    const projects = await Project.find({ company: company._id }).sort({ createdAt: -1 });
-    res.status(200).json({ success: true, data: projects });
+    const projects = await Project.find({
+      company: company._id
+    }).sort({ createdAt: -1 });
+
+    res.status(200).json({
+      success: true,
+      data: projects
+    });
 
   } catch (error) {
-    res.status(500).json({ success: false, message: error.message });
+    res.status(500).json({
+      success: false,
+      message: error.message
+    });
   }
 };
 
