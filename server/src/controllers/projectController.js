@@ -2,6 +2,7 @@ const Project = require('../models/Project');
 const Application = require('../models/Application');
 const TrainerProfile = require('../models/TrainerProfile');
 
+
 // ===============================
 // APPLY TO PROJECT (Trainer Only)
 // ===============================
@@ -88,11 +89,13 @@ exports.applyToProject = async (req, res) => {
   }
 };
 
+
 // ===============================
 // GET ALL PROJECTS (Public)
 // ===============================
 exports.getAllProjects = async (req, res) => {
   try {
+
     const projects = await Project.find()
       .populate('company', 'name description location')
       .sort({ createdAt: -1 });
@@ -101,6 +104,7 @@ exports.getAllProjects = async (req, res) => {
       success: true,
       data: projects
     });
+
   } catch (error) {
     console.error(error);
     res.status(500).json({
@@ -110,11 +114,13 @@ exports.getAllProjects = async (req, res) => {
   }
 };
 
+
 // ===============================
-// GET OPEN PROJECTS (Trainers Only)
+// GET OPEN PROJECTS (Trainer Only)
 // ===============================
 exports.getOpenProjects = async (req, res) => {
   try {
+
     if (req.user.role !== 'trainer') {
       return res.status(403).json({
         success: false,
@@ -140,11 +146,63 @@ exports.getOpenProjects = async (req, res) => {
   }
 };
 
+
 // ===============================
-// GET SINGLE PROJECT BY ID (Public)
+// FILTER PROJECTS (NEW FEATURE)
+// ===============================
+exports.filterProjects = async (req, res) => {
+  try {
+
+    const {
+      technology,
+      location,
+      status,
+      tfaProvided,
+      tocProvided
+    } = req.query;
+
+    let filter = {};
+
+    if (technology) {
+  filter.technology = { $regex: technology, $options: 'i' };
+}
+
+    if (location) {
+  filter.location = { $regex: location, $options: 'i' };
+}
+
+    if (status) filter.status = status;
+
+    if (tfaProvided) filter.tfaProvided = tfaProvided === "true";
+
+    if (tocProvided) filter.tocProvided = tocProvided === "true";
+
+    const projects = await Project.find(filter)
+      .populate('company', 'name location industry')
+      .sort({ createdAt: -1 });
+
+    res.status(200).json({
+      success: true,
+      results: projects.length,
+      data: projects
+    });
+
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({
+      success: false,
+      message: "Server Error"
+    });
+  }
+};
+
+
+// ===============================
+// GET SINGLE PROJECT BY ID
 // ===============================
 exports.getProjectById = async (req, res) => {
   try {
+
     const { projectId } = req.params;
 
     const project = await Project.findById(projectId)
@@ -161,6 +219,7 @@ exports.getProjectById = async (req, res) => {
       success: true,
       data: project
     });
+
   } catch (error) {
     console.error(error);
     res.status(500).json({
