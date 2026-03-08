@@ -40,8 +40,6 @@ const notificationSchema = new mongoose.Schema(
     ref: 'Application'
   }
 
-},
-{ timestamps: true }
-);
+}, { timestamps: true });
 
 module.exports = mongoose.model('Notification', notificationSchema);

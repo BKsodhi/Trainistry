@@ -8,12 +8,6 @@ const trainerProfileSchema = new mongoose.Schema(
     required: true
   },
 
-//   name: {
-//     type: String,
-//     required: true,
-//     trim: true
-//   },
-
   expertise: {
     type: String,
     required: true
@@ -35,7 +29,34 @@ const trainerProfileSchema = new mongoose.Schema(
 
   resumeUrl: {
     type: String
-  }
+  },
+
+  // ===============================
+  // Dashboard and interaction features
+  // ===============================
+  availability: {
+    type: String,
+    enum: ['available', 'busy'],
+    default: 'available'
+  },
+
+  likes: {
+    type: Number,
+    default: 0
+  },
+
+  dislikes: {
+    type: Number,
+    default: 0
+  },
+
+  feedbacks: [
+    {
+      sender: { type: mongoose.Schema.Types.ObjectId, ref: 'User' },
+      comment: { type: String },
+      createdAt: { type: Date, default: Date.now }
+    }
+  ]
 },
 { timestamps: true }
 );

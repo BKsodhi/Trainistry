@@ -46,6 +46,7 @@ const cors = require('cors');
 require('dotenv').config();
 const connectDB = require('./src/config/db');
 
+
 // Routes
 const authRoutes = require('./src/routes/authRoutes');
 const companyRoutes = require('./src/routes/companyRoutes');
@@ -65,6 +66,7 @@ connectDB();
 // ===================
 app.use(cors());
 app.use(express.json()); // Parse JSON requests
+app.use('/uploads', express.static('src/uploads'));
 
 // ===================
 // API Routes

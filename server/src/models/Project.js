@@ -8,6 +8,11 @@ const projectSchema = new mongoose.Schema(
     required: true
   },
 
+  title: {
+    type: String,
+    required: true
+  },
+
   technology: {
     type: String,
     required: true
