@@ -7,178 +7,470 @@ const Notification = require('../models/Notification');
 exports.getMyCompany = async (req, res) => {
   try {
     const company = await CompanyProfile.findOne({ user: req.user._id }).populate('user', 'name email');
-    if (!company) return res.status(404).json({ success: false, message: "Company profile not found" });
-    res.status(200).json({ success: true, data: company });
+
+    if (!company) {
+      return res.status(404).json({
+        success: false,
+        message: "Company profile not found"
+      });
+    }
+
+    res.status(200).json({
+      success: true,
+      data: company
+    });
+
   } catch (error) {
     res.status(500).json({ success: false, message: error.message });
   }
 };
+
 
 // CREATE COMPANY
 exports.createCompany = async (req, res) => {
   try {
-    if (req.user.role !== 'company') return res.status(403).json({ success: false, message: 'Company access only' });
+
+    if (req.user.role !== 'company') {
+      return res.status(403).json({
+        success: false,
+        message: 'Company access only'
+      });
+    }
+
     const existingCompany = await CompanyProfile.findOne({ user: req.user._id });
-    if (existingCompany) return res.status(400).json({ success: false, message: 'Company profile already exists' });
-    const company = await CompanyProfile.create({ user: req.user._id, ...req.body });
-    res.status(201).json({ success: true, data: company });
+
+    if (existingCompany) {
+      return res.status(400).json({
+        success: false,
+        message: 'Company profile already exists'
+      });
+    }
+
+    const company = await CompanyProfile.create({
+      user: req.user._id,
+      ...req.body
+    });
+
+    res.status(201).json({
+      success: true,
+      data: company
+    });
+
   } catch (error) {
     res.status(500).json({ success: false, message: error.message });
   }
 };
+
 
 // GET ALL COMPANIES
 exports.getCompanies = async (req, res) => {
   try {
-    const companies = await CompanyProfile.find().populate('user', 'name email').lean();
-    res.status(200).json({ success: true, data: companies });
+
+    const companies = await CompanyProfile.find()
+      .populate('user', 'name email')
+      .lean();
+
+    res.status(200).json({
+      success: true,
+      data: companies
+    });
+
   } catch (error) {
     res.status(500).json({ success: false, message: error.message });
   }
 };
+
 
 // GET COMPANY BY ID
 exports.getCompanyById = async (req, res) => {
   try {
-    const company = await CompanyProfile.findById(req.params.id).populate('user', 'name email');
-    if (!company) return res.status(404).json({ success: false, message: 'Company not found' });
-    res.status(200).json({ success: true, data: company });
+
+    const company = await CompanyProfile.findById(req.params.id)
+      .populate('user', 'name email');
+
+    if (!company) {
+      return res.status(404).json({
+        success: false,
+        message: 'Company not found'
+      });
+    }
+
+    res.status(200).json({
+      success: true,
+      data: company
+    });
+
   } catch (error) {
     res.status(500).json({ success: false, message: error.message });
   }
 };
+
 
 // UPDATE COMPANY
 exports.updateCompany = async (req, res) => {
   try {
-    if (req.user.role !== 'company') return res.status(403).json({ success: false, message: 'Company access only' });
+
+    if (req.user.role !== 'company') {
+      return res.status(403).json({
+        success: false,
+        message: 'Company access only'
+      });
+    }
+
     const company = await CompanyProfile.findById(req.params.id);
-    if (!company) return res.status(404).json({ success: false, message: 'Company not found' });
-    if (company.user.toString() !== req.user._id.toString()) return res.status(403).json({ success: false, message: 'Not authorized' });
+
+    if (!company) {
+      return res.status(404).json({
+        success: false,
+        message: 'Company not found'
+      });
+    }
+
+    if (company.user.toString() !== req.user._id.toString()) {
+      return res.status(403).json({
+        success: false,
+        message: 'Not authorized'
+      });
+    }
+
     Object.assign(company, req.body);
+
     const updatedCompany = await company.save();
-    res.status(200).json({ success: true, data: updatedCompany });
+
+    res.status(200).json({
+      success: true,
+      data: updatedCompany
+    });
+
   } catch (error) {
     res.status(500).json({ success: false, message: error.message });
   }
 };
+
 
 // DELETE COMPANY
 exports.deleteCompany = async (req, res) => {
   try {
-    if (req.user.role !== 'company') return res.status(403).json({ success: false, message: 'Company access only' });
+
+    if (req.user.role !== 'company') {
+      return res.status(403).json({
+        success: false,
+        message: 'Company access only'
+      });
+    }
+
     const company = await CompanyProfile.findById(req.params.id);
-    if (!company) return res.status(404).json({ success: false, message: 'Company not found' });
-    if (company.user.toString() !== req.user._id.toString()) return res.status(403).json({ success: false, message: 'Not authorized' });
+
+    if (!company) {
+      return res.status(404).json({
+        success: false,
+        message: 'Company not found'
+      });
+    }
+
+    if (company.user.toString() !== req.user._id.toString()) {
+      return res.status(403).json({
+        success: false,
+        message: 'Not authorized'
+      });
+    }
+
     await company.deleteOne();
-    res.status(200).json({ success: true, message: 'Company deleted successfully' });
+
+    res.status(200).json({
+      success: true,
+      message: 'Company deleted successfully'
+    });
+
   } catch (error) {
     res.status(500).json({ success: false, message: error.message });
   }
 };
+
 
 // POST PROJECT
 exports.postProject = async (req, res) => {
   try {
-    if (req.user.role !== 'company') return res.status(403).json({ success: false, message: 'Company access only' });
+
+    if (req.user.role !== 'company') {
+      return res.status(403).json({
+        success: false,
+        message: 'Company access only'
+      });
+    }
+
     const company = await CompanyProfile.findOne({ user: req.user._id });
-    if (!company) return res.status(404).json({ success: false, message: 'Company not found' });
-    const project = await Project.create({ company: company._id, ...req.body });
-    res.status(201).json({ success: true, data: project });
+
+    if (!company) {
+      return res.status(404).json({
+        success: false,
+        message: 'Company not found'
+      });
+    }
+
+    const project = await Project.create({
+      company: company._id,
+      ...req.body
+    });
+
+    res.status(201).json({
+      success: true,
+      data: project
+    });
+
   } catch (error) {
     res.status(500).json({ success: false, message: error.message });
   }
 };
+
 
 // GET COMPANY PROJECTS
 exports.getCompanyProjects = async (req, res) => {
   try {
+
     const company = await CompanyProfile.findById(req.params.companyId);
-    if (!company) return res.status(404).json({ success: false, message: "Company not found" });
-    const projects = await Project.find({ company: company._id }).sort({ createdAt: -1 });
-    res.status(200).json({ success: true, data: projects });
+
+    if (!company) {
+      return res.status(404).json({
+        success: false,
+        message: "Company not found"
+      });
+    }
+
+    const projects = await Project.find({ company: company._id })
+      .sort({ createdAt: -1 });
+
+    res.status(200).json({
+      success: true,
+      data: projects
+    });
+
   } catch (error) {
     res.status(500).json({ success: false, message: error.message });
   }
 };
+
 
 // GET PROJECT APPLICATIONS
 exports.getProjectApplications = async (req, res) => {
   try {
-    if (req.user.role !== 'company') return res.status(403).json({ success: false, message: 'Company access only' });
+
+    if (req.user.role !== 'company') {
+      return res.status(403).json({
+        success: false,
+        message: 'Company access only'
+      });
+    }
+
     const project = await Project.findById(req.params.projectId)
-      .populate({ path: 'company', populate: { path: 'user', select: 'name email' } });
-    if (!project) return res.status(404).json({ success: false, message: 'Project not found' });
-    if (project.company.user._id.toString() !== req.user._id.toString()) return res.status(403).json({ success: false, message: 'Not authorized' });
+      .populate({
+        path: 'company',
+        populate: { path: 'user', select: 'name email' }
+      });
+
+    if (!project) {
+      return res.status(404).json({
+        success: false,
+        message: 'Project not found'
+      });
+    }
+
+    if (project.company.user._id.toString() !== req.user._id.toString()) {
+      return res.status(403).json({
+        success: false,
+        message: 'Not authorized'
+      });
+    }
+
     const applications = await Application.find({ project: project._id })
-      .populate({ path: 'trainer', populate: { path: 'user', select: 'name email' } })
+      .populate({
+        path: 'trainer',
+        populate: { path: 'user', select: 'name email' }
+      })
       .sort({ createdAt: -1 });
-    res.status(200).json({ success: true, data: applications });
+
+    res.status(200).json({
+      success: true,
+      data: applications
+    });
+
   } catch (error) {
     res.status(500).json({ success: false, message: error.message });
   }
 };
 
-// UPDATE APPLICATION STATUS
+
+// UPDATE APPLICATION STATUS (FIXED AUTHORIZATION)
 exports.updateApplicationStatus = async (req, res) => {
   try {
-    if (req.user.role !== 'company') return res.status(403).json({ success: false, message: 'Company access only' });
-    const allowedStatus = ["applied", "shortlisted", "interview", "selected", "rejected"];
-    if (req.body.status && !allowedStatus.includes(req.body.status)) {
-      return res.status(400).json({ success: false, message: "Invalid status value" });
+
+    if (req.user.role !== 'company') {
+      return res.status(403).json({
+        success: false,
+        message: 'Company access only'
+      });
     }
+
+    const allowedStatus = ["applied", "shortlisted", "interview", "selected", "rejected"];
+
+    if (req.body.status && !allowedStatus.includes(req.body.status)) {
+      return res.status(400).json({
+        success: false,
+        message: "Invalid status value"
+      });
+    }
+
     const application = await Application.findById(req.params.applicationId)
-      .populate({ path: 'project', populate: { path: 'company', populate: { path: 'user', select: 'name email' } } });
-    if (!application) return res.status(404).json({ success: false, message: 'Application not found' });
-    if (application.project.company.user._id.toString() !== req.user._id.toString()) return res.status(403).json({ success: false, message: 'Not authorized' });
+      .populate({
+        path: 'project',
+        populate: {
+          path: 'company',
+          populate: { path: 'user', select: 'name email' }
+        }
+      });
+
+    if (!application) {
+      return res.status(404).json({
+        success: false,
+        message: 'Application not found'
+      });
+    }
+
+    // 🔹 safer authorization check
+    const companyProfile = await CompanyProfile.findOne({ user: req.user._id });
+
+    if (!companyProfile) {
+      return res.status(404).json({
+        success: false,
+        message: "Company profile not found"
+      });
+    }
+
+    if (application.project.company._id.toString() !== companyProfile._id.toString()) {
+      return res.status(403).json({
+        success: false,
+        message: 'Not authorized'
+      });
+    }
+
     application.status = req.body.status || application.status;
     application.interviewDate = req.body.interviewDate || application.interviewDate;
+
     const updatedApplication = await application.save();
+
+    // Notification type mapping
+    let notificationType = "general";
+
+    if (application.status === "selected") notificationType = "application_selected";
+    if (application.status === "rejected") notificationType = "application_rejected";
+    if (application.status === "interview") notificationType = "interview_scheduled";
+
     await Notification.create({
-      recipient: application.trainer._id,
+      recipient: application.trainer,
       recipientType: 'trainer',
-      message: `Your application for project "${application.project.title}" has been updated to "${application.status}"`,
-      type: 'application_status',
+      message: `Your application status has been updated to "${application.status}"`,
+      type: notificationType,
       relatedApplication: application._id
     });
-    res.status(200).json({ success: true, data: updatedApplication });
+
+    res.status(200).json({
+      success: true,
+      data: updatedApplication
+    });
+
   } catch (error) {
     res.status(500).json({ success: false, message: error.message });
   }
 };
+
 
 // UPDATE PROJECT STATUS
 exports.updateProjectStatus = async (req, res) => {
   try {
-    if (req.user.role !== 'company') return res.status(403).json({ success: false, message: 'Company access only' });
+
+    if (req.user.role !== 'company') {
+      return res.status(403).json({
+        success: false,
+        message: 'Company access only'
+      });
+    }
+
     const project = await Project.findById(req.params.projectId);
-    if (!project) return res.status(404).json({ success: false, message: 'Project not found' });
+
+    if (!project) {
+      return res.status(404).json({
+        success: false,
+        message: 'Project not found'
+      });
+    }
+
     project.status = req.body.status || project.status;
+
     const updatedProject = await project.save();
-    res.status(200).json({ success: true, data: updatedProject });
+
+    res.status(200).json({
+      success: true,
+      data: updatedProject
+    });
+
   } catch (error) {
     res.status(500).json({ success: false, message: error.message });
   }
 };
 
+
 // SCHEDULE INTERVIEW
 exports.scheduleInterview = async (req, res) => {
   try {
-    if (req.user.role !== 'company') return res.status(403).json({ success: false, message: 'Company access only' });
-    const application = await Application.findById(req.params.applicationId).populate({ path: 'project', populate: { path: 'company', populate: { path: 'user', select: 'name email' } } });
-    if (!application) return res.status(404).json({ success: false, message: 'Application not found' });
-    if (application.project.company.user._id.toString() !== req.user._id.toString()) return res.status(403).json({ success: false, message: 'Not authorized' });
+
+    if (req.user.role !== 'company') {
+      return res.status(403).json({
+        success: false,
+        message: 'Company access only'
+      });
+    }
+
+    const application = await Application.findById(req.params.applicationId)
+      .populate({
+        path: 'project',
+        populate: {
+          path: 'company',
+          populate: { path: 'user', select: 'name email' }
+        }
+      });
+
+    if (!application) {
+      return res.status(404).json({
+        success: false,
+        message: 'Application not found'
+      });
+    }
+
+    if (application.project.company.user._id.toString() !== req.user._id.toString()) {
+      return res.status(403).json({
+        success: false,
+        message: 'Not authorized'
+      });
+    }
+
     application.interviewDate = req.body.interviewDate;
     application.status = 'interview';
+
     const updatedApp = await application.save();
+
     await Notification.create({
-      recipient: application.trainer._id,
+      recipient: application.trainer,
       recipientType: 'trainer',
       message: `Interview scheduled for project "${application.project.title}" on ${application.interviewDate}`,
       type: 'interview_scheduled',
       relatedApplication: application._id
     });
-    res.status(200).json({ success: true, data: updatedApp });
+
+    res.status(200).json({
+      success: true,
+      data: updatedApp
+    });
+
   } catch (error) {
     res.status(500).json({ success: false, message: error.message });
   }

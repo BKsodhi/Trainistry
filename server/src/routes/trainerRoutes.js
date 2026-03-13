@@ -2,7 +2,7 @@ const express = require('express');
 const router = express.Router();
 const { protect } = require('../middleware/authMiddleware');
 const uploadResume = require('../middleware/uploadMiddleware');
-const { uploadResume: uploadResumeController } = require('../controllers/trainerController');
+
 const {
   getMyProfile,
   updateMyProfile,
@@ -11,12 +11,17 @@ const {
   applyToProject,
   getMyApplications,
   likeDislikeTrainer,
-  addFeedback
+  addFeedback,
+  uploadResume: uploadResumeController,
+  searchTrainers
 } = require('../controllers/trainerController');
 
 // ================= TRAINER PROFILE =================
 router.get('/me', protect, getMyProfile);
 router.put('/me', protect, updateMyProfile);
+
+// ================= TRAINER SEARCH =================
+router.get('/search', protect, searchTrainers);
 
 // ================= PROJECTS =================
 router.get('/projects', protect, getAllProjects);

@@ -13,6 +13,9 @@ function TrainerRegister() {
     expertise: ""
   });
 
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState("");
+
   const handleChange = (e) => {
     setFormData({
       ...formData,
@@ -21,23 +24,37 @@ function TrainerRegister() {
   };
 
   const handleSubmit = async (e) => {
-    e.preventDefault(); // prevent page refresh
+    e.preventDefault();
+
+    setLoading(true);
+    setError("");
 
     try {
-      const res = await axios.post("/api/trainer", {
-        name: formData.name,
-        email: formData.email,
-        password: formData.password,
-        expertise: formData.expertise
-      });
+      const res = await axios.post(
+        "http://localhost:5000/api/auth/register",
+        {
+          name: formData.name,
+          email: formData.email,
+          password: formData.password,
+          role: "trainer",   // IMPORTANT
+          expertise: formData.expertise
+        }
+      );
 
-      localStorage.setItem("trainerId", res.data._id);
-      navigate("/trainer-dashboard");
+      alert("Registration successful!");
+
+      navigate("/login");
 
     } catch (error) {
-      console.error(error);
-      alert("Registration failed");
+      console.error("Register error:", error);
+
+      setError(
+        error.response?.data?.message ||
+        "Registration failed"
+      );
     }
+
+    setLoading(false);
   };
 
   return (
@@ -51,6 +68,12 @@ function TrainerRegister() {
           </span>
         </div>
 
+        {error && (
+          <div style={{ color: "red", marginBottom: "10px" }}>
+            {error}
+          </div>
+        )}
+
         <form onSubmit={handleSubmit}>
 
           <input
@@ -58,6 +81,7 @@ function TrainerRegister() {
             name="name"
             placeholder="Full Name"
             className="input"
+            value={formData.name}
             onChange={handleChange}
             required
           />
@@ -67,6 +91,7 @@ function TrainerRegister() {
             name="email"
             placeholder="Email"
             className="input"
+            value={formData.email}
             onChange={handleChange}
             required
           />
@@ -76,6 +101,7 @@ function TrainerRegister() {
             name="password"
             placeholder="Password"
             className="input"
+            value={formData.password}
             onChange={handleChange}
             required
           />
@@ -85,12 +111,17 @@ function TrainerRegister() {
             name="expertise"
             placeholder="Area of Expertise"
             className="input"
+            value={formData.expertise}
             onChange={handleChange}
             required
           />
 
-          <button type="submit" className="btn-full">
-            Create Account
+          <button
+            type="submit"
+            className="btn-full"
+            disabled={loading}
+          >
+            {loading ? "Creating..." : "Create Account"}
           </button>
 
         </form>

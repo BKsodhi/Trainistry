@@ -8,12 +8,13 @@ const {
 } = require('../controllers/notificationController');
 
 // ================= COMPANY NOTIFICATIONS =================
-router.get('/company/:companyId', getCompanyNotifications);
+// Added protect middleware so only logged-in company can access
+router.get('/company', protect, getCompanyNotifications);
 
 // ================= TRAINER NOTIFICATIONS =================
 router.get('/trainer', protect, getTrainerNotifications);
 
 // ================= MARK AS READ =================
-router.put('/:id/read', markAsRead);
+router.put('/:id/read', protect, markAsRead);
 
 module.exports = router;

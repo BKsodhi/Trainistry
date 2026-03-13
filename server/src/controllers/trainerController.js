@@ -234,3 +234,46 @@ exports.uploadResume = async (req, res) => {
     });
   }
 };
+// ===============================
+// SEARCH TRAINERS
+// ===============================
+exports.searchTrainers = async (req, res) => {
+  try {
+
+    const { expertise, location, availability, experienceYears } = req.query;
+
+    const filter = {};
+
+    if (expertise) {
+      filter.expertise = { $regex: expertise, $options: 'i' };
+    }
+
+    if (location) {
+      filter.location = { $regex: location, $options: 'i' };
+    }
+
+    if (availability) {
+      filter.availability = availability;
+    }
+
+    if (experienceYears) {
+      filter.experienceYears = { $gte: Number(experienceYears) };
+    }
+
+    const trainers = await TrainerProfile.find(filter)
+      .populate('user', 'name email')
+      .sort({ createdAt: -1 });
+
+    res.status(200).json({
+      success: true,
+      count: trainers.length,
+      data: trainers
+    });
+
+  } catch (error) {
+    res.status(500).json({
+      success: false,
+      message: error.message
+    });
+  }
+};

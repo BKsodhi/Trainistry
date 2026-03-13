@@ -7,22 +7,32 @@ function NotificationPanel({ companyId }) {
 
   useEffect(() => {
     const fetchNotifications = async () => {
-      const res = await axios.get(`/api/notifications/${companyId}`);
-      setNotifications(res.data.data);
+      if (!companyId) return;
+      try {
+        const res = await axios.get(`http://localhost:5000/api/notifications/${companyId}`);
+        setNotifications(res.data.data);
+      } catch (err) {
+        console.error("Error fetching notifications:", err.response || err);
+      }
     };
     fetchNotifications();
   }, [companyId]);
 
   const markAsRead = async (id) => {
-    await axios.put(`/api/notifications/${id}/read`);
-    setNotifications((prev) =>
-      prev.map((n) => (n._id === id ? { ...n, isRead: true } : n))
-    );
+    try {
+      await axios.put(`http://localhost:5000/api/notifications/${id}/read`);
+      setNotifications((prev) =>
+        prev.map((n) => (n._id === id ? { ...n, isRead: true } : n))
+      );
+    } catch (err) {
+      console.error("Error marking notification as read:", err.response || err);
+    }
   };
+
+  if (!notifications.length) return <div>No notifications.</div>;
 
   return (
     <div>
-      <h2>Notifications</h2>
       {notifications.map((note) => (
         <div
           key={note._id}

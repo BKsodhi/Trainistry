@@ -93,6 +93,43 @@ exports.register = async (req, res) => {
   }
 };
 
+// // ================= LOGIN =================
+// exports.login = async (req, res) => {
+//   try {
+//     const { email, password } = req.body;
+
+//     const user = await User.findOne({ email });
+
+//     if (!user) {
+//       return res.status(401).json({
+//         message: 'Invalid email or password'
+//       });
+//     }
+
+//     const isMatch = await user.matchPassword(password);
+
+//     if (!isMatch) {
+//       return res.status(401).json({
+//         message: 'Invalid email or password'
+//       });
+//     }
+
+//     res.json({
+//       _id: user._id,
+//       name: user.name,
+//       email: user.email,
+//       role: user.role,
+//       token: generateToken(user._id)
+//     });
+
+//   } catch (error) {
+//     console.error(error);
+//     res.status(500).json({
+//       message: error.message
+//     });
+//   }
+// };
+
 // ================= LOGIN =================
 exports.login = async (req, res) => {
   try {
@@ -102,7 +139,7 @@ exports.login = async (req, res) => {
 
     if (!user) {
       return res.status(401).json({
-        message: 'Invalid email or password'
+        message: "Invalid email or password"
       });
     }
 
@@ -110,15 +147,36 @@ exports.login = async (req, res) => {
 
     if (!isMatch) {
       return res.status(401).json({
-        message: 'Invalid email or password'
+        message: "Invalid email or password"
       });
     }
 
+    let companyId = null;
+    let trainerId = null;
+
+    // Get Company Profile ID
+    if (user.role === "company") {
+      const companyProfile = await CompanyProfile.findOne({ user: user._id });
+      if (companyProfile) {
+        companyId = companyProfile._id;
+      }
+    }
+
+    // Get Trainer Profile ID
+    if (user.role === "trainer") {
+      const trainerProfile = await TrainerProfile.findOne({ user: user._id });
+      if (trainerProfile) {
+        trainerId = trainerProfile._id;
+      }
+    }
+
     res.json({
-      _id: user._id,
+      userId: user._id,
       name: user.name,
       email: user.email,
       role: user.role,
+      companyId,
+      trainerId,
       token: generateToken(user._id)
     });
 

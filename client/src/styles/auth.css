@@ -1,6 +1,6 @@
 .auth-page {
   min-height: 100vh;
-  background: linear-gradient(135deg, #FDFBFF 0%, #F3EEFF 40%, #EDE9FE 100%);
+  background: var(--bg-main);
   display: flex;
   justify-content: center;
   align-items: center;
@@ -21,13 +21,13 @@
 }
 
 .auth-page::before {
-  background: rgba(167, 139, 250, 0.35);
+  background: #E9D5FF; /* LandingPage purple blob */
   top: -120px;
   left: -120px;
 }
 
 .auth-page::after {
-  background: rgba(244, 114, 182, 0.25);
+  background: #C7D2FE; /* LandingPage cyan blob */
   bottom: -150px;
   right: -150px;
 }
@@ -39,16 +39,10 @@
   max-width: 540px;
   padding: 60px 50px;
   border-radius: 24px;
-  background: linear-gradient(
-    145deg,
-    rgba(255,255,255,0.9),
-    rgba(255,255,255,0.75)
-  );
-  backdrop-filter: blur(30px);
-  border: 1px solid rgba(255,255,255,0.6);
-  box-shadow:
-    0 30px 60px rgba(167, 139, 250, 0.18),
-    0 15px 30px rgba(0, 0, 0, 0.05);
+  background: var(--glass);
+  backdrop-filter: blur(20px);
+  border: 1px solid var(--border-soft);
+  box-shadow: 0 30px 60px rgba(124, 58, 237, 0.18);
 }
 
 .summary-bar {
@@ -59,7 +53,7 @@
   justify-content: space-between;
   font-weight: 600;
   background: rgba(167, 139, 250, 0.12);
-  color: #6D28D9;
+  color: var(--primary-deep);
 }
 
 .input {
@@ -75,7 +69,7 @@
 
 .input:focus {
   outline: none;
-  border-color: #A78BFA;
+  border-color: var(--primary);
   box-shadow: 0 0 0 4px rgba(167, 139, 250, 0.15);
 }
 
@@ -87,53 +81,31 @@
   font-weight: 600;
   border: none;
   cursor: pointer;
-  background: linear-gradient(135deg, #A78BFA, #F472B6);
+  background: linear-gradient(135deg, var(--primary), var(--primary-deep));
   color: white;
-  transition: all 0.3s ease;
 }
 
 .btn-full:hover {
   transform: translateY(-3px);
-  box-shadow: 0 20px 35px rgba(167, 139, 250, 0.35);
+  box-shadow: 0 20px 35px rgba(124, 58, 237, 0.35);
 }
-/* =========================================================
-   RESTORE PREMIUM AUTH CARD (Needed for AccountType)
-   ========================================================= */
 
 .auth-card {
   position: relative;
   z-index: 2;
-
   width: 100%;
   max-width: 540px;
   padding: 60px 50px;
-
   border-radius: 24px;
-
-  background: linear-gradient(
-    145deg,
-    rgba(255,255,255,0.9),
-    rgba(255,255,255,0.75)
-  );
-
-  backdrop-filter: blur(30px);
-
-  border: 1px solid rgba(255,255,255,0.6);
-
-  box-shadow:
-    0 30px 60px rgba(167, 139, 250, 0.18),
-    0 15px 30px rgba(0, 0, 0, 0.05);
-
-  transition: 0.3s ease;
+  background: var(--glass);
+  backdrop-filter: blur(20px);
+  border: 1px solid var(--border-soft);
+  box-shadow: 0 30px 60px rgba(124, 58, 237, 0.18);
 }
 
 .auth-card:hover {
   transform: translateY(-4px);
 }
-
-/* =========================================================
-   LOGO
-   ========================================================= */
 
 .auth-logo {
   position: absolute;
@@ -141,25 +113,18 @@
   font-size: 28px;
   font-weight: 700;
   letter-spacing: -1px;
-  color: #6D28D9;
+  color: var(--primary-deep);
   z-index: 2;
 }
 
-/* =========================================================
-   HEADINGS
-   ========================================================= */
-
-.auth-card h2 {
+.auth-card h2,
+.form-card h2 {
   font-size: 26px;
   font-weight: 700;
   margin-bottom: 30px;
-  color: #4C1D95;
+  color: var(--primary-deep);
   text-align: center;
 }
-
-/* =========================================================
-   ACCOUNT SELECTION
-   ========================================================= */
 
 .account-options {
   display: flex;
@@ -174,15 +139,14 @@
   cursor: pointer;
   transition: 0.3s ease;
   text-align: center;
-
-  background: rgba(255, 255, 255, 0.85);
-  border: 1px solid rgba(255,255,255,0.7);
+  background: var(--glass);
+  border: 1px solid var(--border-soft);
 }
 
 .account-card:hover {
   transform: translateY(-6px);
-  box-shadow: 0 20px 35px rgba(167, 139, 250, 0.2);
-  border-color: #A78BFA;
+  box-shadow: 0 20px 35px rgba(124, 58, 237, 0.2);
+  border-color: var(--primary);
 }
 
 .account-card h3 {
@@ -193,22 +157,18 @@
 
 .account-card p {
   font-size: 14px;
-  color: #6B7280;
+  color: var(--text-muted);
 }
-
-/* =========================================================
-   FOOTER TEXT
-   ========================================================= */
 
 .auth-footer {
   margin-top: 25px;
   font-size: 14px;
   text-align: center;
-  color: #6B7280;
+  color: var(--text-muted);
 }
 
 .auth-footer span {
-  color: #6D28D9;
+  color: var(--primary-deep);
   font-weight: 500;
   cursor: pointer;
 }
@@ -216,10 +176,6 @@
 .auth-footer span:hover {
   text-decoration: underline;
 }
-
-/* =========================================================
-   RESPONSIVE FIX
-   ========================================================= */
 
 @media (max-width: 600px) {
   .auth-card,
@@ -230,77 +186,4 @@
   .account-options {
     flex-direction: column;
   }
-}
-/* =========================================================
-   LOGIN / REGISTER PAGE FIX
-   ========================================================= */
-
-/* Make form-card behave like premium auth-card */
-.form-card {
-  position: relative;
-  z-index: 2;
-
-  width: 100%;
-  max-width: 540px;
-  padding: 60px 50px;
-
-  border-radius: 24px;
-
-  background: linear-gradient(
-    145deg,
-    rgba(255,255,255,0.9),
-    rgba(255,255,255,0.75)
-  );
-
-  backdrop-filter: blur(30px);
-
-  border: 1px solid rgba(255,255,255,0.6);
-
-  box-shadow:
-    0 30px 60px rgba(167, 139, 250, 0.18),
-    0 15px 30px rgba(0, 0, 0, 0.05);
-
-  transition: 0.3s ease;
-}
-
-.form-card:hover {
-  transform: translateY(-4px);
-}
-
-/* Headings inside form-card */
-.form-card h2 {
-  font-size: 26px;
-  font-weight: 700;
-  margin-bottom: 30px;
-  color: #4C1D95;
-  text-align: center;
-}
-
-/* Footer text under login */
-.auth-footer {
-  margin-top: 25px;
-  font-size: 14px;
-  text-align: center;
-  color: #6B7280;
-}
-
-.auth-footer span {
-  color: #6D28D9;
-  font-weight: 500;
-  cursor: pointer;
-}
-
-.auth-footer span:hover {
-  text-decoration: underline;
-}
-
-/* Logo if used */
-.auth-logo {
-  position: absolute;
-  top: 40px;
-  font-size: 28px;
-  font-weight: 700;
-  letter-spacing: -1px;
-  color: #6D28D9;
-  z-index: 2;
 }

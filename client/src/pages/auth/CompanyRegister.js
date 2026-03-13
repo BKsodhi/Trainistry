@@ -13,6 +13,9 @@ function CompanyRegister() {
     companyName: ""
   });
 
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState("");
+
   const handleChange = (e) => {
     setFormData({
       ...formData,
@@ -21,25 +24,43 @@ function CompanyRegister() {
   };
 
   const handleSubmit = async (e) => {
-    e.preventDefault(); // prevent refresh
+    e.preventDefault();
+
+    setLoading(true);
+    setError("");
 
     try {
-      const res = await axios.post("/api/company", {
-        name: formData.name,
-        email: formData.email,
-        password: formData.password,
-        industry: "General",
-        location: "India",
-        description: formData.companyName
-      });
 
-      localStorage.setItem("companyId", res.data.data._id);
-      navigate("/company-dashboard");
+      const res = await axios.post(
+        "http://localhost:5000/api/auth/register",
+        {
+          name: formData.name.trim(),
+          email: formData.email.trim(),
+          password: formData.password.trim(),
+          role: "company",                 // IMPORTANT
+          industry: "General",
+          location: "India",
+          description: formData.companyName.trim()
+        }
+      );
+
+      console.log("Company registered:", res.data);
+
+      alert("Company registration successful! Please login.");
+
+      navigate("/login");
 
     } catch (error) {
-      console.error(error);
-      alert("Registration failed");
+
+      console.error("Registration error:", error);
+
+      setError(
+        error.response?.data?.message ||
+        "Registration failed"
+      );
     }
+
+    setLoading(false);
   };
 
   return (
@@ -53,6 +74,12 @@ function CompanyRegister() {
           </span>
         </div>
 
+        {error && (
+          <div style={{ color: "red", marginBottom: "10px" }}>
+            {error}
+          </div>
+        )}
+
         <form onSubmit={handleSubmit}>
 
           <input
@@ -60,6 +87,7 @@ function CompanyRegister() {
             name="name"
             placeholder="Contact Name"
             className="input"
+            value={formData.name}
             onChange={handleChange}
             required
           />
@@ -69,6 +97,7 @@ function CompanyRegister() {
             name="email"
             placeholder="Email"
             className="input"
+            value={formData.email}
             onChange={handleChange}
             required
           />
@@ -78,6 +107,7 @@ function CompanyRegister() {
             name="password"
             placeholder="Password"
             className="input"
+            value={formData.password}
             onChange={handleChange}
             required
           />
@@ -87,12 +117,17 @@ function CompanyRegister() {
             name="companyName"
             placeholder="Company Name"
             className="input"
+            value={formData.companyName}
             onChange={handleChange}
             required
           />
 
-          <button type="submit" className="btn-full">
-            Create Account
+          <button
+            type="submit"
+            className="btn-full"
+            disabled={loading}
+          >
+            {loading ? "Creating..." : "Create Account"}
           </button>
 
         </form>
