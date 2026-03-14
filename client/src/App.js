@@ -44,6 +44,10 @@ import Login from "./pages/auth/Login";
 import CompanyDashboard from "./pages/company/CompanyDashboard";
 import TrainerDashboard from "./pages/trainer/TrainerDashboard"; 
 import TrainerApplications from "./pages/trainer/TrainerApplications";
+import ApplyForProject from "./pages/trainer/ApplyForProject";
+import ProjectApplications from "./pages/company/ProjectApplications";
+import TrainerNotifications from "./pages/trainer/TrainerNotifications";
+import ProjectDetails from "./pages/trainer/ProjectDetails";
 
 function App() {
   return (
@@ -61,7 +65,13 @@ function App() {
         {/* ✅ Trainer dashboard */}
         <Route path="/trainer-dashboard" element={<TrainerDashboard />} />
         <Route path="/trainer/applications" element={<TrainerApplications />} />
-
+        <Route path="/trainer/apply/:projectId" element={<ApplyForProject />} />
+        <Route path="/trainer/notifications" element={<TrainerNotifications />} />
+        <Route
+  path="/company/project/:projectId/applications"
+  element={<ProjectApplications />}
+/>
+<Route path="/trainer/project/:projectId" element={<ProjectDetails />} />
       </Routes>
     </Router>
   );

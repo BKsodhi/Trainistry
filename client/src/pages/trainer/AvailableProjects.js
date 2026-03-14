@@ -1,13 +1,15 @@
 import React, { useEffect, useState } from "react";
 import axios from "axios";
 import "../../styles/TrainerDashboard.css";
-import { NavLink } from "react-router-dom";
+import { NavLink, useNavigate } from "react-router-dom";
 
 function AvailableProjects() {
 
   const [projects, setProjects] = useState([]);
 
   const token = localStorage.getItem("token");
+
+  const navigate = useNavigate();
 
   useEffect(() => {
     fetchProjects();
@@ -39,6 +41,13 @@ function AvailableProjects() {
   const logout = () => {
     localStorage.clear();
     window.location.href = "/";
+  };
+
+  const handleApplyClick = (projectId) => {
+
+    // Navigate to application form page
+    navigate(`/trainer/apply/${projectId}`);
+
   };
 
   return (
@@ -119,7 +128,10 @@ function AvailableProjects() {
                   {project.company?.name || "N/A"}
                 </p>
 
-                <button className="apply-btn">
+                <button
+                  className="apply-btn"
+                  onClick={() => handleApplyClick(project._id)}
+                >
                   Apply
                 </button>
 

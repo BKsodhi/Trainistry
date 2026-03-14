@@ -187,3 +187,32 @@
     flex-direction: column;
   }
 }
+/* APPLY PROJECT PAGE */
+
+.form-card p {
+  font-size: 14px;
+  color: var(--text-muted);
+  margin-bottom: 8px;
+}
+
+.form-card label {
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--primary-deep);
+  margin-bottom: 6px;
+  display: block;
+}
+
+textarea.input {
+  resize: none;
+  min-height: 120px;
+}
+
+input[type="file"] {
+  background: white;
+  padding: 12px;
+}
+
+.summary-bar span {
+  font-size: 14px;
+}
