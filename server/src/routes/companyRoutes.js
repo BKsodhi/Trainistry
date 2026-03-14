@@ -134,7 +134,10 @@ router.get('/:companyId/projects/:projectId/applications', protect, authorize('c
 router.put('/applications/:applicationId/status', protect, authorize('company'), updateApplicationStatus);
 
 // Schedule interview
-router.put('/applications/:applicationId/interview', protect, authorize('company'), scheduleInterview);
+// router.put('/applications/:applicationId/interview', protect, authorize('company'), scheduleInterview);
+router.post('/applications/:applicationId/schedule', protect, authorize('company'), scheduleInterview);
+// Dashboard Stats - Add this line
+router.get('/dashboard/stats', protect, authorize('company'), getCompanyDashboardStats);
 
 
 module.exports = router;
