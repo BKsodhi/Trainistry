@@ -1359,6 +1359,355 @@
 
 // export default TrainerDashboard;
 
+// import React, { useEffect, useState } from "react";
+// import { useNavigate } from "react-router-dom";
+// import axios from "axios";
+// import "../../styles/TrainerDashboard.css"; 
+
+// function TrainerDashboard() {
+//   const [data, setData] = useState(null);
+//   const [projects, setProjects] = useState([]);
+//   const [loading, setLoading] = useState(true);
+//   const navigate = useNavigate();
+//   const token = localStorage.getItem("token");
+
+//   useEffect(() => {
+//     // Redirect if no token is found
+//     if (!token) {
+//       navigate("/login");
+//       return;
+//     }
+
+//     const fetchAll = async () => {
+//       try {
+//         const config = { headers: { Authorization: `Bearer ${token}` } };
+        
+//         // Note: Ensure backend has /api/trainer/dashboard and /api/trainer/projects 
+//         // OR /api/projects as per your server.js setup
+//         const [dashRes, projRes] = await Promise.all([
+//           axios.get("http://localhost:5000/api/trainer/dashboard", config),
+//           axios.get("http://localhost:5000/api/trainer/projects", config)
+//         ]);
+
+//         setData(dashRes.data.data);
+//         setProjects(projRes.data.data || []);
+//       } catch (err) {
+//         console.error("Dashboard fetch error:", err.response?.data || err.message);
+//         // If 401 Unauthorized, token might be expired
+//         if (err.response?.status === 401) {
+//           localStorage.removeItem("token");
+//           navigate("/login");
+//         }
+//       } finally {
+//         // This ensures the loader disappears even if the request fails
+//         setLoading(false);
+//       }
+//     };
+
+//     fetchAll();
+//   }, [token, navigate]);
+
+//   const handleToggle = async () => {
+//     try {
+//       const res = await axios.put(
+//         "http://localhost:5000/api/trainer/toggle-status", 
+//         {}, 
+//         { headers: { Authorization: `Bearer ${token}` } }
+//       );
+//       // Update state locally to reflect the change immediately
+//       setData(prev => ({ 
+//         ...prev, 
+//         profile: { ...prev.profile, availability: res.data.availability } 
+//       }));
+//     } catch (err) {
+//       console.error("Toggle error", err);
+//     }
+//   };
+
+//   if (loading) return <div className="loader">Loading Trainistry...</div>;
+
+//   // Basic error state if data failed to load
+//   if (!data) return (
+//     <div className="error-container">
+//       <p>Could not load dashboard data. Please try again later.</p>
+//       <button onClick={() => window.location.reload()}>Retry</button>
+//     </div>
+//   );
+
+//   return (
+//     <div className="trainer-dashboard">
+//       <aside className="sidebar">
+//         <div className="logo">Trainistry</div>
+//         <nav>
+//           <button className="sidebar-btn active">Find Projects</button>
+//           <button className="sidebar-btn" onClick={() => navigate("/trainer/applications")}>Applications</button>
+//           <button className="sidebar-btn" onClick={() => navigate("/trainer/profile")}>My Profile</button>
+//         </nav>
+//         <button className="logout-btn" onClick={() => {
+//           localStorage.removeItem("token");
+//           navigate("/login");
+//         }}>Logout</button>
+//       </aside>
+
+//       <main className="main-content">
+//         <header className="header-section">
+//           <h1>Welcome, {data.profile?.user?.name || 'Trainer'}</h1>
+//           <div className="status-toggle-wrapper" onClick={handleToggle}>
+//             <span className={`status-indicator ${data.profile?.availability}`}></span>
+//             <span>{data.profile?.availability === 'available' ? 'Available' : 'Busy'}</span>
+//           </div>
+//         </header>
+
+//         <div className="stats-grid">
+//           <div className="stat-card glass">
+//             <h4>Total Applied</h4>
+//             <span className="value">{data.stats?.totalApplications || 0}</span>
+//           </div>
+//           <div className="stat-card glass">
+//             <h4>Interviews</h4>
+//             <span className="value">{data.stats?.interviews || 0}</span>
+//           </div>
+//           <div className="stat-card glass">
+//             <h4>Accepted</h4>
+//             <span className="value">{data.stats?.accepted || 0}</span>
+//           </div>
+//         </div>
+
+//         <section className="section-title">
+//           <h2>Latest Projects</h2>
+//         </section>
+
+//         <div className="projects-container">
+//           {projects.length > 0 ? (
+//             projects.map(proj => (
+//               <div key={proj._id} className="project-card">
+//                 <span className="company-badge">{proj.company?.name || 'Partner Company'}</span>
+//                 <h3>{proj.title}</h3>
+//                 <p>{proj.description?.substring(0, 100)}...</p>
+//                 <div style={{ marginTop: '15px', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+//                   <span className="status-pill pending">₹{proj.perDayPayment}/day</span>
+//                   <button className="apply-btn" onClick={() => navigate(`/trainer/project/${proj._id}`)}>
+//                     View Details
+//                   </button>
+//                 </div>
+//               </div>
+//             ))
+//           ) : (
+//             <p>No open projects found at the moment.</p>
+//           )}
+//         </div>
+//       </main>
+//     </div>
+//   );
+// }
+
+// export default TrainerDashboard;
+
+// import React, { useEffect, useState } from "react";
+// import { useNavigate } from "react-router-dom";
+// import axios from "axios";
+// import "../../styles/TrainerDashboard.css"; 
+
+// function TrainerDashboard() {
+//   const [data, setData] = useState(null);
+//   const [projects, setProjects] = useState([]);
+//   const [loading, setLoading] = useState(true);
+  
+//   // Filtering & Sorting States
+//   const [searchTerm, setSearchTerm] = useState("");
+//   const [showFilters, setShowFilters] = useState(false);
+//   const [filters, setFilters] = useState({
+//     location: "",
+//     startDate: "",
+//     sortBy: "newest" // newest, highest_pay
+//   });
+
+//   const navigate = useNavigate();
+//   const token = localStorage.getItem("token");
+
+//   useEffect(() => {
+//     if (!token) {
+//       navigate("/login");
+//       return;
+//     }
+
+//     const fetchAll = async () => {
+//       try {
+//         const config = { headers: { Authorization: `Bearer ${token}` } };
+//         const [dashRes, projRes] = await Promise.all([
+//           axios.get("http://localhost:5000/api/trainer/dashboard", config),
+//           axios.get("http://localhost:5000/api/trainer/projects", config)
+//         ]);
+//         setData(dashRes.data.data);
+//         setProjects(projRes.data.data || []);
+//       } catch (err) {
+//         console.error("Dashboard fetch error:", err.response?.data || err.message);
+//         if (err.response?.status === 401) {
+//           localStorage.removeItem("token");
+//           navigate("/login");
+//         }
+//       } finally {
+//         setLoading(false);
+//       }
+//     };
+//     fetchAll();
+//   }, [token, navigate]);
+
+//   const handleToggle = async () => {
+//     try {
+//       const res = await axios.put(
+//         "http://localhost:5000/api/trainer/toggle-status", 
+//         {}, 
+//         { headers: { Authorization: `Bearer ${token}` } }
+//       );
+//       setData(prev => ({ 
+//         ...prev, 
+//         profile: { ...prev.profile, availability: res.data.availability } 
+//       }));
+//     } catch (err) {
+//       console.error("Toggle error", err);
+//     }
+//   };
+
+//   // UPDATED FILTER LOGIC
+//   const filteredProjects = projects
+//     .filter((proj) => {
+//       // Search term covers Title, Tech, and Company
+//       const searchMatch = (
+//         proj.title?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+//         proj.technology?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+//         proj.company?.name?.toLowerCase().includes(searchTerm.toLowerCase())
+//       );
+
+//       // Location Filter
+//       const locationMatch = filters.location === "" || 
+//         proj.location?.toLowerCase().includes(filters.location.toLowerCase());
+
+//       // Start Date Filter (on or after)
+//       const dateMatch = filters.startDate === "" || 
+//         new Date(proj.startDate) >= new Date(filters.startDate);
+      
+//       return searchMatch && locationMatch && dateMatch;
+//     })
+//     .sort((a, b) => {
+//       if (filters.sortBy === "highest_pay") {
+//         return b.perDayPayment - a.perDayPayment;
+//       }
+//       return new Date(b.createdAt) - new Date(a.createdAt);
+//     });
+
+//   if (loading) return <div className="loader">Loading Trainistry...</div>;
+//   if (!data) return <div className="error-container"><button onClick={() => window.location.reload()}>Retry</button></div>;
+
+//   return (
+//     <div className="trainer-dashboard">
+//       <aside className="sidebar">
+//         <div className="logo">Trainistry</div>
+//         <nav>
+//           <button className="sidebar-btn active">Find Projects</button>
+//           <button className="sidebar-btn" onClick={() => navigate("/trainer/applications")}>Applications</button>
+//           <button className="sidebar-btn" onClick={() => navigate("/trainer/profile")}>My Profile</button>
+//         </nav>
+//         <button className="logout-btn" onClick={() => { localStorage.removeItem("token"); navigate("/login"); }}>Logout</button>
+//       </aside>
+
+//       <main className="main-content">
+//         <header className="header-section">
+//           <h1>Welcome, {data.profile?.user?.name || 'Trainer'}</h1>
+//           <div className="status-toggle-wrapper" onClick={handleToggle}>
+//             <span className={`status-indicator ${data.profile?.availability}`}></span>
+//             <span>{data.profile?.availability === 'available' ? 'Available' : 'Busy'}</span>
+//           </div>
+//         </header>
+
+//         <div className="stats-grid">
+//           <div className="stat-card glass"><h4>Total Applied</h4><span className="value">{data.stats?.totalApplications || 0}</span></div>
+//           <div className="stat-card glass"><h4>Interviews</h4><span className="value">{data.stats?.interviews || 0}</span></div>
+//           <div className="stat-card glass"><h4>Accepted</h4><span className="value">{data.stats?.accepted || 0}</span></div>
+//         </div>
+
+//         <section className="section-title search-header">
+//           <h2>Latest Projects</h2>
+//           <div className="search-controls">
+//             <div className="search-wrapper">
+//               <input 
+//                 type="text" 
+//                 className="search-input"
+//                 placeholder="Search tech, title, or company..." 
+//                 value={searchTerm}
+//                 onChange={(e) => setSearchTerm(e.target.value)}
+//               />
+//             </div>
+            
+//             <div className="filter-container">
+//               <button className="filter-toggle-btn" onClick={() => setShowFilters(!showFilters)}>
+//                 <span className="filter-icon">⚙️</span> Filters
+//               </button>
+              
+//               {showFilters && (
+//                 <div className="filter-dropdown glass">
+//                   <div className="filter-group">
+//                     <label>Location</label>
+//                     <input 
+//                       type="text" 
+//                       placeholder="e.g. Remote, Delhi"
+//                       className="filter-input"
+//                       value={filters.location}
+//                       onChange={(e) => setFilters({...filters, location: e.target.value})}
+//                     />
+//                   </div>
+
+//                   <div className="filter-group">
+//                     <label>Starting After</label>
+//                     <input 
+//                       type="date" 
+//                       className="filter-input"
+//                       value={filters.startDate}
+//                       onChange={(e) => setFilters({...filters, startDate: e.target.value})}
+//                     />
+//                   </div>
+
+//                   <div className="filter-group">
+//                     <label>Sort By</label>
+//                     <select value={filters.sortBy} onChange={(e) => setFilters({...filters, sortBy: e.target.value})}>
+//                       <option value="newest">Newest First</option>
+//                       <option value="highest_pay">Highest Pay (₹)</option>
+//                     </select>
+//                   </div>
+
+//                   <button className="clear-filters" onClick={() => setFilters({location: "", startDate: "", sortBy: "newest"})}>Reset Filters</button>
+//                 </div>
+//               )}
+//             </div>
+//           </div>
+//         </section>
+
+//         <div className="projects-container">
+//           {filteredProjects.length > 0 ? (
+//             filteredProjects.map(proj => (
+//               <div key={proj._id} className="project-card">
+//                 <span className="company-badge">{proj.company?.name || 'Partner Company'}</span>
+//                 <h3>{proj.title}</h3>
+//                 <p>{proj.description?.substring(0, 100)}...</p>
+//                 <div style={{ marginTop: '15px', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+//                   <span className="status-pill pending">₹{proj.perDayPayment}/day</span>
+//                   <button className="apply-btn" onClick={() => navigate(`/trainer/project/${proj._id}`)}>View Details</button>
+//                 </div>
+//               </div>
+//             ))
+//           ) : (
+//             <div className="no-results-msg">
+//               <p>No projects match your search or filters.</p>
+//             </div>
+//           )}
+//         </div>
+//       </main>
+//     </div>
+//   );
+// }
+
+// export default TrainerDashboard;
+
 import React, { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import axios from "axios";
@@ -1368,11 +1717,20 @@ function TrainerDashboard() {
   const [data, setData] = useState(null);
   const [projects, setProjects] = useState([]);
   const [loading, setLoading] = useState(true);
+  
+  // Filtering & Sorting States
+  const [searchTerm, setSearchTerm] = useState("");
+  const [showFilters, setShowFilters] = useState(false);
+  const [filters, setFilters] = useState({
+    location: "",
+    startDate: "",
+    sortBy: "newest" 
+  });
+
   const navigate = useNavigate();
   const token = localStorage.getItem("token");
 
   useEffect(() => {
-    // Redirect if no token is found
     if (!token) {
       navigate("/login");
       return;
@@ -1381,58 +1739,73 @@ function TrainerDashboard() {
     const fetchAll = async () => {
       try {
         const config = { headers: { Authorization: `Bearer ${token}` } };
-        
-        // Note: Ensure backend has /api/trainer/dashboard and /api/trainer/projects 
-        // OR /api/projects as per your server.js setup
         const [dashRes, projRes] = await Promise.all([
           axios.get("http://localhost:5000/api/trainer/dashboard", config),
           axios.get("http://localhost:5000/api/trainer/projects", config)
         ]);
-
         setData(dashRes.data.data);
         setProjects(projRes.data.data || []);
       } catch (err) {
         console.error("Dashboard fetch error:", err.response?.data || err.message);
-        // If 401 Unauthorized, token might be expired
         if (err.response?.status === 401) {
           localStorage.removeItem("token");
           navigate("/login");
         }
       } finally {
-        // This ensures the loader disappears even if the request fails
         setLoading(false);
       }
     };
-
     fetchAll();
   }, [token, navigate]);
 
+  // COMPLETE TOGGLE LOGIC
   const handleToggle = async () => {
+    const currentStatus = data.profile?.availability;
+    const newStatus = currentStatus === 'available' ? 'busy' : 'available';
+    
     try {
       const res = await axios.put(
         "http://localhost:5000/api/trainer/toggle-status", 
-        {}, 
+        { availability: newStatus }, 
         { headers: { Authorization: `Bearer ${token}` } }
       );
-      // Update state locally to reflect the change immediately
+      
       setData(prev => ({ 
         ...prev, 
-        profile: { ...prev.profile, availability: res.data.availability } 
+        profile: { ...prev.profile, availability: res.data.availability || newStatus } 
       }));
     } catch (err) {
       console.error("Toggle error", err);
+      alert("Could not update status. Please check your connection.");
     }
   };
 
-  if (loading) return <div className="loader">Loading Trainistry...</div>;
+  // FILTER LOGIC
+  const filteredProjects = projects
+    .filter((proj) => {
+      const searchMatch = (
+        proj.title?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+        proj.technology?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+        proj.company?.name?.toLowerCase().includes(searchTerm.toLowerCase())
+      );
 
-  // Basic error state if data failed to load
-  if (!data) return (
-    <div className="error-container">
-      <p>Could not load dashboard data. Please try again later.</p>
-      <button onClick={() => window.location.reload()}>Retry</button>
-    </div>
-  );
+      const locationMatch = filters.location === "" || 
+        proj.location?.toLowerCase().includes(filters.location.toLowerCase());
+
+      const dateMatch = filters.startDate === "" || 
+        new Date(proj.startDate) >= new Date(filters.startDate);
+      
+      return searchMatch && locationMatch && dateMatch;
+    })
+    .sort((a, b) => {
+      if (filters.sortBy === "highest_pay") {
+        return b.perDayPayment - a.perDayPayment;
+      }
+      return new Date(b.createdAt) - new Date(a.createdAt);
+    });
+
+  if (loading) return <div className="loader">Loading Trainistry...</div>;
+  if (!data) return <div className="error-container"><button onClick={() => window.location.reload()}>Retry</button></div>;
 
   return (
     <div className="trainer-dashboard">
@@ -1443,57 +1816,109 @@ function TrainerDashboard() {
           <button className="sidebar-btn" onClick={() => navigate("/trainer/applications")}>Applications</button>
           <button className="sidebar-btn" onClick={() => navigate("/trainer/profile")}>My Profile</button>
         </nav>
-        <button className="logout-btn" onClick={() => {
-          localStorage.removeItem("token");
-          navigate("/login");
-        }}>Logout</button>
+        <button className="logout-btn" onClick={() => { localStorage.removeItem("token"); navigate("/login"); }}>Logout</button>
       </aside>
 
       <main className="main-content">
         <header className="header-section">
           <h1>Welcome, {data.profile?.user?.name || 'Trainer'}</h1>
-          <div className="status-toggle-wrapper" onClick={handleToggle}>
-            <span className={`status-indicator ${data.profile?.availability}`}></span>
-            <span>{data.profile?.availability === 'available' ? 'Available' : 'Busy'}</span>
+          
+          {/* INTERACTIVE TOGGLE */}
+          <div className="availability-control">
+            <span className="status-label">Status:</span>
+            <div 
+              className={`status-toggle-wrapper ${data.profile?.availability}`} 
+              onClick={handleToggle}
+            >
+              <div className="toggle-slider">
+                <span className={`status-indicator ${data.profile?.availability}`}></span>
+              </div>
+              <span className="status-text">
+                {data.profile?.availability === 'available' ? 'Available' : 'Busy'}
+              </span>
+            </div>
           </div>
         </header>
 
         <div className="stats-grid">
-          <div className="stat-card glass">
-            <h4>Total Applied</h4>
-            <span className="value">{data.stats?.totalApplications || 0}</span>
-          </div>
-          <div className="stat-card glass">
-            <h4>Interviews</h4>
-            <span className="value">{data.stats?.interviews || 0}</span>
-          </div>
-          <div className="stat-card glass">
-            <h4>Accepted</h4>
-            <span className="value">{data.stats?.accepted || 0}</span>
-          </div>
+          <div className="stat-card glass"><h4>Total Applied</h4><span className="value">{data.stats?.totalApplications || 0}</span></div>
+          <div className="stat-card glass"><h4>Interviews</h4><span className="value">{data.stats?.interviews || 0}</span></div>
+          <div className="stat-card glass"><h4>Accepted</h4><span className="value">{data.stats?.accepted || 0}</span></div>
         </div>
 
-        <section className="section-title">
+        <section className="section-title search-header">
           <h2>Latest Projects</h2>
+          <div className="search-controls">
+            <div className="search-wrapper">
+              <input 
+                type="text" 
+                className="search-input"
+                placeholder="Search tech, title, or company..." 
+                value={searchTerm}
+                onChange={(e) => setSearchTerm(e.target.value)}
+              />
+            </div>
+            
+            <div className="filter-container">
+              <button className="filter-toggle-btn" onClick={() => setShowFilters(!showFilters)}>
+                <span className="filter-icon">⚙️</span> Filters
+              </button>
+              
+              {showFilters && (
+                <div className="filter-dropdown glass">
+                  <div className="filter-group">
+                    <label>Location</label>
+                    <input 
+                      type="text" 
+                      placeholder="e.g. Remote, Delhi"
+                      className="filter-input"
+                      value={filters.location}
+                      onChange={(e) => setFilters({...filters, location: e.target.value})}
+                    />
+                  </div>
+
+                  <div className="filter-group">
+                    <label>Starting After</label>
+                    <input 
+                      type="date" 
+                      className="filter-input"
+                      value={filters.startDate}
+                      onChange={(e) => setFilters({...filters, startDate: e.target.value})}
+                    />
+                  </div>
+
+                  <div className="filter-group">
+                    <label>Sort By</label>
+                    <select value={filters.sortBy} onChange={(e) => setFilters({...filters, sortBy: e.target.value})}>
+                      <option value="newest">Newest First</option>
+                      <option value="highest_pay">Highest Pay (₹)</option>
+                    </select>
+                  </div>
+
+                  <button className="clear-filters" onClick={() => setFilters({location: "", startDate: "", sortBy: "newest"})}>Reset Filters</button>
+                </div>
+              )}
+            </div>
+          </div>
         </section>
 
         <div className="projects-container">
-          {projects.length > 0 ? (
-            projects.map(proj => (
+          {filteredProjects.length > 0 ? (
+            filteredProjects.map(proj => (
               <div key={proj._id} className="project-card">
                 <span className="company-badge">{proj.company?.name || 'Partner Company'}</span>
                 <h3>{proj.title}</h3>
                 <p>{proj.description?.substring(0, 100)}...</p>
                 <div style={{ marginTop: '15px', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
                   <span className="status-pill pending">₹{proj.perDayPayment}/day</span>
-                  <button className="apply-btn" onClick={() => navigate(`/trainer/project/${proj._id}`)}>
-                    View Details
-                  </button>
+                  <button className="apply-btn" onClick={() => navigate(`/trainer/project/${proj._id}`)}>View Details</button>
                 </div>
               </div>
             ))
           ) : (
-            <p>No open projects found at the moment.</p>
+            <div className="no-results-msg">
+              <p>No projects match your search or filters.</p>
+            </div>
           )}
         </div>
       </main>
