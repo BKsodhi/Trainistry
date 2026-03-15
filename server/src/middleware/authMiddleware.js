@@ -1,6 +1,7 @@
 const jwt = require('jsonwebtoken');
 const User = require('../models/User');
 
+
 // 🔐 Protect routes (JWT verification)
 exports.protect = async (req, res, next) => {
   try {

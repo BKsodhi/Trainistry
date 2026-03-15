@@ -105,7 +105,8 @@ import TrainerApplications from "./pages/trainer/TrainerApplications";
 import ApplyForProject from "./pages/trainer/ApplyForProject";
 import TrainerNotifications from "./pages/trainer/TrainerNotifications";
 import ProjectDetails from "./pages/trainer/ProjectDetails";
-import Profile from "./pages/trainer/Profile"; // ✅ IMPORTED PROFILE
+import Profile from "./pages/trainer/Profile"; 
+import Network from "./pages/trainer/Network";
 
 function App() {
   return (
@@ -129,7 +130,7 @@ function App() {
         <Route path="/trainer/notifications" element={<TrainerNotifications />} />
         <Route path="/trainer/project/:projectId" element={<ProjectDetails />} />
         <Route path="/trainer/profile" element={<Profile />} /> {/* ✅ ADDED PROFILE ROUTE */}
-        
+        <Route path="/trainer/network" element={<Network />} />
       </Routes>
     </Router>
   );
