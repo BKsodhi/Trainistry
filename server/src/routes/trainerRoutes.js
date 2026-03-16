@@ -205,7 +205,9 @@ const {
   likeDislikeTrainer,
   addFeedback,
   searchTrainers,
-  followUnfollowUser // NEW IMPORT
+  followUnfollowUser,
+  getNetworkFeed,
+  withdrawApplication
 } = require('../controllers/trainerController');
 
 // All routes are protected
@@ -216,7 +218,7 @@ router.get('/dashboard', getTrainerDashboard);
 router.get('/me', getMyProfile);
 router.put('/profile', uploadResume.single('resume'), updateMyProfile);
 router.put('/toggle-status', updateMyProfile); 
-
+router.get('/profile/me', getMyProfile);
 // Projects
 router.get('/projects', getAllProjects);
 router.get('/projects/:projectId', getProjectById);
@@ -224,12 +226,14 @@ router.get('/projects/:projectId', getProjectById);
 // Applications
 router.post('/projects/:projectId/apply', uploadResume.single('resume'), applyToProject);
 router.get('/applications', getMyApplications);
+router.delete('/applications/:applicationId', protect, withdrawApplication);
 
 // Social & Connections
 router.get('/search', searchTrainers);
 router.put('/like-dislike', likeDislikeTrainer);
 router.post('/feedback', addFeedback);
-router.put('/follow/:id', followUnfollowUser); // NEW ROUTE
+router.put('/follow/:id', followUnfollowUser);
+router.get('/network-feed', getNetworkFeed);
 
 // Notifications
 router.get("/notifications", getTrainerNotifications);

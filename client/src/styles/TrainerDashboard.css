@@ -1473,3 +1473,135 @@ input[type="file"]::file-selector-button:hover {
   transform: translateY(-2px);
   color: white;
 }
+/* =========================================================
+   9. WITHDRAW BUTTON & CARD FOOTER
+   ========================================================= */
+
+.card-footer {
+    margin-top: auto;
+    padding-top: 20px;
+    border-top: 1px solid var(--border-soft);
+    display: flex;
+    justify-content: center;
+}
+
+.withdraw-btn {
+    width: 100%;
+    padding: 12px 20px;
+    background: rgba(239, 68, 68, 0.05); /* Very light red tint */
+    color: var(--danger);
+    border: 1.5px solid rgba(239, 68, 68, 0.2);
+    border-radius: 14px;
+    font-weight: 700;
+    font-size: 14px;
+    cursor: pointer;
+    transition: var(--transition);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+}
+
+.withdraw-btn:hover:not(:disabled) {
+    background: var(--danger);
+    color: white;
+    border-color: var(--danger);
+    transform: translateY(-3px);
+    box-shadow: 0 10px 20px rgba(239, 68, 68, 0.2);
+}
+
+.withdraw-btn:active:not(:disabled) {
+    transform: translateY(-1px);
+}
+
+.withdraw-btn:disabled {
+    background: #f1f5f9;
+    color: var(--text-muted);
+    border-color: var(--border-soft);
+    cursor: not-allowed;
+    opacity: 0.7;
+    filter: grayscale(1);
+}
+
+/* Optional: Add a small icon effect before the text if you want */
+.withdraw-btn::before {
+    content: '✕';
+    font-size: 12px;
+}
+
+/* Network Feed Styles */
+.feed-container {
+  max-width: 700px;
+  margin: 0 auto;
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+
+.achievement-card {
+  background: white;
+  border-radius: 20px;
+  border: 1px solid var(--border-soft);
+  padding: 20px;
+  transition: var(--transition);
+}
+
+.achievement-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 15px;
+}
+
+.user-info-small {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.avatar-sm {
+  width: 40px;
+  height: 40px;
+  background: var(--primary);
+  color: white;
+  border-radius: 10px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: 800;
+}
+
+.achievement-content p {
+  font-size: 15px;
+  color: var(--text-main);
+  margin-bottom: 15px;
+}
+
+.achievement-image {
+  width: 100%;
+  border-radius: 12px;
+  margin-bottom: 15px;
+  max-height: 400px;
+  object-fit: cover;
+}
+
+.achievement-actions {
+  display: flex;
+  gap: 20px;
+  padding-top: 15px;
+  border-top: 1px solid var(--bg-main);
+}
+
+.action-btn {
+  background: none;
+  border: none;
+  color: var(--text-muted);
+  font-weight: 700;
+  cursor: pointer;
+  font-size: 13px;
+  transition: 0.2s;
+}
+
+.action-btn:hover {
+  color: var(--primary);
+}

@@ -312,3 +312,142 @@
   font-weight: 600;
   cursor: pointer;
 }
+/* --- Connection Button States --- */
+.follow-btn-small {
+  transition: all 0.2s ease-in-out;
+  outline: none;
+}
+
+/* Hover effect for the '+ Connect' state */
+.follow-btn-small:not(.following):hover {
+  background-color: rgba(59, 130, 246, 0.1);
+  transform: translateY(-1px);
+}
+
+/* The '✓ Connected' state */
+.follow-btn-small.following {
+  background-color: #3b82f6 !important;
+  color: white !important;
+  border-color: #3b82f6 !important;
+}
+
+/* Hover effect for 'Following' (Optional: shows 'Unfollow' or just a darker blue) */
+.follow-btn-small.following:hover {
+  background-color: #2563eb !important;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+/* Fix header text spacing */
+.author-details strong {
+  display: block; /* Puts the name on its own line */
+  margin-bottom: 2px;
+}
+
+.post-meta-sub {
+  display: block;
+  font-size: 11px;
+  opacity: 0.8;
+}
+
+/* Add a slight hover lift to the cards */
+.pro-post-card {
+  transition: transform 0.2s ease;
+}
+
+.pro-post-card:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
+}
+/* --- Search Bar & Discovery --- */
+.search-container {
+  position: relative;
+  width: 100%;
+  max-width: 600px;
+  margin: 0 auto 25px auto;
+  z-index: 100; /* Ensures dropdown stays above posts */
+}
+
+.search-input {
+  width: 100%;
+  padding: 12px 20px;
+  padding-left: 45px; /* Space for a search icon if you add one */
+  border-radius: 30px;
+  border: 1px solid #e2e8f0;
+  background-color: white;
+  font-size: 15px;
+  transition: all 0.3s ease;
+  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.02);
+}
+
+.search-input:focus {
+  outline: none;
+  border-color: #6366f1;
+  box-shadow: 0 0 0 4px rgba(99, 102, 241, 0.1);
+  background-color: #fff;
+}
+
+/* --- Search Dropdown --- */
+.search-dropdown {
+  position: absolute;
+  top: 55px;
+  left: 0;
+  right: 0;
+  background: white;
+  border-radius: 12px;
+  box-shadow: 0 10px 25px rgba(0, 0, 0, 0.1);
+  border: 1px solid #f1f5f9;
+  overflow: hidden;
+  max-height: 300px;
+  overflow-y: auto;
+}
+
+.search-item {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 12px 20px;
+  border-bottom: 1px solid #f8fafc;
+  transition: background 0.2s;
+}
+
+.search-item:last-child {
+  border-bottom: none;
+}
+
+.search-item:hover {
+  background-color: #f8fafc;
+}
+
+.search-item span {
+  font-weight: 600;
+  color: #1e293b;
+  font-size: 14px;
+}
+
+/* Connect button inside search */
+.search-item button {
+  background: transparent;
+  border: 1px solid #3b82f6;
+  color: #3b82f6;
+  padding: 6px 16px;
+  border-radius: 20px;
+  font-size: 12px;
+  font-weight: 700;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.search-item button:hover {
+  background: #3b82f6;
+  color: white;
+}
+
+/* --- Responsive Fix --- */
+@media (max-width: 768px) {
+  .network-content {
+    margin-left: 0;
+    padding: 10px;
+  }
+  .search-container {
+    padding: 0 10px;
+  }
+}
