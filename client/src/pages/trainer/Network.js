@@ -145,6 +145,386 @@
 
 // export default Network;
 
+// import React, { useEffect, useState, useRef } from "react";
+// import { useNavigate } from "react-router-dom";
+// import axios from "axios";
+// import "../../styles/TrainerDashboard.css"; 
+// import "../../styles/Network.css";
+
+// function Network() {
+//   const [achievements, setAchievements] = useState([]);
+//   const [loading, setLoading] = useState(true);
+//   const [showPostModal, setShowPostModal] = useState(false);
+//   const [currentUser, setCurrentUser] = useState(null);
+//   const [selectedFile, setSelectedFile] = useState(null);
+//   const [previewUrl, setPreviewUrl] = useState(null);
+  
+//   const [newPost, setNewPost] = useState({
+//     description: "",
+//     category: "Project Completion",
+//     companyName: "",
+//     location: ""
+//   });
+
+//   const navigate = useNavigate();
+//   const fileInputRef = useRef(null);
+//   const token = localStorage.getItem("token");
+
+//   const fetchAchievements = async () => {
+//     try {
+//       const res = await axios.get("http://localhost:5000/api/achievements");
+//       setAchievements(res.data.data);
+//     } catch (err) {
+//       console.error("Error fetching network feed", err);
+//     } finally {
+//       setLoading(false);
+//     }
+//   };
+
+//   useEffect(() => {
+//     if (!token) {
+//       navigate("/login");
+//       return;
+//     }
+//     try {
+//       const payload = JSON.parse(atob(token.split('.')[1]));
+//       setCurrentUser(payload);
+//     } catch (e) {
+//       console.error("Auth error", e);
+//     }
+//     fetchAchievements();
+//   }, [token, navigate]);
+
+//   const handleFileChange = (e) => {
+//     const file = e.target.files[0];
+//     if (file) {
+//       setSelectedFile(file);
+//       setPreviewUrl(URL.createObjectURL(file));
+//     }
+//   };
+
+//   const handlePostSubmit = async (e) => {
+//     e.preventDefault();
+    
+//     // IMPORTANT: If your backend doesn't have Multer yet, 
+//     // using FormData will cause the "Failed to post" error.
+//     const formData = new FormData();
+//     formData.append("description", newPost.description);
+//     formData.append("category", newPost.category);
+//     formData.append("companyName", newPost.companyName);
+//     if (selectedFile) formData.append("postImage", selectedFile);
+
+//     try {
+//       await axios.post("http://localhost:5000/api/achievements", formData, {
+//         headers: { 
+//           Authorization: `Bearer ${token}`,
+//           "Content-Type": "multipart/form-data" 
+//         }
+//       });
+//       setShowPostModal(false);
+//       setSelectedFile(null);
+//       setPreviewUrl(null);
+//       setNewPost({ description: "", category: "Project Completion", companyName: "" });
+//       fetchAchievements();
+//     } catch (err) {
+//       alert("Backend Connection Error: Make sure your server is running and Multer is configured.");
+//     }
+//   };
+
+//   return (
+//     <div className="trainistry-network-container">
+//       <aside className="sidebar">
+//         <div className="logo">Trainistry</div>
+//         <nav className="nav-menu">
+//           <button className="sidebar-btn" onClick={() => navigate("/trainer-dashboard")}>Find Projects</button>
+//           <button className="sidebar-btn active">Network Feed</button>
+//           <button className="sidebar-btn" onClick={() => navigate("/trainer/applications")}>Applications</button>
+//           <button className="sidebar-btn" onClick={() => navigate("/trainer/profile")}>My Profile</button>
+//         </nav>
+//         <button className="logout-btn" onClick={() => { localStorage.removeItem("token"); navigate("/login"); }}>Logout</button>
+//       </aside>
+
+//       <main className="network-content">
+//         <div className="feed-header">
+//           <h2>Professional Network</h2>
+//           <p>Showcase your milestones to the industry</p>
+//         </div>
+
+//         {/* Start Post Trigger */}
+//         <div className="post-trigger-box">
+//           <div className="user-avatar-small">{currentUser?.name?.charAt(0) || "T"}</div>
+//           <button onClick={() => setShowPostModal(true)}>Share a project completion or certificate...</button>
+//         </div>
+
+//         <div className="main-feed">
+//           {loading ? (
+//             <div className="network-loader">Loading milestones...</div>
+//           ) : achievements.map((post) => (
+//             <div key={post._id} className="pro-post-card">
+//               <div className="post-header">
+//                 <div className="author-img-circle">{post.trainer?.name?.charAt(0)}</div>
+//                 <div className="author-details">
+//                   <div className="author-name-row">
+//                     <strong>{post.trainer?.name}</strong>
+//                     {post.trainer?._id !== currentUser?.id && <span className="connect-blue">• Connect</span>}
+//                   </div>
+//                   <span className="post-meta-sub">{post.category} at {post.companyName || "Chitkara University"}</span>
+//                 </div>
+//               </div>
+
+//               <div className="post-text">
+//                 <p>{post.description}</p>
+//               </div>
+
+//               {post.imageUrl && (
+//                 <div className="post-media">
+//                   {/* <img src={`http://localhost:5000/${post.imageUrl}`} alt="Achievement" /> */}
+//                   <img src={`http://localhost:5000/${post.imageUrl}`} alt="Achievement" />
+//                 </div>
+//               )}
+
+//               <div className="post-interact">
+//                 <button className="interact-btn">👍 Like</button>
+//                 <button className="interact-btn">💬 Comment</button>
+//                 <button className="interact-btn">🔄 Repost</button>
+//                 <button className="interact-btn">✈️ Send</button>
+//               </div>
+//             </div>
+//           ))}
+//         </div>
+//       </main>
+
+//       {/* Modern Modal */}
+//       {showPostModal && (
+//         <div className="modern-modal-overlay">
+//           <div className="modern-modal">
+//             <div className="modal-head">
+//               <h3>Share Achievement</h3>
+//               <button className="close-x" onClick={() => setShowPostModal(false)}>&times;</button>
+//             </div>
+//             <form onSubmit={handlePostSubmit}>
+//               <div className="modal-body">
+//                 <select className="modal-select" onChange={(e) => setNewPost({...newPost, category: e.target.value})}>
+//                   <option>Project Completion</option>
+//                   <option>Certification</option>
+//                   <option>Workshop</option>
+//                 </select>
+//                 <input 
+//                   type="text" 
+//                   placeholder="Company/University name" 
+//                   className="modal-input"
+//                   onChange={(e) => setNewPost({...newPost, companyName: e.target.value})}
+//                 />
+//                 <textarea 
+//                   placeholder="Describe your milestone..." 
+//                   className="modal-textarea"
+//                   onChange={(e) => setNewPost({...newPost, description: e.target.value})}
+//                   required
+//                 />
+
+//                 {previewUrl && (
+//                   <div className="modal-preview">
+//                     <img src={previewUrl} alt="Preview" />
+//                     <button type="button" onClick={() => {setSelectedFile(null); setPreviewUrl(null);}}>Remove</button>
+//                   </div>
+//                 )}
+//               </div>
+//               <div className="modal-footer">
+//                 <button type="button" className="photo-add-btn" onClick={() => fileInputRef.current.click()}>📷 Photo</button>
+//                 <input type="file" ref={fileInputRef} hidden accept="image/*" onChange={handleFileChange} />
+//                 <button type="submit" className="post-submit-btn">Post to Network</button>
+//               </div>
+//             </form>
+//           </div>
+//         </div>
+//       )}
+//     </div>
+//   );
+// }
+
+// export default Network;
+
+
+// import React, { useEffect, useState, useRef } from "react";
+// import { useNavigate } from "react-router-dom";
+// import axios from "axios";
+// import "../../styles/TrainerDashboard.css"; 
+// import "../../styles/Network.css";
+
+// function Network() {
+//   const [achievements, setAchievements] = useState([]);
+//   const [loading, setLoading] = useState(true);
+//   const [showPostModal, setShowPostModal] = useState(false);
+//   const [currentUser, setCurrentUser] = useState(null);
+//   const [selectedFile, setSelectedFile] = useState(null);
+//   const [previewUrl, setPreviewUrl] = useState(null);
+//   const [activeCommentId, setActiveCommentId] = useState(null);
+//   const [commentText, setCommentText] = useState("");
+  
+//   const [newPost, setNewPost] = useState({
+//     description: "",
+//     category: "Project Completion",
+//     companyName: "",
+//     location: ""
+//   });
+
+//   const navigate = useNavigate();
+//   const fileInputRef = useRef(null);
+//   const token = localStorage.getItem("token");
+
+//   const fetchAchievements = async () => {
+//     try {
+//       const res = await axios.get("http://localhost:5000/api/achievements");
+//       setAchievements(res.data.data);
+//     } catch (err) { console.error(err); } finally { setLoading(false); }
+//   };
+
+//   useEffect(() => {
+//     if (!token) { navigate("/login"); return; }
+//     try {
+//       const payload = JSON.parse(atob(token.split('.')[1]));
+//       setCurrentUser(payload);
+//     } catch (e) { console.error(e); }
+//     fetchAchievements();
+//   }, [token, navigate]);
+
+//   const handleLike = async (id) => {
+//     try {
+//       const res = await axios.put(`http://localhost:5000/api/achievements/${id}/like`, {}, {
+//         headers: { Authorization: `Bearer ${token}` }
+//       });
+//       setAchievements(achievements.map(a => a._id === id ? { ...a, likes: res.data.likes } : a));
+//     } catch (err) { console.error(err); }
+//   };
+
+//   const handleCommentSubmit = async (id) => {
+//     if (!commentText.trim()) return;
+//     try {
+//       const res = await axios.post(`http://localhost:5000/api/achievements/${id}/comment`, { text: commentText }, {
+//         headers: { Authorization: `Bearer ${token}` }
+//       });
+//       setAchievements(achievements.map(a => a._id === id ? { ...a, comments: res.data.data } : a));
+//       setCommentText("");
+//     } catch (err) { console.error(err); }
+//   };
+
+//   const handleRepost = async (id) => {
+//     try {
+//       await axios.post(`http://localhost:5000/api/achievements/${id}/repost`, {}, {
+//         headers: { Authorization: `Bearer ${token}` }
+//       });
+//       fetchAchievements();
+//       alert("Post Shared to your feed!");
+//     } catch (err) { console.error(err); }
+//   };
+
+//   const handlePostSubmit = async (e) => {
+//     e.preventDefault();
+//     const formData = new FormData();
+//     formData.append("description", newPost.description);
+//     formData.append("category", newPost.category);
+//     formData.append("companyName", newPost.companyName);
+//     if (selectedFile) formData.append("postImage", selectedFile);
+
+//     try {
+//       await axios.post("http://localhost:5000/api/achievements", formData, {
+//         headers: { Authorization: `Bearer ${token}`, "Content-Type": "multipart/form-data" }
+//       });
+//       setShowPostModal(false);
+//       setSelectedFile(null); setPreviewUrl(null);
+//       setNewPost({ description: "", category: "Project Completion", companyName: "" });
+//       fetchAchievements();
+//     } catch (err) { alert("Error posting milestone"); }
+//   };
+
+//   return (
+//     <div className="trainistry-network-container">
+//       <aside className="sidebar">
+//         <div className="logo">Trainistry</div>
+//         <nav className="nav-menu">
+//           <button className="sidebar-btn" onClick={() => navigate("/trainer-dashboard")}>Find Projects</button>
+//           <button className="sidebar-btn active">Network Feed</button>
+//           <button className="sidebar-btn">Applications</button>
+//           <button className="sidebar-btn">My Profile</button>
+//         </nav>
+//         <button className="logout-btn" onClick={() => { localStorage.removeItem("token"); navigate("/login"); }}>Logout</button>
+//       </aside>
+
+//       <main className="network-content">
+//         <div className="post-trigger-box">
+//           <div className="user-avatar-small">{currentUser?.name?.charAt(0) || "T"}</div>
+//           <button onClick={() => setShowPostModal(true)}>Share a project completion or certificate...</button>
+//         </div>
+
+//         <div className="main-feed">
+//           {loading ? <div className="network-loader">Loading...</div> : achievements.map((post) => (
+//             <div key={post._id} className="pro-post-card">
+//               <div className="post-header">
+//                 <div className="author-img-circle">{post.trainer?.name?.charAt(0)}</div>
+//                 <div className="author-details">
+//                   <strong>{post.trainer?.name}</strong>
+//                   <span className="post-meta-sub">{post.category} at {post.companyName}</span>
+//                 </div>
+//               </div>
+//               <div className="post-text"><p>{post.description}</p></div>
+//               {post.imageUrl && <div className="post-media"><img src={`http://localhost:5000/${post.imageUrl}`} alt="Post" /></div>}
+              
+//               <div className="post-stats">
+//                 <span>{post.likes?.length || 0} Likes</span> • <span>{post.comments?.length || 0} Comments</span>
+//               </div>
+
+//               <div className="post-interact">
+//                 <button className={`interact-btn ${post.likes?.includes(currentUser?.id) ? 'active-like' : ''}`} onClick={() => handleLike(post._id)}>
+//                   {post.likes?.includes(currentUser?.id) ? '❤️ Liked' : '👍 Like'}
+//                 </button>
+//                 <button className="interact-btn" onClick={() => setActiveCommentId(activeCommentId === post._id ? null : post._id)}>💬 Comment</button>
+//                 <button className="interact-btn" onClick={() => handleRepost(post._id)}>🔄 Repost</button>
+//                 <button className="interact-btn" onClick={() => { navigator.clipboard.writeText(`Check out this post: ${post.description}`); alert("Link Copied!"); }}>✈️ Send</button>
+//               </div>
+
+//               {activeCommentId === post._id && (
+//                 <div className="comment-box">
+//                   <div className="comment-input">
+//                     <input type="text" placeholder="Write a comment..." value={commentText} onChange={(e) => setCommentText(e.target.value)} />
+//                     <button onClick={() => handleCommentSubmit(post._id)}>Post</button>
+//                   </div>
+//                   {post.comments.map((c, i) => (
+//                     <div key={i} className="comment-item"><strong>{c.name}</strong>: {c.text}</div>
+//                   ))}
+//                 </div>
+//               )}
+//             </div>
+//           ))}
+//         </div>
+//       </main>
+
+//       {showPostModal && (
+//         <div className="modern-modal-overlay">
+//           <div className="modern-modal">
+//             <div className="modal-head"><h3>Share Achievement</h3><button onClick={() => setShowPostModal(false)}>&times;</button></div>
+//             <form onSubmit={handlePostSubmit}>
+//               <div className="modal-body">
+//                 <select className="modal-select" onChange={(e) => setNewPost({...newPost, category: e.target.value})}>
+//                   <option>Project Completion</option><option>Certification</option><option>Workshop</option>
+//                 </select>
+//                 <input type="text" placeholder="Company/University name" className="modal-input" onChange={(e) => setNewPost({...newPost, companyName: e.target.value})} />
+//                 <textarea placeholder="Describe your milestone..." className="modal-textarea" onChange={(e) => setNewPost({...newPost, description: e.target.value})} required />
+//                 {previewUrl && <div className="modal-preview"><img src={previewUrl} alt="Preview" /></div>}
+//               </div>
+//               <div className="modal-footer">
+//                 <button type="button" onClick={() => fileInputRef.current.click()}>📷 Photo</button>
+//                 <input type="file" ref={fileInputRef} hidden accept="image/*" onChange={(e) => { setSelectedFile(e.target.files[0]); setPreviewUrl(URL.createObjectURL(e.target.files[0])); }} />
+//                 <button type="submit" className="post-submit-btn">Post to Network</button>
+//               </div>
+//             </form>
+//           </div>
+//         </div>
+//       )}
+//     </div>
+//   );
+// }
+// export default Network;
+
 import React, { useEffect, useState, useRef } from "react";
 import { useNavigate } from "react-router-dom";
 import axios from "axios";
@@ -158,6 +538,8 @@ function Network() {
   const [currentUser, setCurrentUser] = useState(null);
   const [selectedFile, setSelectedFile] = useState(null);
   const [previewUrl, setPreviewUrl] = useState(null);
+  const [activeCommentId, setActiveCommentId] = useState(null);
+  const [commentText, setCommentText] = useState("");
   
   const [newPost, setNewPost] = useState({
     description: "",
@@ -174,40 +556,50 @@ function Network() {
     try {
       const res = await axios.get("http://localhost:5000/api/achievements");
       setAchievements(res.data.data);
-    } catch (err) {
-      console.error("Error fetching network feed", err);
-    } finally {
-      setLoading(false);
-    }
+    } catch (err) { console.error(err); } finally { setLoading(false); }
   };
 
   useEffect(() => {
-    if (!token) {
-      navigate("/login");
-      return;
-    }
+    if (!token) { navigate("/login"); return; }
     try {
       const payload = JSON.parse(atob(token.split('.')[1]));
       setCurrentUser(payload);
-    } catch (e) {
-      console.error("Auth error", e);
-    }
+    } catch (e) { console.error(e); }
     fetchAchievements();
   }, [token, navigate]);
 
-  const handleFileChange = (e) => {
-    const file = e.target.files[0];
-    if (file) {
-      setSelectedFile(file);
-      setPreviewUrl(URL.createObjectURL(file));
-    }
+  const handleLike = async (id) => {
+    try {
+      const res = await axios.put(`http://localhost:5000/api/achievements/${id}/like`, {}, {
+        headers: { Authorization: `Bearer ${token}` }
+      });
+      setAchievements(achievements.map(a => a._id === id ? { ...a, likes: res.data.likes } : a));
+    } catch (err) { console.error(err); }
+  };
+
+  const handleCommentSubmit = async (id) => {
+    if (!commentText.trim()) return;
+    try {
+      const res = await axios.post(`http://localhost:5000/api/achievements/${id}/comment`, { text: commentText }, {
+        headers: { Authorization: `Bearer ${token}` }
+      });
+      setAchievements(achievements.map(a => a._id === id ? { ...a, comments: res.data.data } : a));
+      setCommentText("");
+    } catch (err) { console.error(err); }
+  };
+
+  const handleRepost = async (id) => {
+    try {
+      await axios.post(`http://localhost:5000/api/achievements/${id}/repost`, {}, {
+        headers: { Authorization: `Bearer ${token}` }
+      });
+      fetchAchievements();
+      alert("Post Shared to your feed!");
+    } catch (err) { console.error(err); }
   };
 
   const handlePostSubmit = async (e) => {
     e.preventDefault();
-    
-    // IMPORTANT: If your backend doesn't have Multer yet, 
-    // using FormData will cause the "Failed to post" error.
     const formData = new FormData();
     formData.append("description", newPost.description);
     formData.append("category", newPost.category);
@@ -216,19 +608,13 @@ function Network() {
 
     try {
       await axios.post("http://localhost:5000/api/achievements", formData, {
-        headers: { 
-          Authorization: `Bearer ${token}`,
-          "Content-Type": "multipart/form-data" 
-        }
+        headers: { Authorization: `Bearer ${token}`, "Content-Type": "multipart/form-data" }
       });
       setShowPostModal(false);
-      setSelectedFile(null);
-      setPreviewUrl(null);
+      setSelectedFile(null); setPreviewUrl(null);
       setNewPost({ description: "", category: "Project Completion", companyName: "" });
       fetchAchievements();
-    } catch (err) {
-      alert("Backend Connection Error: Make sure your server is running and Multer is configured.");
-    }
+    } catch (err) { alert("Error posting milestone"); }
   };
 
   return (
@@ -241,97 +627,73 @@ function Network() {
           <button className="sidebar-btn" onClick={() => navigate("/trainer/applications")}>Applications</button>
           <button className="sidebar-btn" onClick={() => navigate("/trainer/profile")}>My Profile</button>
         </nav>
-        <button className="logout-btn" onClick={() => { localStorage.removeItem("token"); navigate("/login"); }}>Logout</button>
+        <button className="logout-btn" onClick={() => { localStorage.clear(); navigate("/login"); }}>Logout</button>
       </aside>
 
       <main className="network-content">
-        <div className="feed-header">
-          <h2>Professional Network</h2>
-          <p>Showcase your milestones to the industry</p>
-        </div>
-
-        {/* Start Post Trigger */}
         <div className="post-trigger-box">
           <div className="user-avatar-small">{currentUser?.name?.charAt(0) || "T"}</div>
           <button onClick={() => setShowPostModal(true)}>Share a project completion or certificate...</button>
         </div>
 
         <div className="main-feed">
-          {loading ? (
-            <div className="network-loader">Loading milestones...</div>
-          ) : achievements.map((post) => (
+          {loading ? <div className="network-loader">Loading...</div> : achievements.map((post) => (
             <div key={post._id} className="pro-post-card">
               <div className="post-header">
                 <div className="author-img-circle">{post.trainer?.name?.charAt(0)}</div>
                 <div className="author-details">
-                  <div className="author-name-row">
-                    <strong>{post.trainer?.name}</strong>
-                    {post.trainer?._id !== currentUser?.id && <span className="connect-blue">• Connect</span>}
-                  </div>
-                  <span className="post-meta-sub">{post.category} at {post.companyName || "Chitkara University"}</span>
+                  <strong>{post.trainer?.name}</strong>
+                  <span className="post-meta-sub">{post.category} at {post.companyName}</span>
                 </div>
               </div>
-
-              <div className="post-text">
-                <p>{post.description}</p>
+              <div className="post-text"><p>{post.description}</p></div>
+              {post.imageUrl && <div className="post-media"><img src={`http://localhost:5000/${post.imageUrl}`} alt="Post" /></div>}
+              
+              <div className="post-stats">
+                <span>{post.likes?.length || 0} Likes</span> • <span>{post.comments?.length || 0} Comments</span>
               </div>
-
-              {post.imageUrl && (
-                <div className="post-media">
-                  {/* <img src={`http://localhost:5000/${post.imageUrl}`} alt="Achievement" /> */}
-                  <img src={`http://localhost:5000/${post.imageUrl}`} alt="Achievement" />
-                </div>
-              )}
 
               <div className="post-interact">
-                <button className="interact-btn">👍 Like</button>
-                <button className="interact-btn">💬 Comment</button>
-                <button className="interact-btn">🔄 Repost</button>
-                <button className="interact-btn">✈️ Send</button>
+                <button className={`interact-btn ${post.likes?.includes(currentUser?.id) ? 'active-like' : ''}`} onClick={() => handleLike(post._id)}>
+                  {post.likes?.includes(currentUser?.id) ? '❤️ Liked' : '👍 Like'}
+                </button>
+                <button className="interact-btn" onClick={() => setActiveCommentId(activeCommentId === post._id ? null : post._id)}>💬 Comment</button>
+                <button className="interact-btn" onClick={() => handleRepost(post._id)}>🔄 Repost</button>
+                <button className="interact-btn" onClick={() => { navigator.clipboard.writeText(`Check out this post: ${post.description}`); alert("Link Copied!"); }}>✈️ Send</button>
               </div>
+
+              {activeCommentId === post._id && (
+                <div className="comment-box">
+                  <div className="comment-input">
+                    <input type="text" placeholder="Write a comment..." value={commentText} onChange={(e) => setCommentText(e.target.value)} />
+                    <button onClick={() => handleCommentSubmit(post._id)}>Post</button>
+                  </div>
+                  {post.comments.map((c, i) => (
+                    <div key={i} className="comment-item"><strong>{c.name}</strong>: {c.text}</div>
+                  ))}
+                </div>
+              )}
             </div>
           ))}
         </div>
       </main>
 
-      {/* Modern Modal */}
       {showPostModal && (
         <div className="modern-modal-overlay">
           <div className="modern-modal">
-            <div className="modal-head">
-              <h3>Share Achievement</h3>
-              <button className="close-x" onClick={() => setShowPostModal(false)}>&times;</button>
-            </div>
+            <div className="modal-head"><h3>Share Achievement</h3><button onClick={() => setShowPostModal(false)}>&times;</button></div>
             <form onSubmit={handlePostSubmit}>
               <div className="modal-body">
                 <select className="modal-select" onChange={(e) => setNewPost({...newPost, category: e.target.value})}>
-                  <option>Project Completion</option>
-                  <option>Certification</option>
-                  <option>Workshop</option>
+                  <option>Project Completion</option><option>Certification</option><option>Workshop</option>
                 </select>
-                <input 
-                  type="text" 
-                  placeholder="Company/University name" 
-                  className="modal-input"
-                  onChange={(e) => setNewPost({...newPost, companyName: e.target.value})}
-                />
-                <textarea 
-                  placeholder="Describe your milestone..." 
-                  className="modal-textarea"
-                  onChange={(e) => setNewPost({...newPost, description: e.target.value})}
-                  required
-                />
-
-                {previewUrl && (
-                  <div className="modal-preview">
-                    <img src={previewUrl} alt="Preview" />
-                    <button type="button" onClick={() => {setSelectedFile(null); setPreviewUrl(null);}}>Remove</button>
-                  </div>
-                )}
+                <input type="text" placeholder="Company/University name" className="modal-input" onChange={(e) => setNewPost({...newPost, companyName: e.target.value})} />
+                <textarea placeholder="Describe your milestone..." className="modal-textarea" onChange={(e) => setNewPost({...newPost, description: e.target.value})} required />
+                {previewUrl && <div className="modal-preview"><img src={previewUrl} alt="Preview" /></div>}
               </div>
               <div className="modal-footer">
-                <button type="button" className="photo-add-btn" onClick={() => fileInputRef.current.click()}>📷 Photo</button>
-                <input type="file" ref={fileInputRef} hidden accept="image/*" onChange={handleFileChange} />
+                <button type="button" onClick={() => fileInputRef.current.click()}>📷 Photo</button>
+                <input type="file" ref={fileInputRef} hidden accept="image/*" onChange={(e) => { setSelectedFile(e.target.files[0]); setPreviewUrl(URL.createObjectURL(e.target.files[0])); }} />
                 <button type="submit" className="post-submit-btn">Post to Network</button>
               </div>
             </form>
@@ -341,5 +703,4 @@ function Network() {
     </div>
   );
 }
-
 export default Network;

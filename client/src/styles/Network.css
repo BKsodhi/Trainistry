@@ -65,6 +65,7 @@
   border-radius: 10px;
   margin-bottom: 15px;
   padding: 15px 0 0 0;
+  overflow: hidden;
 }
 
 .post-header {
@@ -112,15 +113,25 @@
 
 .post-media img {
   width: 100%;
-  max-height: 400px;
+  max-height: 450px;
   object-fit: cover;
   border-top: 1px solid #f1f5f9;
+  border-bottom: 1px solid #f1f5f9;
+}
+
+/* --- Stats & Interaction --- */
+.post-stats {
+  padding: 8px 15px;
+  font-size: 12px;
+  color: #64748b;
+  display: flex;
+  gap: 10px;
 }
 
 .post-interact {
   display: flex;
   border-top: 1px solid #f1f5f9;
-  padding: 5px;
+  padding: 4px;
 }
 
 .interact-btn {
@@ -132,10 +143,62 @@
   font-weight: 600;
   cursor: pointer;
   border-radius: 4px;
+  transition: 0.2s;
+  font-size: 14px;
 }
 
 .interact-btn:hover {
   background: #f3f4f6;
+}
+
+/* Active Liked State */
+.interact-btn.active-like {
+  color: #df2121; /* Red like Instagram or stay Blue like LinkedIn */
+}
+
+/* --- Comment Box Section --- */
+.comment-box {
+  background: #f8fafc;
+  padding: 15px;
+  border-top: 1px solid #f1f5f9;
+}
+
+.comment-input {
+  display: flex;
+  gap: 10px;
+  margin-bottom: 15px;
+}
+
+.comment-input input {
+  flex: 1;
+  padding: 8px 15px;
+  border: 1px solid #cbd5e1;
+  border-radius: 20px;
+  outline: none;
+  font-size: 14px;
+}
+
+.comment-input button {
+  background: #0a66c2;
+  color: white;
+  border: none;
+  padding: 5px 15px;
+  border-radius: 15px;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.comment-item {
+  font-size: 13px;
+  margin-bottom: 8px;
+  padding-bottom: 8px;
+  border-bottom: 1px solid #e2e8f0;
+  color: #334155;
+}
+
+.comment-item:last-child {
+  border-bottom: none;
+  margin-bottom: 0;
 }
 
 /* --- Modern Modal --- */
@@ -152,6 +215,7 @@
 .modern-modal {
   background: white;
   width: 500px;
+  max-width: 95%;
   border-radius: 12px;
   overflow: hidden;
 }
@@ -161,6 +225,15 @@
   border-bottom: 1px solid #e0e0e0;
   display: flex;
   justify-content: space-between;
+  align-items: center;
+}
+
+.close-x {
+  background: none;
+  border: none;
+  font-size: 24px;
+  cursor: pointer;
+  color: #64748b;
 }
 
 .modal-body {
@@ -173,6 +246,7 @@
   border: 1px solid #d1d5db;
   border-radius: 6px;
   margin-bottom: 12px;
+  outline-color: #0a66c2;
 }
 
 .modal-textarea {
@@ -184,10 +258,26 @@
   font-size: 16px;
 }
 
+.modal-preview {
+  position: relative;
+  margin-top: 10px;
+}
+
 .modal-preview img {
   width: 100%;
   border-radius: 8px;
-  margin-top: 10px;
+}
+
+.modal-preview button {
+  position: absolute;
+  top: 10px;
+  right: 10px;
+  background: rgba(0,0,0,0.6);
+  color: white;
+  border: none;
+  border-radius: 4px;
+  padding: 5px 10px;
+  cursor: pointer;
 }
 
 .modal-footer {
@@ -195,22 +285,30 @@
   border-top: 1px solid #e0e0e0;
   display: flex;
   justify-content: space-between;
+  align-items: center;
 }
 
 .post-submit-btn {
   background: #0a66c2;
   color: white;
   border: none;
-  padding: 8px 20px;
+  padding: 8px 25px;
   border-radius: 20px;
   font-weight: bold;
   cursor: pointer;
 }
 
+.post-submit-btn:disabled {
+  background: #cbd5e1;
+  cursor: not-allowed;
+}
+
 .photo-add-btn {
-  background: none;
+  background: #f1f5f9;
   border: none;
-  color: #64748b;
+  color: #475569;
+  padding: 8px 15px;
+  border-radius: 8px;
   font-weight: 600;
   cursor: pointer;
 }
