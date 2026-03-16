@@ -224,9 +224,11 @@ if (!fs.existsSync(uploadDir)) {
 
 /**
  * STATIC FILES MIDDLEWARE
- * This maps http://localhost:5000/uploads to the physical folder src/uploads
+ * Maps the physical 'src/uploads' folder to the URL '/src/uploads'.
+ * Frontend will access images via: http://localhost:5000/src/uploads/filename.jpg
  */
-app.use('/uploads', express.static(path.join(__dirname, 'src/uploads')));
+// app.use('/src/uploads', express.static(path.join(__dirname, 'src/uploads')));
+app.use('/uploads', express.static(path.join(__dirname, 'src', 'uploads')));
 
 // ===================
 // API Routes

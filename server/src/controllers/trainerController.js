@@ -821,12 +821,32 @@ const Application = require('../models/Application');
 const TrainerProfile = require('../models/TrainerProfile');
 const Notification = require('../models/Notification');
 
-// ===============================
-// GET TRAINER DASHBOARD DATA
-// ===============================
+// // ===============================
+// // GET TRAINER DASHBOARD DATA
+// // ===============================
+// exports.getTrainerDashboard = async (req, res) => {
+//   try {
+//     const trainer = await TrainerProfile.findOne({ user: req.user._id }).populate('user', 'name email role');
+//     if (!trainer) return res.status(404).json({ success: false, message: 'Trainer profile not found' });
+
+//     const totalApplications = await Application.countDocuments({ trainer: trainer._id });
+//     const interviews = await Application.countDocuments({ trainer: trainer._id, status: 'interview_scheduled' });
+//     const accepted = await Application.countDocuments({ trainer: trainer._id, status: 'accepted' });
+
+//     res.status(200).json({ 
+//       success: true, 
+//       data: { profile: trainer, stats: { totalApplications, interviews, accepted } } 
+//     });
+//   } catch (error) {
+//     res.status(500).json({ success: false, message: error.message });
+//   }
+// };
 exports.getTrainerDashboard = async (req, res) => {
   try {
-    const trainer = await TrainerProfile.findOne({ user: req.user._id }).populate('user', 'name email role');
+    // UPDATED: Added followers and following to populate
+    const trainer = await TrainerProfile.findOne({ user: req.user._id })
+      .populate('user', 'name email role followers following');
+      
     if (!trainer) return res.status(404).json({ success: false, message: 'Trainer profile not found' });
 
     const totalApplications = await Application.countDocuments({ trainer: trainer._id });
@@ -842,12 +862,31 @@ exports.getTrainerDashboard = async (req, res) => {
   }
 };
 
-// ===============================
-// GET LOGGED-IN TRAINER PROFILE
-// ===============================
+// // ===============================
+// // GET LOGGED-IN TRAINER PROFILE
+// // ===============================
+// exports.getMyProfile = async (req, res) => {
+//   try {
+//     const profile = await TrainerProfile.findOne({ user: req.user._id }).populate('user', 'name email role');
+//     if (!profile) return res.status(404).json({ success: false, message: 'Profile not found' });
+//     res.status(200).json({ success: true, data: profile });
+//   } catch (error) {
+//     res.status(500).json({ success: false, message: error.message });
+//   }
+// };
 exports.getMyProfile = async (req, res) => {
   try {
-    const profile = await TrainerProfile.findOne({ user: req.user._id }).populate('user', 'name email role');
+    const profile = await TrainerProfile.findOne({ user: req.user._id })
+      .populate({
+        path: 'user',
+        select: 'name email role followers following',
+        // This part is the "Deep Populate" to get the details of the followers themselves
+        populate: [
+          { path: 'followers', select: 'name role' },
+          { path: 'following', select: 'name role' }
+        ]
+      });
+
     if (!profile) return res.status(404).json({ success: false, message: 'Profile not found' });
     res.status(200).json({ success: true, data: profile });
   } catch (error) {
@@ -995,5 +1034,45 @@ exports.addFeedback = async (req, res) => {
     res.status(200).json({ success: true, data: profile });
   } catch (error) {
     res.status(500).json({ success: false, message: error.message });
+  }
+};
+
+// @desc    Follow or Unfollow a User (Trainer or Company)
+// @route   PUT /api/trainer/follow/:id
+exports.followUnfollowUser = async (req, res) => {
+  try {
+    const targetUserId = req.params.id;
+    const currentUserId = req.user.id;
+
+    if (targetUserId === currentUserId) {
+      return res.status(400).json({ success: false, message: "You cannot follow yourself" });
+    }
+
+    const User = require('../models/User'); // Ensure User model is imported
+    const targetUser = await User.findById(targetUserId);
+    const currentUser = await User.findById(currentUserId);
+
+    if (!targetUser) {
+      return res.status(404).json({ success: false, message: "User not found" });
+    }
+
+    // Toggle Logic
+    if (currentUser.following.includes(targetUserId)) {
+      // Unfollow
+      currentUser.following = currentUser.following.filter(id => id.toString() !== targetUserId);
+      targetUser.followers = targetUser.followers.filter(id => id.toString() !== currentUserId);
+      await currentUser.save();
+      await targetUser.save();
+      res.status(200).json({ success: true, message: "Unfollowed successfully", isFollowing: false });
+    } else {
+      // Follow
+      currentUser.following.push(targetUserId);
+      targetUser.followers.push(currentUserId);
+      await currentUser.save();
+      await targetUser.save();
+      res.status(200).json({ success: true, message: "Followed successfully", isFollowing: true });
+    }
+  } catch (err) {
+    res.status(500).json({ success: false, message: err.message });
   }
 };

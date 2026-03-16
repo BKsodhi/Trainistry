@@ -138,6 +138,56 @@
 
 // module.exports = router;
 
+// const express = require('express');
+// const router = express.Router();
+// const { protect } = require('../middleware/authMiddleware');
+// const uploadResume = require('../middleware/uploadMiddleware');
+// const { getTrainerNotifications } = require("../controllers/notificationController");
+
+// const {
+//   getTrainerDashboard,
+//   getMyProfile,
+//   updateMyProfile,
+//   getAllProjects,
+//   getProjectById,
+//   applyToProject,
+//   getMyApplications,
+//   likeDislikeTrainer,
+//   addFeedback,
+//   searchTrainers
+// } = require('../controllers/trainerController');
+
+// // All routes are protected
+// router.use(protect);
+
+// // Dashboard & Profile
+// router.get('/dashboard', getTrainerDashboard);
+// router.get('/me', getMyProfile);
+
+// // This matches your frontend Axios call: axios.put(".../api/trainer/profile")
+// router.put('/profile', uploadResume.single('resume'), updateMyProfile);
+
+// // Toggle availability (uses the same update logic)
+// router.put('/toggle-status', updateMyProfile); 
+
+// // Projects
+// router.get('/projects', getAllProjects);
+// router.get('/projects/:projectId', getProjectById);
+
+// // Applications
+// router.post('/projects/:projectId/apply', uploadResume.single('resume'), applyToProject);
+// router.get('/applications', getMyApplications);
+
+// // Social & Misc
+// router.get('/search', searchTrainers);
+// router.put('/like-dislike', likeDislikeTrainer);
+// router.post('/feedback', addFeedback);
+
+// // Notifications
+// router.get("/notifications", getTrainerNotifications);
+
+// module.exports = router;
+
 const express = require('express');
 const router = express.Router();
 const { protect } = require('../middleware/authMiddleware');
@@ -154,7 +204,8 @@ const {
   getMyApplications,
   likeDislikeTrainer,
   addFeedback,
-  searchTrainers
+  searchTrainers,
+  followUnfollowUser // NEW IMPORT
 } = require('../controllers/trainerController');
 
 // All routes are protected
@@ -163,11 +214,7 @@ router.use(protect);
 // Dashboard & Profile
 router.get('/dashboard', getTrainerDashboard);
 router.get('/me', getMyProfile);
-
-// This matches your frontend Axios call: axios.put(".../api/trainer/profile")
 router.put('/profile', uploadResume.single('resume'), updateMyProfile);
-
-// Toggle availability (uses the same update logic)
 router.put('/toggle-status', updateMyProfile); 
 
 // Projects
@@ -178,10 +225,11 @@ router.get('/projects/:projectId', getProjectById);
 router.post('/projects/:projectId/apply', uploadResume.single('resume'), applyToProject);
 router.get('/applications', getMyApplications);
 
-// Social & Misc
+// Social & Connections
 router.get('/search', searchTrainers);
 router.put('/like-dislike', likeDislikeTrainer);
 router.post('/feedback', addFeedback);
+router.put('/follow/:id', followUnfollowUser); // NEW ROUTE
 
 // Notifications
 router.get("/notifications", getTrainerNotifications);
