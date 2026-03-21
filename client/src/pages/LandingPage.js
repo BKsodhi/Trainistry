@@ -76,7 +76,7 @@ function LandingPage() {
 
         <div className="hero-right">
           <img
-            src="https://illustrations.popsy.co/purple/man-working-on-laptop.svg"
+            src="https://static.vecteezy.com/system/resources/thumbnails/013/577/994/small_2x/starting-new-working-day-as-a-team-top-view-of-group-of-six-young-people-holding-hands-together-and-smile-while-sitting-at-the-office-desk-photo.jpg"
             alt="Hero Illustration"
           />
         </div>

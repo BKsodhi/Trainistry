@@ -2472,7 +2472,7 @@ function Network() {
         <div className="logo">Trainistry</div>
         <nav className="nav-menu">
           <button className="sidebar-btn" onClick={() => navigate("/trainer-dashboard")}>Find Projects</button>
-          <button className="sidebar-btn active">Network Feed</button>
+          <button className="sidebar-btn active">Industrial Network</button>
           <button className="sidebar-btn" onClick={() => navigate("/trainer/applications")}>Applications</button>
           <button className="sidebar-btn" onClick={() => navigate("/trainer/profile")}>My Profile</button>
         </nav>

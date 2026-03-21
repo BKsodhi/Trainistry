@@ -1605,3 +1605,10 @@ input[type="file"]::file-selector-button:hover {
 .action-btn:hover {
   color: var(--primary);
 }
+.status-selected {
+    background-color: #10b981 !important; /* Green */
+    color: white !important;
+}
+.border-success {
+    border: 2px solid #10b981 !important;
+}

@@ -161,7 +161,154 @@
 // export default ApplyForProject;
 
 
-import React, { useEffect, useState } from "react";
+// import React, { useEffect, useState } from "react";
+// import axios from "axios";
+// import "../../styles/auth.css";
+// import { useParams, useNavigate } from "react-router-dom";
+
+// function ApplyForProject() {
+//   const { projectId } = useParams();
+//   const navigate = useNavigate();
+
+//   const [project, setProject] = useState(null);
+//   const [proposalMessage, setProposalMessage] = useState("");
+//   const [expectedRate, setExpectedRate] = useState("");
+//   const [resumeFile, setResumeFile] = useState(null);
+//   const [loading, setLoading] = useState(false);
+
+//   const token = localStorage.getItem("token");
+
+//   // ================= FETCH PROJECT DETAILS =================
+//   useEffect(() => {
+//     const fetchProject = async () => {
+//       try {
+//         const res = await axios.get(
+//           `http://localhost:5000/api/projects/${projectId}`,
+//           { headers: { Authorization: `Bearer ${token}` } }
+//         );
+//         setProject(res.data.data || res.data);
+//       } catch (err) {
+//         console.error("Error fetching project", err);
+//       }
+//     };
+//     fetchProject();
+//   }, [projectId, token]);
+
+//   // ================= SUBMIT APPLICATION =================
+//   const handleSubmit = async (e) => {
+//     e.preventDefault();
+
+//     if (!proposalMessage) {
+//       alert("Please enter a proposal message");
+//       return;
+//     }
+
+//     if (expectedRate && expectedRate <= 0) {
+//       alert("Expected rate must be greater than 0");
+//       return;
+//     }
+
+//     if (!resumeFile) {
+//       alert("Please upload your resume");
+//       return;
+//     }
+
+//     setLoading(true);
+
+//     try {
+//       const formData = new FormData();
+//       formData.append("resume", resumeFile);
+//       formData.append("proposalMessage", proposalMessage);
+//       formData.append("expectedRate", expectedRate);
+
+//       await axios.post(
+//         `http://localhost:5000/api/trainer/projects/${projectId}/apply`,
+//         formData,
+//         {
+//           headers: {
+//             Authorization: `Bearer ${token}`,
+//             "Content-Type": "multipart/form-data",
+//           },
+//         }
+//       );
+
+//       alert("Application submitted successfully!");
+//       navigate("/trainer/applications");
+//     } catch (err) {
+//       console.error("Application error:", err);
+//       if (err.response?.data?.message) {
+//         alert(err.response.data.message);
+//       } else {
+//         alert("Application failed");
+//       }
+//     }
+
+//     setLoading(false);
+//   };
+
+//   // ================= LOADING =================
+//   if (!project) {
+//     return <p style={{ textAlign: "center" }}>Loading project...</p>;
+//   }
+
+//   // ================= UI =================
+//   return (
+//     <div className="auth-page">
+//       <div className="form-card">
+//         <h2>Apply for {project.title}</h2>
+
+//         {/* Project Summary */}
+//         <div className="summary-bar">
+//           <span>{project.technology || "N/A"}</span>
+//           <span>{project.durationDays || "N/A"} Days</span>
+//         </div>
+
+//         <p>
+//           <b>Location:</b> {project.location || "Remote"}
+//         </p>
+//         <p>
+//           <b>Per Day Payment:</b> ₹{project.perDayPayment || "N/A"}
+//         </p>
+
+//         <form onSubmit={handleSubmit}>
+//           <label>Proposal Message</label>
+//           <textarea
+//             rows="5"
+//             className="input"
+//             placeholder="Explain why you are the right trainer for this project..."
+//             value={proposalMessage}
+//             onChange={(e) => setProposalMessage(e.target.value)}
+//           />
+
+//           <label>Expected Rate (Optional)</label>
+//           <input
+//             type="number"
+//             className="input"
+//             placeholder="Enter your expected per day rate"
+//             value={expectedRate}
+//             onChange={(e) => setExpectedRate(e.target.value)}
+//           />
+
+//           <label>Upload Resume (PDF/DOC)</label>
+//           <input
+//             type="file"
+//             accept=".pdf,.doc,.docx"
+//             className="input"
+//             onChange={(e) => setResumeFile(e.target.files[0])}
+//           />
+
+//           <button type="submit" className="btn-full" disabled={loading}>
+//             {loading ? "Submitting..." : "Submit Application"}
+//           </button>
+//         </form>
+//       </div>
+//     </div>
+//   );
+// }
+
+// export default ApplyForProject;
+
+import React, { useEffect, useState, useCallback } from "react";
 import axios from "axios";
 import "../../styles/auth.css";
 import { useParams, useNavigate } from "react-router-dom";
@@ -169,6 +316,7 @@ import { useParams, useNavigate } from "react-router-dom";
 function ApplyForProject() {
   const { projectId } = useParams();
   const navigate = useNavigate();
+  const token = localStorage.getItem("token");
 
   const [project, setProject] = useState(null);
   const [proposalMessage, setProposalMessage] = useState("");
@@ -176,10 +324,13 @@ function ApplyForProject() {
   const [resumeFile, setResumeFile] = useState(null);
   const [loading, setLoading] = useState(false);
 
-  const token = localStorage.getItem("token");
-
-  // ================= FETCH PROJECT DETAILS =================
+  // Wrapped in useCallback or kept simple to avoid "size changed" hook errors
   useEffect(() => {
+    if (!token) {
+      navigate("/login");
+      return;
+    }
+
     const fetchProject = async () => {
       try {
         const res = await axios.get(
@@ -188,28 +339,18 @@ function ApplyForProject() {
         );
         setProject(res.data.data || res.data);
       } catch (err) {
-        console.error("Error fetching project", err);
+        console.error("Error fetching project:", err);
       }
     };
-    fetchProject();
-  }, [projectId, token]);
 
-  // ================= SUBMIT APPLICATION =================
+    fetchProject();
+  }, [projectId, token, navigate]); 
+
   const handleSubmit = async (e) => {
     e.preventDefault();
 
-    if (!proposalMessage) {
-      alert("Please enter a proposal message");
-      return;
-    }
-
-    if (expectedRate && expectedRate <= 0) {
-      alert("Expected rate must be greater than 0");
-      return;
-    }
-
-    if (!resumeFile) {
-      alert("Please upload your resume");
+    if (!proposalMessage || !resumeFile) {
+      alert("Please provide a proposal message and upload your resume.");
       return;
     }
 
@@ -217,6 +358,7 @@ function ApplyForProject() {
 
     try {
       const formData = new FormData();
+      // Ensure "resume" matches your backend upload.single('resume')
       formData.append("resume", resumeFile);
       formData.append("proposalMessage", proposalMessage);
       formData.append("expectedRate", expectedRate);
@@ -235,70 +377,59 @@ function ApplyForProject() {
       alert("Application submitted successfully!");
       navigate("/trainer/applications");
     } catch (err) {
-      console.error("Application error:", err);
-      if (err.response?.data?.message) {
-        alert(err.response.data.message);
-      } else {
-        alert("Application failed");
-      }
+      // Detailed logging to debug the 500 error
+      console.error("Full Error Object:", err);
+      console.error("Server Response Data:", err.response?.data);
+      
+      const errorMsg = err.response?.data?.message || "Server Error (500). Check backend terminal.";
+      alert(errorMsg);
+    } finally {
+      setLoading(false);
     }
-
-    setLoading(false);
   };
 
-  // ================= LOADING =================
-  if (!project) {
-    return <p style={{ textAlign: "center" }}>Loading project...</p>;
-  }
+  if (!project) return <div className="loader">Loading project details...</div>;
 
-  // ================= UI =================
   return (
     <div className="auth-page">
-      <div className="form-card">
-        <h2>Apply for {project.title}</h2>
-
-        {/* Project Summary */}
-        <div className="summary-bar">
-          <span>{project.technology || "N/A"}</span>
-          <span>{project.durationDays || "N/A"} Days</span>
-        </div>
-
-        <p>
-          <b>Location:</b> {project.location || "Remote"}
-        </p>
-        <p>
-          <b>Per Day Payment:</b> ₹{project.perDayPayment || "N/A"}
-        </p>
+      <div className="form-card glass">
+        <h2>Apply for Training</h2>
+        <h4 style={{ color: '#2563eb', marginBottom: '20px' }}>{project.title}</h4>
 
         <form onSubmit={handleSubmit}>
           <label>Proposal Message</label>
           <textarea
             rows="5"
             className="input"
-            placeholder="Explain why you are the right trainer for this project..."
+            placeholder="Why are you the best fit for this project?"
             value={proposalMessage}
             onChange={(e) => setProposalMessage(e.target.value)}
+            required
           />
 
-          <label>Expected Rate (Optional)</label>
+          <label>Expected Rate (Per Day)</label>
           <input
             type="number"
             className="input"
-            placeholder="Enter your expected per day rate"
+            placeholder={project.perDayPayment || "0"}
             value={expectedRate}
             onChange={(e) => setExpectedRate(e.target.value)}
           />
 
-          <label>Upload Resume (PDF/DOC)</label>
+          <label>Resume (PDF only)</label>
           <input
             type="file"
-            accept=".pdf,.doc,.docx"
+            accept=".pdf"
             className="input"
             onChange={(e) => setResumeFile(e.target.files[0])}
+            required
           />
 
           <button type="submit" className="btn-full" disabled={loading}>
             {loading ? "Submitting..." : "Submit Application"}
+          </button>
+          <button type="button" className="sidebar-btn" onClick={() => navigate(-1)} style={{ width: '100%', marginTop: '10px' }}>
+            Back
           </button>
         </form>
       </div>

@@ -1,14 +1,50 @@
+// const mongoose = require('mongoose');
+
+// const postSchema = new mongoose.Schema({
+//   trainer: {
+//     type: mongoose.Schema.Types.ObjectId,
+//     ref: 'TrainerProfile',
+//     required: true
+//   },
+//   user: {
+//     type: mongoose.Schema.Types.ObjectId,
+//     ref: 'User',
+//     required: true
+//   },
+//   title: {
+//     type: String,
+//     required: true,
+//     trim: true
+//   },
+//   description: {
+//     type: String,
+//     required: true
+//   },
+//   location: {
+//     type: String,
+//     default: ''
+//   },
+//   likes: [{
+//     type: mongoose.Schema.Types.ObjectId,
+//     ref: 'User'
+//   }],
+// }, { timestamps: true });
+
+// module.exports = mongoose.model('Post', postSchema);
+
 const mongoose = require('mongoose');
 
 const postSchema = new mongoose.Schema({
-  trainer: {
-    type: mongoose.Schema.Types.ObjectId,
-    ref: 'TrainerProfile',
-    required: true
-  },
+  // The person/account creating the post
   user: {
     type: mongoose.Schema.Types.ObjectId,
     ref: 'User',
+    required: true
+  },
+  // To keep it flexible for Trainers OR Company Employees
+  authorRole: {
+    type: String,
+    enum: ['trainer', 'company', 'admin'],
     required: true
   },
   title: {
@@ -19,6 +55,17 @@ const postSchema = new mongoose.Schema({
   description: {
     type: String,
     required: true
+  },
+  // UPDATED: 'warning' matches the Trust Score logic
+  postType: {
+    type: String,
+    enum: ['standard', 'warning', 'achievement'], 
+    default: 'standard'
+  },
+  // Link to the company if it's a "Defame/Warning" post
+  relatedCompany: {
+    type: mongoose.Schema.Types.ObjectId,
+    ref: 'CompanyProfile'
   },
   location: {
     type: String,

@@ -1384,7 +1384,7 @@ const getCleanUrl = (path) => {
         <div className="logo">Trainistry</div>
         <nav>
           <button className="sidebar-btn" onClick={() => navigate("/trainer-dashboard")}>Find Projects</button>
-          <button className="sidebar-btn" onClick={() => navigate("/trainer/network")}>Network Feed</button>
+          <button className="sidebar-btn" onClick={() => navigate("/trainer/network")}>Industrial Network</button>
           <button className="sidebar-btn" onClick={() => navigate("/trainer/applications")}>Applications</button>
           <button className="sidebar-btn active">My Profile</button>
         </nav>
