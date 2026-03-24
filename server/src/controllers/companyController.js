@@ -3618,11 +3618,38 @@ exports.getCompanyDashboardStats = async (req, res) => {
 // =====================================
 // GET MY COMPANY PROFILE
 // =====================================
+// exports.getMyCompany = async (req, res) => {
+//   try {
+//     const company = await CompanyProfile
+//       .findOne({ user: req.user._id })
+//       .populate("user", "name email phone");
+
+//     if (!company) {
+//       return res.status(404).json({ success: false, message: "Company profile not found" });
+//     }
+
+//     const warningCount = await Post.countDocuments({ 
+//       relatedCompany: company._id, 
+//       postType: 'warning' 
+//     });
+    
+//     company.trustScore = Math.max(0, 100 - (warningCount * 10));
+//     await company.save();
+
+//     res.status(200).json({ success: true, data: company });
+//   } catch (error) {
+//     res.status(500).json({ success: false, message: error.message });
+//   }
+// };
+// =====================================
+// GET MY COMPANY PROFILE (Updated to include Connections)
+// =====================================
 exports.getMyCompany = async (req, res) => {
   try {
     const company = await CompanyProfile
       .findOne({ user: req.user._id })
-      .populate("user", "name email phone");
+      // ADDED 'followers' and 'following' to the populate list here:
+      .populate("user", "name email phone followers following");
 
     if (!company) {
       return res.status(404).json({ success: false, message: "Company profile not found" });
@@ -3975,5 +4002,154 @@ exports.getCompanyById = async (req, res) => {
     res.status(200).json({ success: true, data: company });
   } catch (error) {
     res.status(500).json({ success: false, message: error.message });
+  }
+};
+// =====================================
+// SEARCH COMPANIES
+// =====================================
+exports.searchCompanies = async (req, res) => {
+  try {
+    const { name } = req.query;
+
+    if (!name || name.trim().length === 0) {
+      return res.status(200).json({ success: true, data: [] });
+    }
+
+    // UPDATED: Changed 'companyName' to 'name' to match your Model
+    const companies = await CompanyProfile.find({
+      $or: [
+        { name: { $regex: name.trim(), $options: "i" } },
+        { location: { $regex: name.trim(), $options: "i" } }
+      ]
+    }).populate("user", "name email");
+
+    res.status(200).json({ success: true, data: companies });
+  } catch (error) {
+    console.error("Search Error:", error);
+    res.status(500).json({ success: false, message: error.message });
+  }
+};
+
+exports.followCompany = async (req, res) => {
+  try {
+    const targetUserId = req.params.targetId;
+    const currentUserId = req.user._id;
+
+    if (targetUserId === currentUserId.toString()) {
+      return res.status(400).json({ success: false, message: "You cannot connect with yourself" });
+    }
+
+    const user = await User.findById(currentUserId);
+    const isFollowing = user.following && user.following.includes(targetUserId);
+
+    // Use findByIdAndUpdate to bypass full document validation
+    await User.findByIdAndUpdate(currentUserId, {
+      [isFollowing ? '$pull' : '$addToSet']: { following: targetUserId }
+    });
+
+    res.status(200).json({ 
+      success: true, 
+      isFollowing: !isFollowing,
+      message: isFollowing ? "Unfollowed" : "Followed" 
+    });
+  } catch (error) {
+    console.error("FOLLOW_ERROR:", error);
+    res.status(500).json({ success: false, message: error.message });
+  }
+};
+// // =====================================
+// // UPDATE COMPANY PROFILE
+// // =====================================
+// exports.updateCompanyProfile = async (req, res) => {
+//   try {
+//     const { name, industry, location, description } = req.body;
+
+//     // 1. Find the profile belonging to the logged-in user
+//     let profile = await CompanyProfile.findOne({ user: req.user._id });
+
+//     if (!profile) {
+//       return res.status(404).json({
+//         success: false,
+//         message: "Company profile not found"
+//       });
+//     }
+
+//     // 2. Update the fields if provided in the request body
+//     if (name) profile.name = name;
+//     if (industry) profile.industry = industry;
+//     if (location) profile.location = location;
+//     if (description) profile.description = description;
+
+//     // 3. Save the changes
+//     // This uses your existing CompanyProfile model constraints
+//     await profile.save();
+
+//     // 4. Return the updated profile with populated user data
+//     // This ensures your Frontend state (profile.user.followers, etc.) stays intact
+//     const updatedProfile = await CompanyProfile.findOne({ user: req.user._id })
+//       .populate("user", "name email phone followers following");
+
+//     res.status(200).json({
+//       success: true,
+//       message: "Profile updated successfully",
+//       data: updatedProfile
+//     });
+
+//   } catch (error) {
+//     console.error("UPDATE_PROFILE_ERROR:", error);
+//     res.status(500).json({
+//       success: false,
+//       message: error.message || "Server Error: Could not update profile"
+//     });
+//   }
+// };
+// =====================================
+// UPDATE COMPANY PROFILE (Updated for Verification Toggle)
+// =====================================
+exports.updateCompanyProfile = async (req, res) => {
+  try {
+    // 1. Add 'isVerified' to the destructured body
+    const { name, industry, location, description, isVerified } = req.body;
+
+    let profile = await CompanyProfile.findOne({ user: req.user._id });
+
+    if (!profile) {
+      return res.status(404).json({
+        success: false,
+        message: "Company profile not found"
+      });
+    }
+
+    // 2. Update the fields if provided in the request body
+    if (name) profile.name = name;
+    if (industry) profile.industry = industry;
+    if (location) profile.location = location;
+    if (description) profile.description = description;
+    
+    // 3. Handle the verification toggle
+    // We check if it's undefined to allow 'false' to be passed
+    if (isVerified !== undefined) {
+      profile.isVerified = isVerified;
+    }
+
+    // 4. Save the changes
+    await profile.save();
+
+    // 5. Return the updated profile with populated user data
+    const updatedProfile = await CompanyProfile.findOne({ user: req.user._id })
+      .populate("user", "name email phone followers following");
+
+    res.status(200).json({
+      success: true,
+      message: "Profile updated successfully",
+      data: updatedProfile
+    });
+
+  } catch (error) {
+    console.error("UPDATE_PROFILE_ERROR:", error);
+    res.status(500).json({
+      success: false,
+      message: error.message || "Server Error: Could not update profile"
+    });
   }
 };

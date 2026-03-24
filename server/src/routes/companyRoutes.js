@@ -150,6 +150,7 @@ const {
   getCompanyDashboardStats,
   getMyCompany,
   createCompany,
+  updateCompanyProfile,
   getCompanies,
   getCompanyById,
   postProject,
@@ -158,6 +159,8 @@ const {
   updateApplicationStatus,
   updateProjectStatus,
   resolveDispute,
+  searchCompanies,
+  followCompany,
   scheduleInterview
 } = require('../controllers/companyController');
 
@@ -166,7 +169,10 @@ router.get('/stats', protect, authorize('company'), getCompanyDashboardStats);
 router.get('/me', protect, authorize('company'), getMyCompany);
 router.post('/', protect, authorize('company'), createCompany);
 
+router.put('/profile', protect, authorize('company'), updateCompanyProfile);
+
 // Public Company Info
+router.get('/search', searchCompanies);
 router.get('/', getCompanies);
 router.get('/:id', getCompanyById);
 
@@ -187,5 +193,6 @@ router.put('/applications/:applicationId/status', protect, authorize('company'),
 router.post('/applications/:applicationId/schedule', protect, authorize('company'), scheduleInterview);
 
 router.put('/applications/:applicationId/resolve', protect, resolveDispute);
+router.put('/follow/:targetId', protect, followCompany);
 
 module.exports = router;
