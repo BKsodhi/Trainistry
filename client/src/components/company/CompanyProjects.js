@@ -537,7 +537,8 @@ function CompanyProjects({ companyId, refreshFlag }) {
             </p>
           </div>
 
-          <h3 className="project-title">{project.technology}</h3>
+          {/* <h3 className="project-title">{project.technology}</h3> */}
+        <h3 className="project-title">{project.title || project.technology}</h3>
           
           <div className="project-details">
             <div className="detail-item">

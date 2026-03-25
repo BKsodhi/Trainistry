@@ -3715,17 +3715,54 @@ exports.postProject = async (req, res) => {
 // =====================================
 // GET COMPANY PROJECTS (Updated to merge Application Status)
 // =====================================
+// exports.getCompanyProjects = async (req, res) => {
+//   try {
+//     const company = await CompanyProfile.findOne({ user: req.user._id });
+//     if (!company) {
+//       return res.status(404).json({ success: false, message: "Company profile not found" });
+//     }
+
+//     // Get projects and convert to plain objects with .lean()
+//     const projects = await Project.find({ company: company._id }).sort({ createdAt: -1 }).lean();
+
+//     // Merge payment/dispute data from the Application collection
+//     const projectsWithAppData = await Promise.all(projects.map(async (proj) => {
+//       const selectedApp = await Application.findOne({ 
+//         project: proj._id, 
+//         status: { $in: ['selected', 'completed'] } 
+//       }).select('isDisputed paymentStatus transactionId');
+
+//       return {
+//         ...proj,
+//         isDisputed: selectedApp ? selectedApp.isDisputed : false,
+//         paymentStatus: selectedApp ? selectedApp.paymentStatus : 'pending',
+//         transactionId: selectedApp ? selectedApp.transactionId : null
+//       };
+//     }));
+
+//     res.status(200).json({ success: true, data: projectsWithAppData });
+//   } catch (error) {
+//     res.status(500).json({ success: false, message: error.message });
+//   }
+// };
 exports.getCompanyProjects = async (req, res) => {
   try {
+    // 1. Find the profile linked to the logged-in user
     const company = await CompanyProfile.findOne({ user: req.user._id });
+    
     if (!company) {
       return res.status(404).json({ success: false, message: "Company profile not found" });
     }
 
-    // Get projects and convert to plain objects with .lean()
-    const projects = await Project.find({ company: company._id }).sort({ createdAt: -1 }).lean();
+    // DEBUG LOG: Compare this ID with the one in your MongoDB Project document
+    console.log("Current Profile ID:", company._id.toString());
 
-    // Merge payment/dispute data from the Application collection
+    // 2. Fetch projects matching this specific profile ID
+    const projects = await Project.find({ company: company._id })
+      .sort({ createdAt: -1 })
+      .lean();
+
+    // 3. Merge Application Status (Disputes/Payments)
     const projectsWithAppData = await Promise.all(projects.map(async (proj) => {
       const selectedApp = await Application.findOne({ 
         project: proj._id, 
@@ -3742,6 +3779,7 @@ exports.getCompanyProjects = async (req, res) => {
 
     res.status(200).json({ success: true, data: projectsWithAppData });
   } catch (error) {
+    console.error("GET_PROJECTS_ERROR:", error);
     res.status(500).json({ success: false, message: error.message });
   }
 };
@@ -3764,6 +3802,85 @@ exports.getProjectApplications = async (req, res) => {
   }
 };
 
+// // =====================================
+// // UPDATE APPLICATION STATUS
+// // =====================================
+// exports.updateApplicationStatus = async (req, res) => {
+//   try {
+//     const { applicationId } = req.params;
+//     const { status, feedback, date, time, link } = req.body;
+
+//     const application = await Application.findById(applicationId)
+//       .populate("project")
+//       .populate({
+//         path: "trainer",
+//         populate: { path: "user" }
+//       });
+
+//     if (!application) {
+//       return res.status(404).json({ success: false, message: "Application not found" });
+//     }
+
+//     application.status = status;
+//     if (feedback) application.feedback = feedback;
+    
+//     if (status === 'interview_scheduled') {
+//       application.interviewDate = date;
+//       application.interviewTime = time;
+//       application.meetingLink = link;
+//     }
+    
+//     await application.save();
+
+//     const trainerUser = application.trainer.user;
+//     let emailSubject = '';
+//     let emailHtml = '';
+
+//     if (status === 'selected') {
+//       emailSubject = `🎉 Selection Confirmed: ${application.project.title}`;
+//       emailHtml = `
+//         <div style="font-family: Arial, sans-serif; padding: 20px; border: 1px solid #ddd; border-radius: 10px;">
+//           <h2 style="color: #4338ca;">Congratulations ${trainerUser.name}!</h2>
+//           <p>You have been <b>Selected</b> for the industrial project: <strong>${application.project.title}</strong>.</p>
+//           <p>The company will reach out to you at <strong>${trainerUser.phone}</strong> to discuss the schedule.</p>
+//           <p>Best Regards,<br/><strong>Trainistry Team</strong></p>
+//         </div>`;
+//     } 
+//     else if (status === 'interview_scheduled') {
+//       emailSubject = `📅 Interview Scheduled: ${application.project.title}`;
+//       emailHtml = `
+//         <div style="font-family: Arial, sans-serif; padding: 20px; border: 1px solid #ddd; border-radius: 10px;">
+//           <h2 style="color: #f59e0b;">Interview Invitation</h2>
+//           <p>Hi ${trainerUser.name}, an interview has been scheduled for <strong>${application.project.title}</strong>.</p>
+//           <p><b>Date:</b> ${date}<br/><b>Time:</b> ${time}</p>
+//           <p><b>Meeting Link:</b> <a href="${link}">${link}</a></p>
+//           <p>Best Regards,<br/>Trainistry Team</p>
+//         </div>`;
+//     }
+//     else if (status === 'rejected') {
+//       emailSubject = `Update: ${application.project.title}`;
+//       emailHtml = `
+//         <div style="font-family: Arial, sans-serif; padding: 20px; border: 1px solid #ddd; border-radius: 10px;">
+//           <p>Hi ${trainerUser.name},</p>
+//           <p>The company has decided not to proceed with your application for <strong>${application.project.title}</strong>.</p>
+//           ${feedback ? `<p><b>Note:</b> ${feedback}</p>` : ''}
+//           <p>Keep applying!</p>
+//         </div>`;
+//     }
+
+//     if (emailSubject) {
+//       await sendEmail({
+//         email: trainerUser.email,
+//         subject: emailSubject,
+//         html: emailHtml
+//       });
+//     }
+
+//     res.status(200).json({ success: true, message: `Status updated to ${status} and Trainer notified.` });
+//   } catch (error) {
+//     res.status(500).json({ success: false, message: error.message });
+//   }
+// };
 // =====================================
 // UPDATE APPLICATION STATUS
 // =====================================
@@ -3771,6 +3888,9 @@ exports.updateApplicationStatus = async (req, res) => {
   try {
     const { applicationId } = req.params;
     const { status, feedback, date, time, link } = req.body;
+
+    // Log the incoming status to check for string mismatches (e.g., 'shortlisted' vs 'Shortlisted')
+    console.log(`Updating Application ${applicationId} to status: ${status}`);
 
     const application = await Application.findById(applicationId)
       .populate("project")
@@ -3798,48 +3918,65 @@ exports.updateApplicationStatus = async (req, res) => {
     let emailSubject = '';
     let emailHtml = '';
 
-    if (status === 'selected') {
+    // UPDATED LOGIC: Trigger email if status is 'selected' OR 'shortlisted'
+    if (status === 'selected' || status === 'shortlisted') {
       emailSubject = `🎉 Selection Confirmed: ${application.project.title}`;
       emailHtml = `
-        <div style="font-family: Arial, sans-serif; padding: 20px; border: 1px solid #ddd; border-radius: 10px;">
+        <div style="font-family: Arial, sans-serif; padding: 20px; border: 1px solid #ddd; border-radius: 10px; max-width: 600px;">
           <h2 style="color: #4338ca;">Congratulations ${trainerUser.name}!</h2>
-          <p>You have been <b>Selected</b> for the industrial project: <strong>${application.project.title}</strong>.</p>
-          <p>The company will reach out to you at <strong>${trainerUser.phone}</strong> to discuss the schedule.</p>
-          <p>Best Regards,<br/><strong>Trainistry Team</strong></p>
+          <p>You have been <b>Selected/Shortlisted</b> for the industrial project: <strong>${application.project.title}</strong>.</p>
+          <p>The company will reach out to you at <strong>${trainerUser.phone}</strong> to discuss the next steps and schedule.</p>
+          <hr style="border: 0; border-top: 1px solid #eee; margin: 20px 0;" />
+          <p style="color: #666; font-size: 14px;">Best Regards,<br/><strong>Trainistry Team</strong></p>
         </div>`;
     } 
     else if (status === 'interview_scheduled') {
       emailSubject = `📅 Interview Scheduled: ${application.project.title}`;
       emailHtml = `
-        <div style="font-family: Arial, sans-serif; padding: 20px; border: 1px solid #ddd; border-radius: 10px;">
+        <div style="font-family: Arial, sans-serif; padding: 20px; border: 1px solid #ddd; border-radius: 10px; max-width: 600px;">
           <h2 style="color: #f59e0b;">Interview Invitation</h2>
           <p>Hi ${trainerUser.name}, an interview has been scheduled for <strong>${application.project.title}</strong>.</p>
-          <p><b>Date:</b> ${date}<br/><b>Time:</b> ${time}</p>
-          <p><b>Meeting Link:</b> <a href="${link}">${link}</a></p>
-          <p>Best Regards,<br/>Trainistry Team</p>
+          <div style="background: #fff9eb; padding: 15px; border-radius: 8px; margin: 15px 0;">
+            <p><b>Date:</b> ${date}</p>
+            <p><b>Time:</b> ${time}</p>
+            <p><b>Meeting Link:</b> <a href="${link}">${link}</a></p>
+          </div>
+          <p style="color: #666; font-size: 14px;">Best Regards,<br/>Trainistry Team</p>
         </div>`;
     }
     else if (status === 'rejected') {
-      emailSubject = `Update: ${application.project.title}`;
+      emailSubject = `Update regarding: ${application.project.title}`;
       emailHtml = `
-        <div style="font-family: Arial, sans-serif; padding: 20px; border: 1px solid #ddd; border-radius: 10px;">
+        <div style="font-family: Arial, sans-serif; padding: 20px; border: 1px solid #ddd; border-radius: 10px; max-width: 600px;">
           <p>Hi ${trainerUser.name},</p>
-          <p>The company has decided not to proceed with your application for <strong>${application.project.title}</strong>.</p>
-          ${feedback ? `<p><b>Note:</b> ${feedback}</p>` : ''}
-          <p>Keep applying!</p>
+          <p>The company has decided not to proceed with your application for <strong>${application.project.title}</strong> at this time.</p>
+          ${feedback ? `<p style="padding: 10px; background: #f9fafb; border-left: 4px solid #d1d5db;"><b>Feedback from Company:</b> ${feedback}</p>` : ''}
+          <p>Don't be discouraged—keep applying to other relevant projects on Trainistry!</p>
+          <p style="color: #666; font-size: 14px;">Best Regards,<br/>Trainistry Team</p>
         </div>`;
     }
 
+    // Only attempt to send if a subject was assigned based on the status
     if (emailSubject) {
-      await sendEmail({
-        email: trainerUser.email,
-        subject: emailSubject,
-        html: emailHtml
-      });
+      try {
+        await sendEmail({
+          email: trainerUser.email,
+          subject: emailSubject,
+          html: emailHtml
+        });
+        console.log(`Email successfully sent to: ${trainerUser.email}`);
+      } catch (emailError) {
+        console.error("EMAIL_SEND_FAILURE:", emailError.message);
+        // We don't return 500 here because the DB update was successful
+      }
     }
 
-    res.status(200).json({ success: true, message: `Status updated to ${status} and Trainer notified.` });
+    res.status(200).json({ 
+      success: true, 
+      message: `Status updated to ${status} and Trainer notified via email.` 
+    });
   } catch (error) {
+    console.error("UPDATE_STATUS_ERROR:", error);
     res.status(500).json({ success: false, message: error.message });
   }
 };
