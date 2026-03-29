@@ -328,22 +328,39 @@ const { protect } = require('../middleware/authMiddleware'); // Existing middlew
 const uploadResume = require('../middleware/uploadMiddleware');
 const { getTrainerNotifications } = require("../controllers/notificationController");
 
+// const {
+//   getTrainerDashboard,
+//   getMyProfile,
+//   updateMyProfile,
+//   getAllProjects,
+//   getProjectById,
+//   applyToProject,
+//   getMyApplications,
+//   likeDislikeTrainer,
+//   addFeedback,
+//   searchTrainers,
+//   followUnfollowUser,
+//   getNetworkFeed,
+//   withdrawApplication,
+//   raiseDispute,
+//   markAsDisputed // Added this to the import list
+// } = require('../controllers/trainerController');
 const {
-  getTrainerDashboard,
-  getMyProfile,
-  updateMyProfile,
-  getAllProjects,
-  getProjectById,
-  applyToProject,
-  getMyApplications,
-  likeDislikeTrainer,
-  addFeedback,
-  searchTrainers,
-  followUnfollowUser,
-  getNetworkFeed,
-  withdrawApplication,
-  raiseDispute,
-  markAsDisputed // Added this to the import list
+ getTrainerDashboard,
+ getMyProfile,
+ updateMyProfile,
+ getAllProjects,
+ getProjectById,
+ applyToProject,
+ getMyApplications,
+ withdrawApplication,
+ searchTrainers,
+ followUnfollowUser,
+ getNetworkFeed,
+ likeDislikeTrainer,
+ addFeedback,
+ markAsDisputed,
+ raiseDispute
 } = require('../controllers/trainerController');
 
 // All routes below this line will require a valid JWT token

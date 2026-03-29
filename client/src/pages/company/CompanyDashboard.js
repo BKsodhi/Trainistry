@@ -2487,6 +2487,7 @@ function CompanyDashboard() {
   const [companyProfile, setCompanyProfile] = useState({});
   const [refreshTrigger, setRefreshTrigger] = useState(false);
   
+  
   const companyId = localStorage.getItem("companyId");
   const token = localStorage.getItem("token");
   

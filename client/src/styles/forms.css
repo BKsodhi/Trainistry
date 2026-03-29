@@ -91,3 +91,70 @@
   height: 1px;
   background: var(--border-soft);
 }
+/* =========================================================
+   RESPONSIVE – FORM
+   ========================================================= */
+
+/* Tablet */
+@media (max-width: 992px) {
+
+.form-wrapper {
+  padding: 35px;
+  margin: 3rem 20px;
+}
+
+.form-title {
+  font-size: 22px;
+}
+
+}
+
+/* Mobile */
+@media (max-width: 768px) {
+
+.form-wrapper {
+  padding: 25px 20px;
+  margin: 2rem 15px;
+  border-radius: var(--radius-md);
+}
+
+.form-title {
+  font-size: 20px;
+  margin-bottom: 25px;
+}
+
+/* Stack form row */
+.form-row {
+  flex-direction: column;
+  gap: 15px;
+}
+
+.form-input,
+.form-textarea {
+  padding: 12px 14px;
+  font-size: 13px;
+}
+
+.form-group label {
+  font-size: 13px;
+}
+
+.form-actions {
+  margin-top: 20px;
+}
+
+}
+
+/* Small Mobile */
+@media (max-width: 480px) {
+
+.form-wrapper {
+  padding: 20px 15px;
+  margin: 1.5rem 10px;
+}
+
+.form-title {
+  font-size: 18px;
+}
+
+}

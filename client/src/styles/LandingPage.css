@@ -1,61 +1,52 @@
 /* =========================================================
-   1️⃣ ROOT COLOR SYSTEM (Pastel + Premium Palette)
+   1️⃣ ROOT COLOR SYSTEM (Modern SaaS Premium)
    ========================================================= */
 
 :root {
-  --primary: #A78BFA;
-  --primary-deep: #7C3AED;
-  --cyan-soft: #67E8F9;
-  --pink-soft: #F9A8D4;
+  --primary: #6366F1;
+  --primary-deep: #4F46E5;
+  --secondary: #8B5CF6;
+  --accent: #06B6D4;
 
-  --text-main: #1F1F2E;
-  --text-muted: #6B7280;
+  --text-main: #0F172A;
+  --text-muted: #64748B;
 
-  --bg-main: #F6F7FB;
-  --glass: rgba(255, 255, 255, 0.65);
-  --border-soft: rgba(255, 255, 255, 0.5);
+  --bg-main: #F8FAFC;
+  --surface: #FFFFFF;
+  --glass: rgba(255,255,255,0.7);
+
+  --border-soft: #E2E8F0;
+
+  --shadow-soft: 0 10px 30px rgba(0,0,0,0.05);
+  --shadow-hover: 0 20px 40px rgba(0,0,0,0.08);
 }
 
-
 /* =========================================================
-   2️⃣ GLOBAL STYLES + SOFT BACKGROUND BLOBS
+   GLOBAL
    ========================================================= */
+
+* {
+  transition: all 0.25s ease;
+}
 
 body {
   margin: 0;
   font-family: "Inter", sans-serif;
   background: var(--bg-main);
   color: var(--text-main);
-  position: relative;
   overflow-x: hidden;
 }
 
-body::before,
-body::after {
-  content: "";
-  position: absolute;
-  width: 500px;
-  height: 500px;
-  border-radius: 50%;
-  filter: blur(120px);
-  z-index: -1;
+h1,h2,h3 {
+  letter-spacing: -0.5px;
 }
 
-body::before {
-  background: #E9D5FF;
-  top: -150px;
-  left: -150px;
+p {
+  line-height: 1.6;
 }
-
-body::after {
-  background: #C7D2FE;
-  bottom: -200px;
-  right: -150px;
-}
-
 
 /* =========================================================
-   3️⃣ NAVBAR (Glass Effect + Sticky)
+   NAVBAR
    ========================================================= */
 
 .navbar {
@@ -64,64 +55,55 @@ body::after {
   display: flex;
   justify-content: space-between;
   align-items: center;
-
-  background: var(--glass);
-  backdrop-filter: blur(20px);
-  border-bottom: 1px solid var(--border-soft);
+  background: rgba(255,255,255,0.8);
+  backdrop-filter: blur(12px);
   position: sticky;
   top: 0;
   z-index: 10;
+  border-bottom: 1px solid var(--border-soft);
 }
 
 .logo {
   font-size: 26px;
   font-weight: 700;
-  letter-spacing: -1px;
-}
-
-.nav-actions {
-  display: flex;
-  align-items: center;
+  color: var(--primary);
 }
 
 .nav-actions button {
-  margin-left: 20px; /* space between Login & Get Started */
+  margin-left: 15px;
 }
 
-
 /* =========================================================
-   4️⃣ BUTTON SYSTEM (Modern Floating Style)
+   BUTTONS
    ========================================================= */
 
 .primary-btn {
-  background: linear-gradient(135deg, var(--primary), var(--primary-deep));
+  background: linear-gradient(135deg, var(--primary), var(--secondary));
   color: white;
   border: none;
   padding: 12px 28px;
   border-radius: 12px;
   cursor: pointer;
   font-weight: 500;
-  transition: all 0.25s ease;
-  box-shadow: 0 8px 20px rgba(124, 58, 237, 0.25);
+  box-shadow: var(--shadow-soft);
 }
 
 .primary-btn:hover {
-  transform: translateY(-2px);
-  box-shadow: 0 12px 25px rgba(124, 58, 237, 0.35);
+  transform: translateY(-3px);
+  box-shadow: var(--shadow-hover);
 }
 
 .secondary-btn {
   background: white;
-  border: 1px solid #E5E7EB;
+  border: 1px solid var(--border-soft);
   color: var(--text-main);
   padding: 12px 28px;
   border-radius: 12px;
   cursor: pointer;
-  transition: all 0.25s ease;
 }
 
 .secondary-btn:hover {
-  background: #F3F4F6;
+  background: #F8FAFC;
 }
 
 .large {
@@ -129,32 +111,27 @@ body::after {
   font-size: 16px;
 }
 
-/* ✅ Login Button Style */
 .login-btn {
   background: transparent;
-  border: 1px solid #E5E7EB;
+  border: 1px solid var(--border-soft);
   padding: 10px 24px;
   border-radius: 12px;
   cursor: pointer;
-  font-weight: 500;
-  transition: all 0.25s ease;
 }
 
 .login-btn:hover {
-  background: #F3F4F6;
-  transform: translateY(-1px);
+  background: #F1F5F9;
 }
 
-
 /* =========================================================
-   5️⃣ HERO SECTION (Clean + Spacious)
+   HERO
    ========================================================= */
 
 .hero {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  padding: 140px 100px 100px 100px;
+  padding: 140px 100px;
 }
 
 .hero-left {
@@ -162,19 +139,18 @@ body::after {
 }
 
 .hero-left h1 {
-  font-size: 58px;
+  font-size: 56px;
   line-height: 1.15;
-  margin-bottom: 25px;
-  letter-spacing: -1.5px;
+  margin-bottom: 20px;
+  font-weight: 700;
 }
 
 .hero-left p {
   color: var(--text-muted);
-  margin-bottom: 35px;
+  margin-bottom: 30px;
   font-size: 17px;
 }
 
-/* ✅ Space between Join & Find buttons */
 .hero-buttons {
   display: flex;
   gap: 20px;
@@ -182,35 +158,43 @@ body::after {
 
 .hero-right {
   width: 45%;
-  display: flex;
-  justify-content: flex-end;
 }
 
 .hero-right img {
-  width: 90%;
-  max-width: 520px;
+  width: 100%;
+  border-radius: 20px;
+  box-shadow: var(--shadow-soft);
+  animation: float 6s ease-in-out infinite;
 }
 
+/* =========================================================
+   FLOAT ANIMATION
+   ========================================================= */
+
+@keyframes float {
+0% { transform: translateY(0px); }
+50% { transform: translateY(-10px); }
+100% { transform: translateY(0px); }
+}
 
 /* =========================================================
-   6️⃣ GRADIENT TEXT UTILITIES
+   GRADIENT TEXT
    ========================================================= */
 
 .gradient-purple {
-  background: linear-gradient(45deg, var(--primary), var(--primary-deep));
+  background: linear-gradient(45deg, var(--primary), var(--secondary));
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
 }
 
 .gradient-cyan {
-  background: linear-gradient(45deg, var(--cyan-soft), var(--primary));
+  background: linear-gradient(45deg, var(--accent), var(--primary));
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
 }
 
-
 /* =========================================================
-   7️⃣ FEATURES SECTION (Glass Floating Cards)
+   FEATURES
    ========================================================= */
 
 .features {
@@ -223,8 +207,8 @@ body::after {
 }
 
 .section-header h2 {
-  font-size: 36px;
-  margin-bottom: 10px;
+  font-size: 38px;
+  font-weight: 600;
 }
 
 .section-header p {
@@ -234,65 +218,58 @@ body::after {
 .features-grid {
   display: grid;
   grid-template-columns: repeat(3, 1fr);
-  gap: 40px;
+  gap: 30px;
 }
 
 .feature-card {
-  background: var(--glass);
-  backdrop-filter: blur(20px);
-  padding: 45px;
-  border-radius: 24px;
+  background: white;
+  padding: 40px;
+  border-radius: 20px;
   text-align: center;
   border: 1px solid var(--border-soft);
-  transition: all 0.3s ease;
 }
 
 .feature-card:hover {
-  transform: translateY(-8px);
-  box-shadow: 0 20px 40px rgba(0, 0, 0, 0.08);
+  transform: translateY(-10px);
+  box-shadow: var(--shadow-hover);
 }
 
 .icon {
-  width: 65px;
-  height: 65px;
-  border-radius: 18px;
+  width: 60px;
+  height: 60px;
+  border-radius: 15px;
   display: flex;
   align-items: center;
   justify-content: center;
-  margin: 0 auto 20px auto;
-  font-size: 26px;
-  background: linear-gradient(135deg, #DDD6FE, #C7D2FE);
+  margin: 0 auto 20px;
+  background: linear-gradient(135deg, #EEF2FF, #E0F2FE);
 }
 
-
 /* =========================================================
-   8️⃣ STATS SECTION (Soft Gradient Container)
+   STATS
    ========================================================= */
 
 .stats {
   display: flex;
   justify-content: space-around;
-  padding: 100px;
-  margin: 100px;
-  border-radius: 30px;
-  background: linear-gradient(135deg, #C4B5FD, #A5F3FC);
-  color: var(--text-main);
-  text-align: center;
+  padding: 80px;
+  margin: 120px 100px;
+  border-radius: 25px;
+  background: linear-gradient(135deg, var(--primary), var(--secondary));
+  color: white;
+  box-shadow: var(--shadow-soft);
 }
 
 .stat-item h3 {
-  font-size: 42px;
-  font-weight: 700;
-  margin-bottom: 8px;
+  font-size: 40px;
 }
 
 .stat-item p {
-  color: #4B5563;
+  opacity: 0.9;
 }
 
-
 /* =========================================================
-   9️⃣ FINAL CTA SECTION
+   FINAL CTA
    ========================================================= */
 
 .final-cta {
@@ -302,44 +279,119 @@ body::after {
 
 .final-cta p {
   color: var(--text-muted);
-  margin-bottom: 30px;
 }
 
-
 /* =========================================================
-   🔟 FOOTER (Clean + Balanced)
+   FOOTER
    ========================================================= */
 
 .footer {
-  padding: 100px 100px 40px 100px;
-  border-top: 1px solid #E5E7EB;
-  background: #F9FAFB;
+  padding: 100px 100px 40px;
+  border-top: 1px solid var(--border-soft);
+  background: white;
 }
 
 .footer-grid {
   display: grid;
   grid-template-columns: repeat(4, 1fr);
   gap: 60px;
-  margin-bottom: 40px;
 }
 
 .footer h3 {
-  color: var(--primary-deep);
+  color: var(--primary);
 }
 
 .footer p {
   color: var(--text-muted);
-  margin: 6px 0;
-  cursor: pointer;
-  transition: 0.2s ease;
+  margin: 8px 0;
 }
 
 .footer p:hover {
-  color: var(--primary-deep);
+  color: var(--primary);
 }
 
-.copyright {
+/* =========================================================
+   RESPONSIVE DESIGN
+   ========================================================= */
+
+@media (max-width: 1200px) {
+
+.hero,
+.features,
+.footer,
+.final-cta {
+  padding: 100px 50px;
+}
+
+.navbar {
+  padding: 0 50px;
+}
+
+}
+
+@media (max-width: 992px) {
+
+.hero {
+  flex-direction: column;
   text-align: center;
-  font-size: 14px;
-  color: #9CA3AF;
+}
+
+.hero-left {
+  width: 100%;
+}
+
+.hero-right {
+  width: 100%;
+  margin-top: 40px;
+}
+
+.features-grid {
+  grid-template-columns: repeat(2, 1fr);
+}
+
+.stats {
+  flex-direction: column;
+  gap: 40px;
+}
+
+}
+
+@media (max-width: 768px) {
+
+.navbar {
+  padding: 0 20px;
+}
+
+.hero,
+.features,
+.footer,
+.final-cta {
+  padding: 80px 20px;
+}
+
+.features-grid {
+  grid-template-columns: 1fr;
+}
+
+.footer-grid {
+  grid-template-columns: 1fr 1fr;
+}
+
+}
+
+@media (max-width: 480px) {
+
+.hero-left h1 {
+  font-size: 36px;
+}
+
+.footer-grid {
+  grid-template-columns: 1fr;
+}
+
+.stats {
+  margin: 30px;
+  padding: 40px;
+}
+
 }

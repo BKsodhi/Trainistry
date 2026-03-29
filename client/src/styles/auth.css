@@ -1,3 +1,7 @@
+/* =========================================================
+   AUTH PAGE BASE
+   ========================================================= */
+
 .auth-page {
   min-height: 100vh;
   background: var(--bg-main);
@@ -8,6 +12,10 @@
   position: relative;
   overflow: hidden;
 }
+
+/* =========================================================
+   BACKGROUND BLOBS
+   ========================================================= */
 
 .auth-page::before,
 .auth-page::after {
@@ -21,18 +29,23 @@
 }
 
 .auth-page::before {
-  background: #E9D5FF; /* LandingPage purple blob */
+  background: #E9D5FF;
   top: -120px;
   left: -120px;
 }
 
 .auth-page::after {
-  background: #C7D2FE; /* LandingPage cyan blob */
+  background: #C7D2FE;
   bottom: -150px;
   right: -150px;
 }
 
-.form-card {
+/* =========================================================
+   FORM / AUTH CARD
+   ========================================================= */
+
+.form-card,
+.auth-card {
   position: relative;
   z-index: 2;
   width: 100%;
@@ -43,18 +56,70 @@
   backdrop-filter: blur(20px);
   border: 1px solid var(--border-soft);
   box-shadow: 0 30px 60px rgba(124, 58, 237, 0.18);
+  transition: 0.25s ease;
 }
 
-.summary-bar {
-  padding: 15px;
-  border-radius: 14px;
-  margin-bottom: 25px;
-  display: flex;
-  justify-content: space-between;
+.auth-card:hover,
+.form-card:hover {
+  transform: translateY(-4px);
+}
+
+/* =========================================================
+   LOGO
+   ========================================================= */
+
+.auth-logo {
+  position: absolute;
+  top: 40px;
+  font-size: 28px;
+  font-weight: 700;
+  letter-spacing: -1px;
+  color: var(--primary-deep);
+  z-index: 2;
+}
+
+/* =========================================================
+   HEADINGS
+   ========================================================= */
+
+.auth-card h2,
+.form-card h2 {
+  font-size: 26px;
+  font-weight: 700;
+  margin-bottom: 10px;
+  color: var(--primary-deep);
+  text-align: center;
+}
+
+.auth-card > p:first-of-type {
+  text-align: center;
+  color: var(--text-muted);
+  margin-bottom: 30px;
+  font-size: 15px;
+}
+
+/* =========================================================
+   SUMMARY BAR
+   ========================================================= */
+
+.summary-bar span {
+  font-size: 13px;
+  cursor: pointer;
+  color: var(--primary);
   font-weight: 600;
-  background: rgba(167, 139, 250, 0.12);
+  padding: 4px 10px;
+  border-radius: 8px;
+  transition: 0.2s ease;
+}
+
+.summary-bar span:hover {
+  background: rgba(124, 58, 237, 0.1);
   color: var(--primary-deep);
 }
+
+/* =========================================================
+   INPUTS
+   ========================================================= */
 
 .input {
   width: 100%;
@@ -73,6 +138,38 @@
   box-shadow: 0 0 0 4px rgba(167, 139, 250, 0.15);
 }
 
+textarea.input {
+  resize: none;
+  min-height: 120px;
+}
+
+input[type="file"] {
+  background: white;
+  padding: 12px;
+}
+
+/* =========================================================
+   LABELS
+   ========================================================= */
+
+.form-card label {
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--primary-deep);
+  margin-bottom: 6px;
+  display: block;
+}
+
+.form-card p {
+  font-size: 14px;
+  color: var(--text-muted);
+  margin-bottom: 8px;
+}
+
+/* =========================================================
+   BUTTON
+   ========================================================= */
+
 .btn-full {
   width: 100%;
   padding: 16px;
@@ -83,6 +180,7 @@
   cursor: pointer;
   background: linear-gradient(135deg, var(--primary), var(--primary-deep));
   color: white;
+  transition: 0.25s ease;
 }
 
 .btn-full:hover {
@@ -90,41 +188,9 @@
   box-shadow: 0 20px 35px rgba(124, 58, 237, 0.35);
 }
 
-.auth-card {
-  position: relative;
-  z-index: 2;
-  width: 100%;
-  max-width: 540px;
-  padding: 60px 50px;
-  border-radius: 24px;
-  background: var(--glass);
-  backdrop-filter: blur(20px);
-  border: 1px solid var(--border-soft);
-  box-shadow: 0 30px 60px rgba(124, 58, 237, 0.18);
-}
-
-.auth-card:hover {
-  transform: translateY(-4px);
-}
-
-.auth-logo {
-  position: absolute;
-  top: 40px;
-  font-size: 28px;
-  font-weight: 700;
-  letter-spacing: -1px;
-  color: var(--primary-deep);
-  z-index: 2;
-}
-
-.auth-card h2,
-.form-card h2 {
-  font-size: 26px;
-  font-weight: 700;
-  margin-bottom: 30px;
-  color: var(--primary-deep);
-  text-align: center;
-}
+/* =========================================================
+   ACCOUNT OPTIONS
+   ========================================================= */
 
 .account-options {
   display: flex;
@@ -137,10 +203,10 @@
   padding: 32px;
   border-radius: 18px;
   cursor: pointer;
-  transition: 0.3s ease;
   text-align: center;
   background: var(--glass);
   border: 1px solid var(--border-soft);
+  transition: all 0.25s ease;
 }
 
 .account-card:hover {
@@ -149,8 +215,13 @@
   border-color: var(--primary);
 }
 
+.account-card .icon {
+  margin-bottom: 10px;
+  font-size: 30px;
+}
+
 .account-card h3 {
-  margin-top: 15px;
+  margin-top: 10px;
   font-size: 18px;
   font-weight: 600;
 }
@@ -159,6 +230,10 @@
   font-size: 14px;
   color: var(--text-muted);
 }
+
+/* =========================================================
+   FOOTER
+   ========================================================= */
 
 .auth-footer {
   margin-top: 25px;
@@ -177,42 +252,62 @@
   text-decoration: underline;
 }
 
-@media (max-width: 600px) {
-  .auth-card,
-  .form-card {
-    padding: 40px 30px;
-  }
+/* =========================================================
+   RESPONSIVE
+   ========================================================= */
 
-  .account-options {
-    flex-direction: column;
-  }
-}
-/* APPLY PROJECT PAGE */
+@media (max-width: 992px) {
 
-.form-card p {
-  font-size: 14px;
-  color: var(--text-muted);
-  margin-bottom: 8px;
+.auth-card,
+.form-card {
+  padding: 50px 40px;
 }
 
-.form-card label {
-  font-size: 14px;
-  font-weight: 600;
-  color: var(--primary-deep);
-  margin-bottom: 6px;
-  display: block;
 }
 
-textarea.input {
-  resize: none;
-  min-height: 120px;
+@media (max-width: 768px) {
+
+.auth-page {
+  padding: 20px 15px;
 }
 
-input[type="file"] {
-  background: white;
+.auth-card,
+.form-card {
+  padding: 40px 25px;
+}
+
+.account-options {
+  flex-direction: column;
+}
+
+.auth-logo {
+  top: 20px;
+}
+.auth-error {
+  background: rgba(239, 68, 68, 0.1);
+  color: #ef4444;
   padding: 12px;
+  border-radius: 10px;
+  margin-bottom: 15px;
+  font-size: 14px;
+}
 }
 
-.summary-bar span {
-  font-size: 14px;
+@media (max-width: 480px) {
+
+.auth-card,
+.form-card {
+  padding: 35px 20px;
+  border-radius: 18px;
+}
+
+.auth-card h2,
+.form-card h2 {
+  font-size: 22px;
+}
+
+.btn-full {
+  padding: 14px;
+}
+
 }
