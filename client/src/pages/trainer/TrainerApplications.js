@@ -1324,7 +1324,7 @@ function TrainerApplications() {
                     </button>
                   )}
 
-                  <button className="withdraw-btn" disabled={app.status === 'completed' || app.paymentStatus === 'cleared'}>
+                  <button className="withdraw-btn" disabled={app.status === 'completed' || app.paymentStatus === 'cleared'} onClick={() => handleWithdraw(app._id)}>
                     {app.paymentStatus === 'cleared' ? "Payment Settled" : app.status === 'completed' ? "Project Finished" : "Withdraw"}
                   </button>
                 </div>
