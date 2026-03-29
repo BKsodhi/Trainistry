@@ -403,6 +403,10 @@ html {
   display: flex;
   flex-direction: column;
   gap: 15px;
+  background: white;
+  border-radius: 24px;
+  border: 1px solid var(--border-soft);
+  min-height: 420px; /* Ensures uniform card height */
 }
 
 .app-card-header {
@@ -485,22 +489,33 @@ html {
   color: var(--primary);
 }
 
-/* Button Container - FIXED OVERLAP */
+/* Button Container - FIXED OVERLAP & WRAP */
 .application-action-btns {
   display: flex;
-  gap: 12px;
+  flex-wrap: wrap; /* Allows buttons to wrap to next line if text is long */
+  gap: 10px;
   width: 100%;
+  margin-top: auto; /* Pushes buttons to the bottom of card */
 }
 
 .application-action-btns button {
-  flex: 1;
-  padding: 12px;
+  flex: 1 1 120px; /* Allows buttons to grow and shrink, min-width 120px */
+  padding: 12px 8px;
   border-radius: 12px;
   font-weight: 700;
-  font-size: 13px;
+  font-size: 12px; /* Slightly smaller to fit "Mark as Completed" */
   cursor: pointer;
   border: none;
   transition: var(--transition);
+  
+  /* Critical fix for overflow */
+  white-space: normal; 
+  word-break: break-word;
+  line-height: 1.2;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
 }
 
 .shortlist-btn {

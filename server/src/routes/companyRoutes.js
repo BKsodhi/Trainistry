@@ -161,7 +161,8 @@ const {
   resolveDispute,
   searchCompanies,
   followCompany,
-  scheduleInterview
+  scheduleInterview,
+  confirmAdvancePayment
 } = require('../controllers/companyController');
 
 // Profile & Stats (Protected)
@@ -194,5 +195,11 @@ router.post('/applications/:applicationId/schedule', protect, authorize('company
 
 router.put('/applications/:applicationId/resolve', protect, resolveDispute);
 router.put('/follow/:targetId', protect, followCompany);
+router.put(
+  '/projects/:projectId/confirm-advance', 
+  protect, 
+  authorize('company'), 
+  confirmAdvancePayment // Use the destructured name from your imports at the top
+);
 
 module.exports = router;

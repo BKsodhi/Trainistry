@@ -1235,6 +1235,343 @@
 
 // export default ProjectApplications;
 
+// import React, { useEffect, useState } from "react";
+// import axios from "axios";
+// import { useParams, useNavigate } from "react-router-dom";
+// import "../../styles/companyDashboard.css";
+
+// function ProjectApplications() {
+//   const { projectId } = useParams();
+//   const navigate = useNavigate();
+//   const [applications, setApplications] = useState([]);
+//   const [loading, setLoading] = useState(true);
+  
+//   const [showModal, setShowModal] = useState(false);
+//   const [selectedApp, setSelectedApp] = useState(null);
+//   const [interviewData, setInterviewData] = useState({ date: "", time: "", link: "" });
+
+//   const token = localStorage.getItem("token");
+//   const companyId = localStorage.getItem("companyId");
+//   const API_BASE_URL = "http://localhost:5000";
+
+//   const handleViewResume = (e, resumePath) => {
+//     e.preventDefault();
+//     if (!resumePath) return alert("No resume found.");
+//     let finalUrl = resumePath.startsWith("http") ? resumePath : `${API_BASE_URL}${resumePath.replace(/\\/g, "/")}`;
+//     window.open(finalUrl, '_blank', 'noopener,noreferrer');
+//   };
+
+//   useEffect(() => {
+//     const fetchApplications = async () => {
+//       if (!companyId || !projectId) return;
+//       try {
+//         const res = await axios.get(
+//           `${API_BASE_URL}/api/company/${companyId}/projects/${projectId}/applications`,
+//           { headers: { Authorization: `Bearer ${token}` } }
+//         );
+//         setApplications(Array.isArray(res.data.data) ? res.data.data : []);
+//       } catch (err) {
+//         console.error("Error fetching applications:", err);
+//       } finally {
+//         setLoading(false);
+//       }
+//     };
+//     fetchApplications();
+//   }, [projectId, companyId, token]);
+
+//   const updateStatus = async (applicationId, status) => {
+//     const feedback = status === 'rejected' ? window.prompt("Optional feedback for the trainer:") : null;
+//     if (!window.confirm(`Confirm application ${status}?`)) return;
+
+//     try {
+//       const res = await axios.put(
+//         `${API_BASE_URL}/api/company/applications/${applicationId}/status`,
+//         { status, feedback },
+//         { headers: { Authorization: `Bearer ${token}` } }
+//       );
+//       setApplications((prev) => prev.map((app) => (app._id === applicationId ? { ...app, status } : app)));
+//       alert(`Trainer notified via email about ${status} status.`);
+//     } catch (err) {
+//       alert("Error updating status.");
+//     }
+//   };
+
+//   const handleScheduleInterview = async (e) => {
+//     e.preventDefault();
+//     try {
+//       await axios.put(
+//         `${API_BASE_URL}/api/company/applications/${selectedApp._id}/status`,
+//         { 
+//           status: "interview_scheduled",
+//           date: interviewData.date,
+//           time: interviewData.time,
+//           link: interviewData.link
+//         },
+//         { headers: { Authorization: `Bearer ${token}` } }
+//       );
+      
+//       setApplications((prev) => prev.map((app) => app._id === selectedApp._id ? { ...app, status: "interview_scheduled" } : app));
+//       alert("Interview scheduled and trainer notified via email!");
+//       setShowModal(false);
+//     } catch (err) {
+//       alert("Failed to schedule interview.");
+//     }
+//   };
+
+//   if (loading) return <div className="loading-text">Loading applications...</div>;
+
+//   return (
+//     <div className="company-dashboard">
+//       <div className="main-content" style={{ marginLeft: "0", padding: "40px" }}>
+//         <div className="dashboard-header">
+//           <button className="back-link" onClick={() => navigate(-1)}>← Back to Projects</button>
+//           <h1 style={{ marginTop: "15px" }}>Trainer Applications</h1>
+//         </div>
+
+//         <div className="applications-grid">
+//           {applications.length === 0 ? (
+//             <div className="dashboard-card glass full-width"><p>No applications received yet.</p></div>
+//           ) : (
+//             applications.map((app) => (
+//               <div key={app?._id} className="application-card glass">
+//                 <div className="app-card-header">
+//                   <div className="trainer-avatar">{app?.trainer?.user?.name?.charAt(0) || "T"}</div>
+//                   <span className={`status-badge status-${app?.status?.toLowerCase()}`}>{app?.status?.replace('_', ' ')}</span>
+//                 </div>
+//                 <div className="trainer-info">
+//                   <h3>{app?.trainer?.user?.name}</h3>
+//                   <p className="trainer-email">{app?.trainer?.user?.email}</p>
+//                 </div>
+//                 <div className="app-stats">
+//                   <div className="stat"><span>Expected Rate</span><strong>₹{app?.expectedRate} / day</strong></div>
+//                 </div>
+//                 <div className="app-footer-actions">
+//                   <button onClick={(e) => handleViewResume(e, app.resumeUrl)} className="resume-link-btn">📄 View Resume</button>
+//                   <div className="application-action-btns">
+//                     {app?.status === "shortlisted" || app?.status === "interview_scheduled" ? (
+//                       <button className="btn-primary" onClick={() => { setSelectedApp(app); setShowModal(true); }}>
+//                         📅 {app?.status === "interview_scheduled" ? "Reschedule" : "Schedule Interview"}
+//                       </button>
+//                     ) : app?.status !== "rejected" && (
+//                       <>
+//                         <button className="shortlist-btn" onClick={() => updateStatus(app?._id, "shortlisted")}>Shortlist</button>
+//                         <button className="reject-btn" onClick={() => updateStatus(app?._id, "rejected")}>Reject</button>
+//                       </>
+//                     )}
+//                   </div>
+//                 </div>
+//               </div>
+//             ))
+//           )}
+//         </div>
+//       </div>
+
+//       {showModal && (
+//         <div className="modal-overlay">
+//           <div className="modal-content glass">
+//             <h2>Schedule Interview</h2>
+//             <form onSubmit={handleScheduleInterview}>
+//               <div className="form-group"><label>Date</label><input type="date" className="form-input" required onChange={(e) => setInterviewData({...interviewData, date: e.target.value})}/></div>
+//               <div className="form-group"><label>Time</label><input type="time" className="form-input" required onChange={(e) => setInterviewData({...interviewData, time: e.target.value})}/></div>
+//               <div className="form-group"><label>Meeting Link</label><input type="url" className="form-input" placeholder="https://meet.google.com/..." required onChange={(e) => setInterviewData({...interviewData, link: e.target.value})}/></div>
+//               <div className="modal-actions">
+//                 <button type="button" className="btn-secondary" onClick={() => setShowModal(false)}>Cancel</button>
+//                 <button type="submit" className="btn-primary">Confirm & Send Email</button>
+//               </div>
+//             </form>
+//           </div>
+//         </div>
+//       )}
+//     </div>
+//   );
+// }
+
+// export default ProjectApplications;
+
+// import React, { useEffect, useState } from "react";
+// import axios from "axios";
+// import { useParams, useNavigate } from "react-router-dom";
+// import "../../styles/companyDashboard.css";
+
+// function ProjectApplications() {
+//   const { projectId } = useParams();
+//   const navigate = useNavigate();
+//   const [applications, setApplications] = useState([]);
+//   const [loading, setLoading] = useState(true);
+  
+//   const [showModal, setShowModal] = useState(false);
+//   const [selectedApp, setSelectedApp] = useState(null);
+//   const [interviewData, setInterviewData] = useState({ date: "", time: "", link: "" });
+
+//   const token = localStorage.getItem("token");
+//   const companyId = localStorage.getItem("companyId");
+//   const API_BASE_URL = "http://localhost:5000";
+
+//   // HELPER: Check if the current time is past the interview time
+//   const isInterviewOver = (date, time) => {
+//     if (!date || !time) return false;
+//     const interviewDateTime = new Date(`${date}T${time}`);
+//     return interviewDateTime < new Date();
+//   };
+
+//   const handleViewResume = (e, resumePath) => {
+//     e.preventDefault();
+//     if (!resumePath) return alert("No resume found.");
+//     let finalUrl = resumePath.startsWith("http") ? resumePath : `${API_BASE_URL}${resumePath.replace(/\\/g, "/")}`;
+//     window.open(finalUrl, '_blank', 'noopener,noreferrer');
+//   };
+
+//   useEffect(() => {
+//     const fetchApplications = async () => {
+//       if (!companyId || !projectId) return;
+//       try {
+//         const res = await axios.get(
+//           `${API_BASE_URL}/api/company/${companyId}/projects/${projectId}/applications`,
+//           { headers: { Authorization: `Bearer ${token}` } }
+//         );
+//         setApplications(Array.isArray(res.data.data) ? res.data.data : []);
+//       } catch (err) {
+//         console.error("Error fetching applications:", err);
+//       } finally {
+//         setLoading(false);
+//       }
+//     };
+//     fetchApplications();
+//   }, [projectId, companyId, token]);
+
+//   const updateStatus = async (applicationId, status) => {
+//     const feedback = status === 'rejected' ? window.prompt("Optional feedback for the trainer:") : null;
+//     if (!window.confirm(`Confirm application ${status}?`)) return;
+
+//     try {
+//       await axios.put(
+//         `${API_BASE_URL}/api/company/applications/${applicationId}/status`,
+//         { status, feedback },
+//         { headers: { Authorization: `Bearer ${token}` } }
+//       );
+//       setApplications((prev) => prev.map((app) => (app._id === applicationId ? { ...app, status } : app)));
+//       alert(`Trainer notified via email about ${status} status.`);
+//     } catch (err) {
+//       alert("Error updating status.");
+//     }
+//   };
+
+//   const handleScheduleInterview = async (e) => {
+//     e.preventDefault();
+//     try {
+//       await axios.put(
+//         `${API_BASE_URL}/api/company/applications/${selectedApp._id}/status`,
+//         { 
+//           status: "interview_scheduled",
+//           date: interviewData.date,
+//           time: interviewData.time,
+//           link: interviewData.link
+//         },
+//         { headers: { Authorization: `Bearer ${token}` } }
+//       );
+      
+//       setApplications((prev) => prev.map((app) => 
+//         app._id === selectedApp._id 
+//           ? { ...app, status: "interview_scheduled", interviewDate: interviewData.date, interviewTime: interviewData.time } 
+//           : app
+//       ));
+//       alert("Interview scheduled and trainer notified via email!");
+//       setShowModal(false);
+//     } catch (err) {
+//       alert("Failed to schedule interview.");
+//     }
+//   };
+
+//   if (loading) return <div className="loading-text">Loading applications...</div>;
+
+//   return (
+//     <div className="company-dashboard">
+//       <div className="main-content" style={{ marginLeft: "0", padding: "40px" }}>
+//         <div className="dashboard-header">
+//           <button className="back-link" onClick={() => navigate(-1)}>← Back to Projects</button>
+//           <h1 style={{ marginTop: "15px" }}>Trainer Applications</h1>
+//         </div>
+
+//         <div className="applications-grid">
+//           {applications.length === 0 ? (
+//             <div className="dashboard-card glass full-width"><p>No applications received yet.</p></div>
+//           ) : (
+//             applications.map((app) => (
+//               <div key={app?._id} className="application-card glass">
+//                 <div className="app-card-header">
+//                   <div className="trainer-avatar">{app?.trainer?.user?.name?.charAt(0) || "T"}</div>
+//                   <span className={`status-badge status-${app?.status?.toLowerCase()}`}>{app?.status?.replace('_', ' ')}</span>
+//                 </div>
+//                 <div className="trainer-info">
+//                   <h3>{app?.trainer?.user?.name}</h3>
+//                   <p className="trainer-email">{app?.trainer?.user?.email}</p>
+//                 </div>
+//                 <div className="app-stats">
+//                   <div className="stat"><span>Expected Rate</span><strong>₹{app?.expectedRate} / day</strong></div>
+//                 </div>
+//                 <div className="app-footer-actions">
+//                   <button onClick={(e) => handleViewResume(e, app.resumeUrl)} className="resume-link-btn">📄 View Resume</button>
+//                   <div className="application-action-btns">
+                    
+//                     {/* LOGIC START: INTERVIEW SCHEDULED FLOW */}
+//                     {app?.status === "interview_scheduled" ? (
+//                       isInterviewOver(app.interviewDate, app.interviewTime) ? (
+//                         // If interview is over, show final decision buttons
+//                         <>
+//                           <button className="shortlist-btn" style={{backgroundColor: '#10b981'}} onClick={() => updateStatus(app?._id, "selected")}>Select</button>
+//                           <button className="reject-btn" onClick={() => updateStatus(app?._id, "rejected")}>Reject</button>
+//                         </>
+//                       ) : (
+//                         // If interview is in the future, show reschedule
+//                         <button className="btn-primary" onClick={() => { setSelectedApp(app); setShowModal(true); }}>
+//                           📅 Reschedule
+//                         </button>
+//                       )
+//                     ) : app?.status === "shortlisted" ? (
+//                       // If shortlisted, show schedule interview
+//                       <button className="btn-primary" onClick={() => { setSelectedApp(app); setShowModal(true); }}>
+//                         📅 Schedule Interview
+//                       </button>
+//                     ) : app?.status !== "rejected" && app?.status !== "selected" && (
+//                       // Default state (applied)
+//                       <>
+//                         <button className="shortlist-btn" onClick={() => updateStatus(app?._id, "shortlisted")}>Shortlist</button>
+//                         <button className="reject-btn" onClick={() => updateStatus(app?._id, "rejected")}>Reject</button>
+//                       </>
+//                     )}
+//                     {/* LOGIC END */}
+
+//                   </div>
+//                 </div>
+//               </div>
+//             ))
+//           )}
+//         </div>
+//       </div>
+
+//       {/* MODAL CODE REMAINS THE SAME */}
+//       {showModal && (
+//         <div className="modal-overlay">
+//           <div className="modal-content glass">
+//             <h2>Schedule Interview</h2>
+//             <form onSubmit={handleScheduleInterview}>
+//               <div className="form-group"><label>Date</label><input type="date" className="form-input" required onChange={(e) => setInterviewData({...interviewData, date: e.target.value})}/></div>
+//               <div className="form-group"><label>Time</label><input type="time" className="form-input" required onChange={(e) => setInterviewData({...interviewData, time: e.target.value})}/></div>
+//               <div className="form-group"><label>Meeting Link</label><input type="url" className="form-input" placeholder="https://meet.google.com/..." required onChange={(e) => setInterviewData({...interviewData, link: e.target.value})}/></div>
+//               <div className="modal-actions">
+//                 <button type="button" className="btn-secondary" onClick={() => setShowModal(false)}>Cancel</button>
+//                 <button type="submit" className="btn-primary">Confirm & Send Email</button>
+//               </div>
+//             </form>
+//           </div>
+//         </div>
+//       )}
+//     </div>
+//   );
+// }
+
+// export default ProjectApplications;
+
 import React, { useEffect, useState } from "react";
 import axios from "axios";
 import { useParams, useNavigate } from "react-router-dom";
@@ -1253,6 +1590,12 @@ function ProjectApplications() {
   const token = localStorage.getItem("token");
   const companyId = localStorage.getItem("companyId");
   const API_BASE_URL = "http://localhost:5000";
+
+  const isInterviewOver = (date, time) => {
+    if (!date || !time) return false;
+    const interviewDateTime = new Date(`${date}T${time}`);
+    return interviewDateTime < new Date();
+  };
 
   const handleViewResume = (e, resumePath) => {
     e.preventDefault();
@@ -1284,15 +1627,38 @@ function ProjectApplications() {
     if (!window.confirm(`Confirm application ${status}?`)) return;
 
     try {
-      const res = await axios.put(
+      await axios.put(
         `${API_BASE_URL}/api/company/applications/${applicationId}/status`,
         { status, feedback },
         { headers: { Authorization: `Bearer ${token}` } }
       );
+      
       setApplications((prev) => prev.map((app) => (app._id === applicationId ? { ...app, status } : app)));
-      alert(`Trainer notified via email about ${status} status.`);
+      alert(`Status updated to ${status}.`);
     } catch (err) {
       alert("Error updating status.");
+    }
+  };
+
+  const confirmAdvancePayment = async (applicationId) => {
+    if (!window.confirm("Confirm that 50% advance has been processed?")) return;
+
+    try {
+      // Backend now supports "hired" enum
+      await axios.put(
+        `${API_BASE_URL}/api/company/applications/${applicationId}/status`,
+        { status: "hired" }, 
+        { headers: { Authorization: `Bearer ${token}` } }
+      );
+      
+      setApplications((prev) => 
+        prev.map((app) => (app._id === applicationId ? { ...app, status: "hired" } : app))
+      );
+      
+      alert("Advance confirmed! Status updated to Hired.");
+    } catch (err) {
+      console.error("Payment confirmation failed:", err.response?.data || err.message);
+      alert(`Error: ${err.response?.data?.message || "Check backend status transition"}`);
     }
   };
 
@@ -1310,8 +1676,12 @@ function ProjectApplications() {
         { headers: { Authorization: `Bearer ${token}` } }
       );
       
-      setApplications((prev) => prev.map((app) => app._id === selectedApp._id ? { ...app, status: "interview_scheduled" } : app));
-      alert("Interview scheduled and trainer notified via email!");
+      setApplications((prev) => prev.map((app) => 
+        app._id === selectedApp._id 
+          ? { ...app, status: "interview_scheduled", interviewDate: interviewData.date, interviewTime: interviewData.time } 
+          : app
+      ));
+      alert("Interview scheduled successfully!");
       setShowModal(false);
     } catch (err) {
       alert("Failed to schedule interview.");
@@ -1336,22 +1706,71 @@ function ProjectApplications() {
               <div key={app?._id} className="application-card glass">
                 <div className="app-card-header">
                   <div className="trainer-avatar">{app?.trainer?.user?.name?.charAt(0) || "T"}</div>
-                  <span className={`status-badge status-${app?.status?.toLowerCase()}`}>{app?.status?.replace('_', ' ')}</span>
+                  <span className={`status-badge status-${app?.status?.toLowerCase()}`}>
+                    {app?.status?.replace('_', ' ')}
+                  </span>
                 </div>
+                
                 <div className="trainer-info">
                   <h3>{app?.trainer?.user?.name}</h3>
                   <p className="trainer-email">{app?.trainer?.user?.email}</p>
                 </div>
+
                 <div className="app-stats">
-                  <div className="stat"><span>Expected Rate</span><strong>₹{app?.expectedRate} / day</strong></div>
+                  <div className="stat">
+                    <span>Expected Rate</span>
+                    {/* Fallback to project perDayPayment if app.expectedRate is missing */}
+                    <strong>₹{app?.expectedRate || app?.project?.perDayPayment || 0} / day</strong>
+                  </div>
                 </div>
+
+                {/* ADVANCE PAY UI - Robust calculation logic */}
+                {(app?.status === "selected" || app?.status === "hired") && (
+                  <div className="advance-display-box">
+                    <span style={{ fontSize: "0.85rem", color: "#666" }}>Advance (50%)</span>
+                    <strong style={{ color: "#10b981", fontSize: "1.05rem" }}>
+                      ₹{(
+                        (app?.expectedRate || app?.project?.perDayPayment || 0) * (app?.project?.durationDays || 0) * 0.5
+                      ).toLocaleString()}
+                    </strong>
+                  </div>
+                )}
+
                 <div className="app-footer-actions">
-                  <button onClick={(e) => handleViewResume(e, app.resumeUrl)} className="resume-link-btn">📄 View Resume</button>
+                  <button onClick={(e) => handleViewResume(e, app.resumeUrl)} className="resume-link-btn">📄 Resume</button>
+                  
                   <div className="application-action-btns">
-                    {app?.status === "shortlisted" || app?.status === "interview_scheduled" ? (
+                    {app?.status === "interview_scheduled" ? (
+                      isInterviewOver(app.interviewDate, app.interviewTime) ? (
+                        <>
+                          <button 
+                            className="shortlist-btn" 
+                            style={{ background: "#10b981", border: "none", color: "white" }} 
+                            onClick={() => updateStatus(app?._id, "selected")}
+                          >
+                            Select
+                          </button>
+                          <button className="reject-btn" onClick={() => updateStatus(app?._id, "rejected")}>Reject</button>
+                        </>
+                      ) : (
+                        <button className="btn-primary" onClick={() => { setSelectedApp(app); setShowModal(true); }}>
+                          📅 Reschedule
+                        </button>
+                      )
+                    ) : app?.status === "shortlisted" ? (
                       <button className="btn-primary" onClick={() => { setSelectedApp(app); setShowModal(true); }}>
-                        📅 {app?.status === "interview_scheduled" ? "Reschedule" : "Schedule Interview"}
+                        📅 Interview
                       </button>
+                    ) : app?.status === "selected" ? (
+                      <button 
+                        className="shortlist-btn" 
+                        style={{ background: "#10b981", color: "white", width: "100%" }} 
+                        onClick={() => confirmAdvancePayment(app._id)}
+                      >
+                        Confirm 50% Advance
+                      </button>
+                    ) : app?.status === "hired" ? (
+                      <div className="hired-status-pill" style={{ color: "#10b981", fontWeight: "bold" }}>✔ Hired & Paid</div>
                     ) : app?.status !== "rejected" && (
                       <>
                         <button className="shortlist-btn" onClick={() => updateStatus(app?._id, "shortlisted")}>Shortlist</button>

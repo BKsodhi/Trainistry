@@ -3574,6 +3574,20 @@ function TrainerDashboard() {
                 <span className="company-badge">{proj.company?.name || 'Partner'}</span>
                 <h3>{proj.title}</h3>
                 <p><strong>Tech:</strong> {proj.technology}</p>
+                {/* --- ADDED ADVANCE PAYMENT STATUS HERE --- */}
+                <div style={{ marginTop: '10px' }}>
+                  {proj.advanceStatus === 'pending' && (
+                    <span style={{ color: '#f59e0b', fontWeight: 'bold', fontSize: '0.85rem' }}>
+                      ⏳ Waiting for 50% Advance
+                    </span>
+                  )}
+                  {proj.advanceStatus === 'paid' && (
+                    <span style={{ color: '#10b981', fontWeight: 'bold', fontSize: '0.85rem' }}>
+                      ✅ Advance Received - Start Project
+                    </span>
+                  )}
+                </div>
+                {/* ------------------------------------------ */}
                 <div style={{ marginTop: '15px', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
                   <span className="status-pill pending">₹{proj.perDayPayment}/day</span>
                   <button className="apply-btn" onClick={() => navigate(`/trainer/project/${proj._id}`)}>View Details</button>

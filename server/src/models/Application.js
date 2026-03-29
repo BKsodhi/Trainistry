@@ -373,7 +373,8 @@ const applicationSchema = new mongoose.Schema(
         'interview_scheduled', 
         'selected', 
         'rejected', 
-        'completed'
+        'completed',
+        'hired'
       ],
       default: 'applied'
     },

@@ -569,7 +569,23 @@ function CompanyProjects({ companyId, refreshFlag }) {
             >
               View Applications 
             </button>
-
+              {project.advanceStatus === "pending" && (
+                <button
+                  className="btn-primary"
+                  style={{ flex: 1, backgroundColor: '#f59e0b', color: 'white' }}
+                  onClick={() => {
+                    const txId = window.prompt(`Enter Transaction ID for 50% Advance (₹${(project.perDayPayment * project.durationDays * 0.5).toLocaleString()}):`);
+                    if (txId) {
+                      axios.put(`${API_BASE_URL}/api/company/projects/${project._id}/confirm-advance`, 
+                        { transactionId: txId },
+                        { headers: { Authorization: `Bearer ${token}` } }
+                      ).then(() => alert("Advance Confirmed!"));
+                    }
+                  }}
+                >
+                  Confirm 50% Advance
+                </button>
+              )}
             {/* UI FIX: Only show button if status is NOT completed (case-insensitive check) */}
             {project.status?.toLowerCase() !== "completed" && (
               <button
