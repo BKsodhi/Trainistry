@@ -3936,6 +3936,122 @@ exports.getProjectApplications = async (req, res) => {
 //     res.status(500).json({ success: false, message: error.message });
 //   }
 // };
+// exports.updateApplicationStatus = async (req, res) => {
+//   try {
+//     const { applicationId } = req.params;
+//     const { status, feedback, date, time, link } = req.body;
+
+//     const application = await Application.findById(applicationId)
+//       .populate("project")
+//       .populate({
+//         path: "trainer",
+//         populate: { path: "user" }
+//       });
+
+//     if (!application) {
+//       return res.status(404).json({ success: false, message: "Application not found" });
+//     }
+
+//     const companyProfile = await CompanyProfile.findOne({ user: req.user._id });
+//     const trainerUser = application.trainer.user;
+
+//     application.status = status;
+//     if (feedback) application.feedback = feedback;
+    
+//     if (status === 'interview_scheduled') {
+//       application.interviewDate = date;
+//       application.interviewTime = time;
+//       application.meetingLink = link;
+//     }
+    
+//     await application.save();
+
+//     let emailSubject = '';
+//     let emailHtml = '';
+    
+//     // --- 1. SHORTLISTED ---
+//     if (status === 'shortlisted') {
+//       emailSubject = `⚡ Shortlisted: ${application.project.title}`;
+//       emailHtml = `<div style="font-family: Arial; padding: 20px; border: 1px solid #4338ca; border-radius: 10px;">
+//           <h2 style="color: #4338ca;">You're Shortlisted!</h2>
+//           <p>Hi ${trainerUser.name}, <strong>${companyProfile.name}</strong> has shortlisted you for: <strong>${application.project.title}</strong>.</p>
+//           <p>They will contact you shortly.</p>
+//         </div>`;
+//     } 
+
+//     // --- 2. SELECTED (The "Advance Requested" Mail) ---
+//     else if (status === 'selected') {
+//       const totalBudget = (application.expectedRate || application.project.perDayPayment) * application.project.durationDays;
+//       const advanceAmount = totalBudget * 0.5;
+
+//       await Project.findByIdAndUpdate(application.project._id, {
+//           status: 'assigned',
+//           advanceStatus: 'pending',
+//           advanceAmount: advanceAmount
+//       });
+
+//       emailSubject = `🎉 Selection Confirmed: ${application.project.title}`;
+//       emailHtml = `<div style="font-family: Arial; padding: 20px; border: 1px solid #10b981; border-radius: 10px;">
+//           <h2 style="color: #10b981;">Congratulations!</h2>
+//           <p>You have been selected for <strong>${application.project.title}</strong>.</p>
+//           <p><strong>Advance Payment:</strong> 50% advance (₹${advanceAmount.toLocaleString()}) has been requested from the company.</p>
+//           <p>You will receive a confirmation once the payment is processed.</p>
+//         </div>`;
+//     }
+
+//     // --- 3. HIRED (The "Payment Confirmed / Official Hire" Mail) ---
+//     else if (status === 'hired') {
+//       emailSubject = `✅ Payment Confirmed: You are Hired for ${application.project.title}!`;
+//       emailHtml = `
+//         <div style="font-family: Arial; padding: 20px; border: 1px solid #059669; border-radius: 10px; background-color: #f0fdf4;">
+//           <h2 style="color: #059669;">Welcome Aboard!</h2>
+//           <p>Hi ${trainerUser.name},</p>
+//           <p>Great news! <strong>${companyProfile.name}</strong> has confirmed your 50% advance payment for the project: <strong>${application.project.title}</strong>.</p>
+//           <p style="font-size: 1.1em; font-weight: bold;">You are now officially HIRED.</p>
+//           <hr style="border: 0; border-top: 1px solid #bdf1d4; margin: 20px 0;"/>
+//           <p><strong>Next Steps:</strong></p>
+//           <ul>
+//             <li>Coordinate with the company for the training schedule.</li>
+//             <li>Ensure all training materials are ready.</li>
+//             <li>Mark the project as "Started" on your dashboard.</li>
+//           </ul>
+//           <p>Best Regards,<br/><strong>Trainistry Team</strong></p>
+//         </div>`;
+//     }
+
+//     // --- 4. INTERVIEW ---
+//     else if (status === 'interview_scheduled') {
+//       emailSubject = `📅 Interview Scheduled: ${application.project.title}`;
+//       emailHtml = `<div style="font-family: Arial; padding: 20px; border: 1px solid #f59e0b; border-radius: 10px;">
+//           <h2 style="color: #f59e0b;">Interview Invitation</h2>
+//           <p><b>Date:</b> ${date}<br/><b>Time:</b> ${time}</p>
+//           <p><b>Link:</b> <a href="${link}">${link}</a></p>
+//         </div>`;
+//     }
+
+//     // --- 5. REJECTION ---
+//     else if (status === 'rejected') {
+//       emailSubject = `Update regarding: ${application.project.title}`;
+//       emailHtml = `<p>Hi ${trainerUser.name}, the company has decided not to proceed with your application at this time.</p>`;
+//     }
+
+//     // Send Email
+//     if (emailSubject) {
+//       await sendEmail({
+//         email: trainerUser.email,
+//         subject: emailSubject,
+//         from: `"${companyProfile.name} via Trainistry" <${process.env.EMAIL_USER}>`,
+//         replyTo: req.user.email, 
+//         html: emailHtml
+//       });
+//     }
+
+//     res.status(200).json({ success: true, message: `Status updated to ${status} and trainer notified.` });
+
+//   } catch (error) {
+//     res.status(500).json({ success: false, message: error.message });
+//   }
+// };
 exports.updateApplicationStatus = async (req, res) => {
   try {
     const { applicationId } = req.params;
@@ -3979,27 +4095,46 @@ exports.updateApplicationStatus = async (req, res) => {
         </div>`;
     } 
 
-    // --- 2. SELECTED (The "Advance Requested" Mail) ---
+    // --- 2. SELECTED (Conditional Advance Check) ---
     else if (status === 'selected') {
-      const totalBudget = (application.expectedRate || application.project.perDayPayment) * application.project.durationDays;
-      const advanceAmount = totalBudget * 0.5;
+      // CHECK: Does the project form mention "advance"?
+      const hasAdvanceRequirement = application.project.paymentTerms?.toLowerCase().includes('advance');
 
-      await Project.findByIdAndUpdate(application.project._id, {
-          status: 'assigned',
-          advanceStatus: 'pending',
-          advanceAmount: advanceAmount
-      });
+      if (hasAdvanceRequirement) {
+        // TRIGGER ADVANCE FEATURE
+        const totalBudget = (application.expectedRate || application.project.perDayPayment) * application.project.durationDays;
+        const advanceAmount = totalBudget * 0.5;
 
-      emailSubject = `🎉 Selection Confirmed: ${application.project.title}`;
-      emailHtml = `<div style="font-family: Arial; padding: 20px; border: 1px solid #10b981; border-radius: 10px;">
-          <h2 style="color: #10b981;">Congratulations!</h2>
-          <p>You have been selected for <strong>${application.project.title}</strong>.</p>
-          <p><strong>Advance Payment:</strong> 50% advance (₹${advanceAmount.toLocaleString()}) has been requested from the company.</p>
-          <p>You will receive a confirmation once the payment is processed.</p>
-        </div>`;
+        await Project.findByIdAndUpdate(application.project._id, {
+            status: 'assigned',
+            advanceStatus: 'pending',
+            advanceAmount: advanceAmount
+        });
+
+        emailSubject = `🎉 Selection Confirmed: ${application.project.title}`;
+        emailHtml = `<div style="font-family: Arial; padding: 20px; border: 1px solid #10b981; border-radius: 10px;">
+            <h2 style="color: #10b981;">Congratulations!</h2>
+            <p>You have been selected for <strong>${application.project.title}</strong>.</p>
+            <p><strong>Advance Payment:</strong> A 50% advance (₹${advanceAmount.toLocaleString()}) has been requested from the company.</p>
+            <p>You will receive a confirmation once the payment is processed.</p>
+          </div>`;
+      } else {
+        // DEFAULT FLOW (15-Day Rule applies by default)
+        await Project.findByIdAndUpdate(application.project._id, {
+            status: 'assigned',
+            advanceStatus: 'none' // No advance UI will show up on frontend
+        });
+
+        emailSubject = `🎉 Selection Confirmed: ${application.project.title}`;
+        emailHtml = `<div style="font-family: Arial; padding: 20px; border: 1px solid #4338ca; border-radius: 10px;">
+            <h2 style="color: #4338ca;">Congratulations!</h2>
+            <p>You have been selected for <strong>${application.project.title}</strong>.</p>
+            <p>The company will contact you regarding the schedule. Payment will be processed as per the standard 15-day completion rule.</p>
+          </div>`;
+      }
     }
 
-    // --- 3. HIRED (The "Payment Confirmed / Official Hire" Mail) ---
+    // --- 3. HIRED ---
     else if (status === 'hired') {
       emailSubject = `✅ Payment Confirmed: You are Hired for ${application.project.title}!`;
       emailHtml = `
@@ -4009,12 +4144,6 @@ exports.updateApplicationStatus = async (req, res) => {
           <p>Great news! <strong>${companyProfile.name}</strong> has confirmed your 50% advance payment for the project: <strong>${application.project.title}</strong>.</p>
           <p style="font-size: 1.1em; font-weight: bold;">You are now officially HIRED.</p>
           <hr style="border: 0; border-top: 1px solid #bdf1d4; margin: 20px 0;"/>
-          <p><strong>Next Steps:</strong></p>
-          <ul>
-            <li>Coordinate with the company for the training schedule.</li>
-            <li>Ensure all training materials are ready.</li>
-            <li>Mark the project as "Started" on your dashboard.</li>
-          </ul>
           <p>Best Regards,<br/><strong>Trainistry Team</strong></p>
         </div>`;
     }
