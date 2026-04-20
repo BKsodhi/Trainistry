@@ -1071,3 +1071,128 @@ html {
   margin-top: 6px;
   font-weight: 500;
 }
+/* =========================================================
+   DASHBOARD HOME & AUTOMATION (IMAGE 1 & 3 LOGIC)
+   ========================================================= */
+
+/* Main Container Spacing */
+.dashboard-home-content {
+  animation: fadeIn 0.4s ease-out;
+}
+
+/* 🚀 Automation & Milestone Grid */
+.automation-section {
+  background: white;
+  border-radius: 24px;
+  border: 1px solid var(--border-soft);
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.03);
+}
+
+.automation-section h3 {
+  font-size: 18px;
+  font-weight: 800;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+/* Individual Project Milestone Mini-Cards */
+.mini-card.glass {
+  background: #ffffff !important;
+  border: 1px solid #edf2f7 !important;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  min-height: 180px;
+}
+
+.mini-card.glass:hover {
+  transform: translateY(-5px);
+  border-color: var(--primary) !important;
+  box-shadow: 0 12px 24px rgba(99, 102, 241, 0.1);
+}
+
+/* Status Progress Bars */
+.mini-card .progress-container {
+  height: 6px;
+  background: #f1f5f9;
+  border-radius: 10px;
+  margin: 12px 0;
+  overflow: hidden;
+}
+
+.mini-card .progress-bar {
+  height: 100%;
+  background: linear-gradient(90deg, var(--primary), var(--primary-deep));
+  border-radius: 10px;
+  transition: width 1s ease-in-out;
+}
+
+/* Action Buttons (Download Contract) */
+.mini-card button {
+  background: rgba(99, 102, 241, 0.08) !important;
+  border: 1.5px solid var(--primary) !important;
+  color: var(--primary) !important;
+  font-weight: 700 !important;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  font-size: 11px !important;
+  transition: all 0.2s ease;
+}
+
+.mini-card button:hover {
+  background: var(--primary) !important;
+  color: white !important;
+}
+
+/* 💳 Payment Tracking List */
+.payment-tracking {
+  background: white;
+  border-radius: 24px;
+  border: 1px solid var(--border-soft);
+}
+
+.payment-item {
+  transition: background 0.2s ease;
+}
+
+.payment-item:hover {
+  background: #fcfcfd;
+}
+
+.payment-item strong {
+  font-size: 14px;
+  color: var(--text-main);
+}
+
+/* Dispute & Overdue Tags */
+.dispute-tag {
+  background: #fef2f2;
+  color: #ef4444;
+  padding: 4px 10px;
+  border-radius: 6px;
+  font-size: 11px;
+  font-weight: 800;
+  border: 1px solid #fee2e2;
+}
+
+.overdue-text {
+  color: #ef4444 !important;
+  background: rgba(239, 68, 68, 0.05);
+  padding: 4px 8px;
+  border-radius: 6px;
+}
+
+/* Animations */
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(10px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+.badge {
+  color: #ffffff !important;
+  font-weight: 600;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+}
