@@ -1,0 +1,488 @@
+/* =========================================================
+   ADMIN DASHBOARD — MATCHES LANDING PAGE DESIGN SYSTEM
+   ========================================================= */
+
+/* =========================================================
+   ROOT
+   ========================================================= */
+
+:root {
+  --primary: #6366F1;
+  --primary-deep: #4F46E5;
+  --secondary: #8B5CF6;
+  --accent: #06B6D4;
+
+  --text-main: #0F172A;
+  --text-muted: #64748B;
+
+  --bg-main: #F8FAFC;
+  --surface: #FFFFFF;
+
+  --border-soft: #E2E8F0;
+
+  --shadow-soft: 0 10px 30px rgba(0,0,0,0.05);
+  --shadow-hover: 0 20px 40px rgba(0,0,0,0.08);
+}
+
+/* =========================================================
+   BASE LAYOUT
+   ========================================================= */
+
+.admin-container {
+  display: flex;
+  min-height: 100vh;
+  background: var(--bg-main);
+  color: var(--text-main);
+  font-family: "Inter", sans-serif;
+}
+
+.admin-content {
+  width: 100%;
+}
+
+/* =========================================================
+   GLASS COMPONENT
+   ========================================================= */
+
+.glass {
+  background: rgba(255,255,255,0.7);
+  backdrop-filter: blur(12px);
+  border: 1px solid var(--border-soft);
+  border-radius: 20px;
+  box-shadow: var(--shadow-soft);
+}
+
+/* =========================================================
+   SIDEBAR
+   ========================================================= */
+
+.admin-sidebar {
+  width: 280px;
+  margin: 20px;
+  padding: 30px 20px;
+  display: flex;
+  flex-direction: column;
+  background: white;
+}
+
+.brand-logo {
+  font-size: 22px;
+  font-weight: 700;
+  color: var(--primary);
+  margin-bottom: 40px;
+}
+
+.brand-logo span {
+  color: var(--secondary);
+}
+
+/* =========================================================
+   NAVIGATION
+   ========================================================= */
+
+.admin-sidebar nav button {
+  width: 100%;
+  padding: 12px 16px;
+  margin-bottom: 8px;
+  border: 1px solid transparent;
+  background: transparent;
+  color: var(--text-muted);
+  text-align: left;
+  border-radius: 12px;
+  cursor: pointer;
+  transition: all 0.25s ease;
+  font-weight: 500;
+}
+
+.admin-sidebar nav button:hover {
+  background: #F1F5F9;
+  color: var(--text-main);
+  transform: translateX(5px);
+}
+
+.admin-sidebar nav button.active {
+  background: linear-gradient(135deg, var(--primary), var(--secondary));
+  color: white;
+}
+
+/* =========================================================
+   MAIN AREA
+   ========================================================= */
+
+.admin-main {
+  flex: 1;
+  padding: 20px 40px;
+  display: flex;
+  flex-direction: column;
+  gap: 25px;
+}
+
+/* =========================================================
+   TOP BAR
+   ========================================================= */
+
+.admin-top-bar {
+  padding: 20px;
+  background: rgba(255,255,255,0.8);
+  backdrop-filter: blur(12px);
+  border-bottom: 1px solid var(--border-soft);
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+/* =========================================================
+   STATS GRID
+   ========================================================= */
+
+.stats-grid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 20px;
+}
+
+.stat-box {
+  padding: 30px;
+  text-align: center;
+  transition: all 0.25s ease;
+}
+
+.stat-box:hover {
+  transform: translateY(-6px);
+  box-shadow: var(--shadow-hover);
+}
+
+.stat-box h3 {
+  font-size: 40px;
+  color: var(--primary);
+}
+
+.stat-box p {
+  color: var(--text-muted);
+}
+
+/* =========================================================
+   TABLE
+   ========================================================= */
+
+.table-container {
+  padding: 20px;
+  overflow-x: auto;
+}
+
+.admin-table {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+.admin-table th {
+  text-align: left;
+  padding: 14px;
+  color: var(--text-muted);
+  font-weight: 600;
+  border-bottom: 1px solid var(--border-soft);
+}
+
+.admin-table td {
+  padding: 14px;
+  border-bottom: 1px solid var(--border-soft);
+}
+
+/* =========================================================
+   ROLE BADGES
+   ========================================================= */
+
+.role-badge {
+  padding: 5px 10px;
+  border-radius: 20px;
+  font-size: 12px;
+}
+
+.role-badge.admin {
+  background: #EEF2FF;
+  color: var(--primary);
+}
+
+.role-badge.trainer {
+  background: #F3E8FF;
+  color: var(--secondary);
+}
+
+.role-badge.company {
+  background: #ECFEFF;
+  color: var(--accent);
+}
+
+/* =========================================================
+   STATUS TAG (WITH ALL STATES)
+   ========================================================= */
+
+.status-tag {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 6px 12px;
+  border-radius: 20px;
+  font-size: 12px;
+  font-weight: 500;
+  text-transform: capitalize;
+}
+
+/* circle */
+.status-tag::before {
+  content: "";
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+}
+
+/* OPEN */
+.status-tag.open {
+  background: #EFF6FF;
+  color: #1D4ED8;
+}
+
+.status-tag.open::before {
+  background: #3B82F6;
+}
+
+/* ASSIGNED */
+.status-tag.assigned {
+  background: #F5F3FF;
+  color: #6D28D9;
+}
+
+.status-tag.assigned::before {
+  background: #8B5CF6;
+}
+
+/* PENDING */
+.status-tag.pending {
+  background: #FEF3C7;
+  color: #92400E;
+}
+
+.status-tag.pending::before {
+  background: #F59E0B;
+}
+
+/* ONGOING */
+.status-tag.ongoing {
+  background: #E0F2FE;
+  color: #0369A1;
+}
+
+.status-tag.ongoing::before {
+  background: #0EA5E9;
+}
+
+/* COMPLETED */
+.status-tag.completed {
+  background: #DCFCE7;
+  color: #166534;
+}
+
+.status-tag.completed::before {
+  background: #22C55E;
+}
+
+/* APPROVED */
+.status-tag.approved {
+  background: #EDE9FE;
+  color: #5B21B6;
+}
+
+.status-tag.approved::before {
+  background: #7C3AED;
+}
+
+/* REJECTED */
+.status-tag.rejected {
+  background: #FEE2E2;
+  color: #991B1B;
+}
+
+.status-tag.rejected::before {
+  background: #EF4444;
+}
+
+/* =========================================================
+   ACTION BUTTONS
+   ========================================================= */
+
+.action-btn {
+  padding: 7px 12px;
+  border-radius: 10px;
+  border: none;
+  cursor: pointer;
+  margin-right: 6px;
+  font-size: 13px;
+}
+
+.action-btn.ver {
+  background: var(--primary);
+  color: white;
+}
+
+.action-btn.rev {
+  background: var(--secondary);
+  color: white;
+}
+
+.action-btn.blk {
+  background: #ef4444;
+  color: white;
+}
+
+.admin-actions-cell {
+  display: flex;
+}
+
+/* =========================================================
+   TRAINING GRID
+   ========================================================= */
+
+.training-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 20px;
+}
+
+.training-card {
+  padding: 20px;
+}
+
+.card-header {
+  display: flex;
+  justify-content: space-between;
+}
+
+.card-info {
+  margin-top: 10px;
+}
+
+.card-info p {
+  margin: 4px 0;
+}
+
+.card-actions {
+  margin-top: 12px;
+}
+
+.approve-btn {
+  background: #22c55e;
+  color: white;
+  border: none;
+  padding: 6px 12px;
+  border-radius: 8px;
+  margin-right: 6px;
+}
+
+.reject-btn {
+  background: #ef4444;
+  color: white;
+  border: none;
+  padding: 6px 12px;
+  border-radius: 8px;
+}
+
+/* =========================================================
+   FILTER BAR
+   ========================================================= */
+
+.filter-bar {
+  display: flex;
+  gap: 10px;
+  margin-bottom: 15px;
+}
+
+.filter-bar button {
+  padding: 8px 14px;
+  border-radius: 12px;
+  border: 1px solid var(--border-soft);
+  background: white;
+}
+
+.filter-bar .f-active {
+  background: var(--primary);
+  color: white;
+}
+
+/* =========================================================
+   PAYMENT BADGES
+   ========================================================= */
+
+.pay-badge {
+  padding: 5px 10px;
+  border-radius: 20px;
+  font-size: 12px;
+}
+
+.pay-badge.pending {
+  background: #FEF3C7;
+}
+
+.pay-badge.paid {
+  background: #DCFCE7;
+}
+
+/* =========================================================
+   EMPTY STATES
+   ========================================================= */
+
+.no-data {
+  text-align: center;
+  padding: 20px;
+  color: var(--text-muted);
+}
+
+.no-data-msg {
+  text-align: center;
+  padding: 30px;
+  color: var(--text-muted);
+}
+
+/* =========================================================
+   LOADER
+   ========================================================= */
+
+.loader {
+  display: flex;
+  height: 100vh;
+  justify-content: center;
+  align-items: center;
+  font-size: 20px;
+}
+
+/* =========================================================
+   RESPONSIVE
+   ========================================================= */
+
+@media (max-width:1200px) {
+  .stats-grid {
+    grid-template-columns: repeat(2,1fr);
+  }
+
+  .training-grid {
+    grid-template-columns: repeat(2,1fr);
+  }
+}
+
+@media (max-width:768px) {
+  .admin-container {
+    flex-direction: column;
+  }
+
+  .admin-sidebar {
+    width: auto;
+    margin: 10px;
+  }
+
+  .stats-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .training-grid {
+    grid-template-columns: 1fr;
+  }
+}

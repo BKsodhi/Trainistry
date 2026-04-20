@@ -292,6 +292,7 @@ const projectRoutes = require('./src/routes/projectRoutes');
 const notificationRoutes = require('./src/routes/notificationRoutes');
 const achievementRoutes = require('./src/routes/achievementRoutes');
 const postRoutes = require('./src/routes/postRoutes');
+const adminRoutes = require('./src/routes/adminRoutes');
 
 const app = express();
 
@@ -356,6 +357,7 @@ app.use('/api/projects', projectRoutes);
 app.use('/api/notifications', notificationRoutes);
 app.use('/api/achievements', achievementRoutes);
 app.use('/api/posts', postRoutes);
+app.use('/api/admin', adminRoutes);
 
 // ===================
 // Base Route

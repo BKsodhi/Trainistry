@@ -50,8 +50,6 @@ const notificationSchema = new mongoose.Schema(
 {
   recipient: {
     type: mongoose.Schema.Types.ObjectId,
-    // Note: We don't use 'ref' here because recipient could be a User, 
-    // TrainerProfile, or CompanyProfile depending on your logic.
     required: true
   },
 
@@ -73,9 +71,9 @@ const notificationSchema = new mongoose.Schema(
       'interview_scheduled',
       'application_selected',
       'application_rejected',
-      'dispute_raised',    // <--- Added for the Dispute Button
-      'warning_posted',    // <--- Added for the Defame/Network Warning
-      'payment_deadline',  // <--- Added for 15-day alerts
+      'dispute_raised',    
+      'warning_posted',    
+      'payment_deadline',  
       'general',
       'payment_resolved'
     ],

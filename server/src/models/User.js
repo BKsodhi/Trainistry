@@ -140,34 +140,256 @@
 
 // module.exports = mongoose.model('User', userSchema);
 
+// const mongoose = require('mongoose');
+// const bcrypt = require('bcryptjs');
+
+// const userSchema = new mongoose.Schema(
+//   {
+//     name: {
+//       type: String,
+//       required: true
+//     },
+//     email: {
+//       type: String,
+//       required: true,
+//       unique: true,
+//       lowercase: true
+//     },
+//     // Added phone field as per new requirement
+//     phone: {
+//       type: String,
+//       required: true
+//     },
+//     password: {
+//       type: String,
+//       required: true
+//     },
+//     role: {
+//       type: String,
+//       enum: ['company', 'trainer'],
+//       required: true
+//     },
+//     following: [{ type: mongoose.Schema.Types.ObjectId, ref: 'User' }],
+//     followers: [{ type: mongoose.Schema.Types.ObjectId, ref: 'User' }]
+//   },
+//   { timestamps: true }
+// );
+
+// userSchema.pre('save', async function () {
+//   if (!this.isModified('password')) {
+//     return;
+//   }
+//   try {
+//     const salt = await bcrypt.genSalt(10);
+//     this.password = await bcrypt.hash(this.password, salt);
+//   } catch (error) {
+//     throw new Error(error);
+//   }
+// });
+
+// userSchema.methods.matchPassword = async function (enteredPassword) {
+//   return await bcrypt.compare(enteredPassword, this.password);
+// };
+
+// module.exports = mongoose.model('User', userSchema);
+
+// const mongoose = require('mongoose');
+// const bcrypt = require('bcryptjs');
+
+// const userSchema = new mongoose.Schema(
+//   {
+//     name: {
+//       type: String,
+//       required: true
+//     },
+//     email: {
+//       type: String,
+//       required: true,
+//       unique: true,
+//       lowercase: true
+//     },
+//     phone: {
+//       type: String,
+//       required: true
+//     },
+//     password: {
+//       type: String,
+//       required: true
+//     },
+//     role: {
+//       type: String,
+//       enum: ['admin', 'company', 'trainer'], // added admin
+//       required: true
+//     },
+//     following: [{ type: mongoose.Schema.Types.ObjectId, ref: 'User' }],
+//     followers: [{ type: mongoose.Schema.Types.ObjectId, ref: 'User' }]
+//   },
+//   { timestamps: true }
+// );
+
+// userSchema.pre('save', async function () {
+//   if (!this.isModified('password')) {
+//     return;
+//   }
+//   try {
+//     const salt = await bcrypt.genSalt(10);
+//     this.password = await bcrypt.hash(this.password, salt);
+//   } catch (error) {
+//     throw new Error(error);
+//   }
+// });
+
+// userSchema.methods.matchPassword = async function (enteredPassword) {
+//   return await bcrypt.compare(enteredPassword, this.password);
+// };
+
+// module.exports = mongoose.model('User', userSchema);
+
+// const mongoose = require('mongoose');
+// const bcrypt = require('bcryptjs');
+
+// const userSchema = new mongoose.Schema(
+//   {
+//     name: { type: String, required: true },
+//     email: { type: String, required: true, unique: true, lowercase: true },
+//     phone: { type: String, required: true },
+//     password: { type: String, required: true },
+//     role: {
+//       type: String,
+//       enum: ['admin', 'company', 'trainer'],
+//       required: true
+//     },
+//     // --- NEW FIELDS FOR ADMIN FEATURE 1 ---
+//     isVerified: { type: Boolean, default: false },
+//     status: { 
+//       type: String, 
+//       enum: ['active', 'blacklisted'], 
+//       default: 'active' 
+//     },
+//     // ---------------------------------------
+//     following: [{ type: mongoose.Schema.Types.ObjectId, ref: 'User' }],
+//     followers: [{ type: mongoose.Schema.Types.ObjectId, ref: 'User' }]
+//   },
+//   { timestamps: true }
+// );
+
+// userSchema.pre('save', async function () {
+//   if (!this.isModified('password')) return;
+//   try {
+//     const salt = await bcrypt.genSalt(10);
+//     this.password = await bcrypt.hash(this.password, salt);
+//   } catch (error) {
+//     throw new Error(error);
+//   }
+// });
+
+// userSchema.methods.matchPassword = async function (enteredPassword) {
+//   return await bcrypt.compare(enteredPassword, this.password);
+// };
+
+// module.exports = mongoose.model('User', userSchema);
+
+// const mongoose = require('mongoose');
+// const bcrypt = require('bcryptjs');
+
+// const userSchema = new mongoose.Schema(
+//   {
+//     name: { type: String, required: true },
+//     email: { type: String, required: true, unique: true, lowercase: true },
+//     phone: { type: String, required: true },
+//     password: { type: String, required: true },
+//     role: {
+//       type: String,
+//       enum: ['admin', 'company', 'trainer'],
+//       required: true
+//     },
+//     // --- CORPORATE COMPLIANCE FIELDS (NEW) ---
+//     gstNumber: { type: String }, // GST Validation
+//     companyLocation: {
+//       address: { type: String },
+//       coordinates: { 
+//         lat: { type: Number }, 
+//         lng: { type: Number } 
+//       }
+//     },
+//     registrationDoc: { type: String }, // URL to uploaded PDF/Image
+//     // -----------------------------------------
+//     isVerified: { type: Boolean, default: false },
+//     status: { 
+//       type: String, 
+//       enum: ['active', 'blacklisted'], 
+//       default: 'active' 
+//     },
+//     following: [{ type: mongoose.Schema.Types.ObjectId, ref: 'User' }],
+//     followers: [{ type: mongoose.Schema.Types.ObjectId, ref: 'User' }]
+//   },
+//   { timestamps: true }
+// );
+
+// userSchema.pre('save', async function () {
+//   if (!this.isModified('password')) return;
+//   try {
+//     const salt = await bcrypt.genSalt(10);
+//     this.password = await bcrypt.hash(this.password, salt);
+//   } catch (error) {
+//     throw new Error(error);
+//   }
+// });
+
+// userSchema.methods.matchPassword = async function (enteredPassword) {
+//   return await bcrypt.compare(enteredPassword, this.password);
+// };
+
+// module.exports = mongoose.model('User', userSchema);
+
 const mongoose = require('mongoose');
 const bcrypt = require('bcryptjs');
 
 const userSchema = new mongoose.Schema(
   {
-    name: {
-      type: String,
-      required: true
-    },
-    email: {
-      type: String,
-      required: true,
-      unique: true,
-      lowercase: true
-    },
-    // Added phone field as per new requirement
-    phone: {
-      type: String,
-      required: true
-    },
-    password: {
-      type: String,
-      required: true
-    },
+    name: { type: String, required: true },
+    email: { type: String, required: true, unique: true, lowercase: true },
+    phone: { type: String, required: true },
+    password: { type: String, required: true },
     role: {
       type: String,
-      enum: ['company', 'trainer'],
+      enum: ['admin', 'company', 'trainer'],
       required: true
+    },
+    // --- CORPORATE COMPLIANCE FIELDS ---
+    gstNumber: { type: String },
+    companyLocation: {
+      address: { type: String },
+      coordinates: { 
+        lat: { type: Number }, 
+        lng: { type: Number } 
+      }
+    },
+    registrationDoc: { type: String }, 
+    
+    // --- EMBEDDED PROJECTS (No separate schema needed) ---
+    projects: [{
+      technology: { type: String, required: true },
+      perDayPayment: { type: Number, default: 0 },
+      durationDays: { type: Number, default: 0 },
+      status: { 
+        type: String, 
+        enum: ['open', 'pending', 'approved', 'ongoing', 'completed', 'cancelled'],
+        default: 'pending' 
+      },
+      paymentStatus: { 
+        type: String, 
+        enum: ['pending', 'paid', 'overdue'],
+        default: 'pending' 
+      },
+      createdAt: { type: Date, default: Date.now }
+    }],
+
+    isVerified: { type: Boolean, default: false },
+    status: { 
+      type: String, 
+      enum: ['active', 'blacklisted'], 
+      default: 'active' 
     },
     following: [{ type: mongoose.Schema.Types.ObjectId, ref: 'User' }],
     followers: [{ type: mongoose.Schema.Types.ObjectId, ref: 'User' }]
@@ -176,9 +398,7 @@ const userSchema = new mongoose.Schema(
 );
 
 userSchema.pre('save', async function () {
-  if (!this.isModified('password')) {
-    return;
-  }
+  if (!this.isModified('password')) return;
   try {
     const salt = await bcrypt.genSalt(10);
     this.password = await bcrypt.hash(this.password, salt);
