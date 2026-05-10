@@ -319,20 +319,363 @@
 // };
 
 
+// const User = require('../models/User');
+// const Training = require('../models/Training');
+
+// // ===============================
+// // GET ADMIN DASHBOARD STATS
+// // ===============================
+// exports.getAdminStats = async (req, res) => {
+//   try {
+//     const totalUsers = await User.countDocuments();
+//     const totalTrainers = await User.countDocuments({ role: 'trainer' });
+//     const totalCompanies = await User.countDocuments({ role: 'company' });
+    
+//     // Calculate volume based on your specific perDayPayment * durationDays
+//     const trainings = await Training.find({ status: { $in: ['approved', 'ongoing', 'completed'] } });
+//     const totalVolume = trainings.reduce((acc, curr) => {
+//       return acc + ((curr.perDayPayment || 0) * (curr.durationDays || 0));
+//     }, 0);
+
+//     res.json({
+//       success: true,
+//       stats: {
+//         totalUsers,
+//         totalTrainers,
+//         totalCompanies,
+//         platformVolume: totalVolume
+//       }
+//     });
+//   } catch (error) {
+//     res.status(500).json({ success: false, message: error.message });
+//   }
+// };
+
+// // ===============================
+// // USER MANAGEMENT
+// // ===============================
+// exports.getAllUsers = async (req, res) => {
+//   try {
+//     const users = await User.find().select('-password').sort({ createdAt: -1 });
+//     res.json({ success: true, count: users.length, users });
+//   } catch (error) {
+//     res.status(500).json({ success: false, message: error.message });
+//   }
+// };
+
+// exports.toggleVerification = async (req, res) => {
+//   try {
+//     const user = await User.findById(req.params.id);
+//     if (!user) return res.status(404).json({ success: false, message: "User not found" });
+//     user.isVerified = !user.isVerified;
+//     await user.save();
+//     res.json({ success: true, isVerified: user.isVerified });
+//   } catch (error) {
+//     res.status(500).json({ success: false, message: error.message });
+//   }
+// };
+
+// exports.toggleBlacklist = async (req, res) => {
+//   try {
+//     const user = await User.findById(req.params.id);
+//     if (!user) return res.status(404).json({ success: false, message: "User not found" });
+//     user.status = user.status === 'active' ? 'blacklisted' : 'active';
+//     await user.save();
+//     res.json({ success: true, status: user.status });
+//   } catch (error) {
+//     res.status(500).json({ success: false, message: error.message });
+//   }
+// };
+
+// // ===============================
+// // PROJECT & PAYMENT MANAGEMENT
+// // ===============================
+// // exports.getAllTrainings = async (req, res) => {
+// //   try {
+// //     const trainings = await Training.find()
+// //       .populate('trainer', 'name email')
+// //       .populate('company', 'name email') // This fetches the name from the User collection
+// //       .sort({ createdAt: -1 });
+
+// //     const formattedTrainings = trainings.map(t => {
+// //       const totalPrice = (t.perDayPayment || 0) * (t.durationDays || 0);
+      
+// //       return {
+// //         ...t.toObject(), // Use toObject() to get a clean JS object
+// //         title: t.technology || "General Training",
+// //         price: totalPrice,
+// //         // Explicitly map the company name so the frontend sees it clearly
+// //         companyName: t.company ? t.company.name : "N/A", 
+// //         trainerName: t.trainer ? t.trainer.name : "Unassigned"
+// //       };
+// //     });
+
+// //     res.json({ 
+// //       success: true, 
+// //       count: formattedTrainings.length, 
+// //       trainings: formattedTrainings 
+// //     });
+// //   } catch (error) {
+// //     res.status(500).json({ success: false, message: error.message });
+// //   }
+// // };
+
+// exports.getAllTrainings = async (req, res) => {
+//   try {
+//     const trainings = await Training.find()
+//       .populate('trainer', 'name email')
+//       // This will now look into the CompanyProfile collection for the name
+//       .populate('company', 'name') 
+//       .sort({ createdAt: -1 });
+
+//     const formattedTrainings = trainings.map(t => {
+//       const totalPrice = (t.perDayPayment || 0) * (t.durationDays || 0);
+      
+//       return {
+//         ...t.toObject(),
+//         title: t.technology || "General Training",
+//         price: totalPrice,
+//         // If company is found in CompanyProfile table, use that name
+//         companyName: t.company ? t.company.name : "N/A", 
+//         trainerName: t.trainer ? t.trainer.name : "Unassigned"
+//       };
+//     });
+
+//     res.json({ 
+//       success: true, 
+//       count: formattedTrainings.length, 
+//       trainings: formattedTrainings 
+//     });
+//   } catch (error) {
+//     res.status(500).json({ success: false, message: error.message });
+//   }
+// };
+
+// exports.approveTraining = async (req, res) => {
+//   try {
+//     const training = await Training.findByIdAndUpdate(
+//       req.params.id, 
+//       { status: 'approved' }, 
+//       { new: true }
+//     ).populate('trainer company', 'name email');
+//     res.json({ success: true, training });
+//   } catch (error) {
+//     res.status(500).json({ success: false, message: error.message });
+//   }
+// };
+
+// exports.rejectTraining = async (req, res) => {
+//   try {
+//     const training = await Training.findByIdAndUpdate(
+//       req.params.id, 
+//       { status: 'cancelled' }, 
+//       { new: true }
+//     ).populate('trainer company', 'name email');
+//     res.json({ success: true, training });
+//   } catch (error) {
+//     res.status(500).json({ success: false, message: error.message });
+//   }
+// };
+
+// const User = require('../models/User');
+// const Training = require('../models/Training');
+// const TrainerProfile = require('../models/TrainerProfile');
+// const CompanyProfile = require('../models/CompanyProfile');
+
+// // ===============================
+// // GET ADMIN DASHBOARD STATS
+// // ===============================
+// exports.getAdminStats = async (req, res) => {
+//   try {
+//     const [totalUsers, totalTrainers, totalCompanies, trainings] = await Promise.all([
+//       User.countDocuments(),
+//       User.countDocuments({ role: 'trainer' }),
+//       User.countDocuments({ role: 'company' }),
+//       Training.find({ status: { $in: ['approved', 'ongoing', 'completed'] } })
+//     ]);
+
+//     // Calculate total volume based on perDayPayment * durationDays
+//     const totalVolume = trainings.reduce((acc, curr) => {
+//       return acc + ((curr.perDayPayment || 0) * (curr.durationDays || 0));
+//     }, 0);
+
+//     res.json({
+//       success: true,
+//       stats: {
+//         totalUsers,
+//         totalTrainers,
+//         totalCompanies,
+//         platformVolume: totalVolume
+//       }
+//     });
+//   } catch (error) {
+//     res.status(500).json({ success: false, message: error.message });
+//   }
+// };
+
+// // ===============================
+// // USER MANAGEMENT (Enriched with Profiles)
+// // ===============================
+// exports.getAllUsers = async (req, res) => {
+//   try {
+//     // 1. Fetch all users excluding passwords
+//     const users = await User.find().select('-password').sort({ createdAt: -1 });
+
+//     // 2. Map through users to attach Profile-specific data (Docs, Location, Bio)
+//     const enrichedUsers = await Promise.all(users.map(async (user) => {
+//       let profileData = null;
+
+//       if (user.role === 'trainer') {
+//         profileData = await TrainerProfile.findOne({ user: user._id })
+//           .select('verificationDoc isVerified location expertise experienceYears');
+//       } else if (user.role === 'company') {
+//         profileData = await CompanyProfile.findOne({ user: user._id })
+//           .select('isVerified location industry');
+//       }
+
+//       return {
+//         ...user.toObject(),
+//         // Prioritize profile verification status and attach the document path
+//         isVerified: profileData ? profileData.isVerified : user.isVerified,
+//         verificationDoc: profileData ? profileData.verificationDoc : null,
+//         location: profileData ? profileData.location : "Not Provided",
+//         expertise: profileData?.expertise || [],
+//         experienceYears: profileData?.experienceYears || 0,
+//         industry: profileData?.industry || "N/A"
+//       };
+//     }));
+
+//     res.json({ success: true, count: enrichedUsers.length, users: enrichedUsers });
+//   } catch (error) {
+//     res.status(500).json({ success: false, message: error.message });
+//   }
+// };
+
+// exports.toggleVerification = async (req, res) => {
+//   try {
+//     const user = await User.findById(req.params.id);
+//     if (!user) return res.status(404).json({ success: false, message: "User not found" });
+
+//     let newStatus;
+
+//     // Update Role-Specific Profile
+//     if (user.role === 'trainer') {
+//       const profile = await TrainerProfile.findOneAndUpdate(
+//         { user: user._id },
+//         [{ $set: { isVerified: { $not: "$isVerified" } } }], // Atomic toggle
+//         { new: true }
+//       );
+//       newStatus = profile.isVerified;
+//     } else if (user.role === 'company') {
+//       const profile = await CompanyProfile.findOneAndUpdate(
+//         { user: user._id },
+//         [{ $set: { isVerified: { $not: "$isVerified" } } }],
+//         { new: true }
+//       );
+//       newStatus = profile.isVerified;
+//     }
+
+//     // Sync status with the Base User model for easier searching/login
+//     user.isVerified = newStatus;
+//     await user.save();
+
+//     res.json({ success: true, isVerified: newStatus });
+//   } catch (error) {
+//     res.status(500).json({ success: false, message: error.message });
+//   }
+// };
+
+// exports.toggleBlacklist = async (req, res) => {
+//   try {
+//     const user = await User.findById(req.params.id);
+//     if (!user) return res.status(404).json({ success: false, message: "User not found" });
+    
+//     user.status = user.status === 'active' ? 'blacklisted' : 'active';
+//     await user.save();
+    
+//     res.json({ success: true, status: user.status });
+//   } catch (error) {
+//     res.status(500).json({ success: false, message: error.message });
+//   }
+// };
+
+// // ===============================
+// // PROJECT & PAYMENT MANAGEMENT
+// // ===============================
+// exports.getAllTrainings = async (req, res) => {
+//   try {
+//     const trainings = await Training.find()
+//       .populate('trainer', 'name email')
+//       .populate('company', 'name email') 
+//       .sort({ createdAt: -1 });
+
+//     const formattedTrainings = trainings.map(t => {
+//       const totalPrice = (t.perDayPayment || 0) * (t.durationDays || 0);
+      
+//       return {
+//         ...t.toObject(),
+//         title: t.technology || "General Training",
+//         price: totalPrice,
+//         companyName: t.company ? t.company.name : "N/A", 
+//         trainerName: t.trainer ? t.trainer.name : "Unassigned"
+//       };
+//     });
+
+//     res.json({ 
+//       success: true, 
+//       count: formattedTrainings.length, 
+//       trainings: formattedTrainings 
+//     });
+//   } catch (error) {
+//     res.status(500).json({ success: false, message: error.message });
+//   }
+// };
+
+// exports.approveTraining = async (req, res) => {
+//   try {
+//     const training = await Training.findByIdAndUpdate(
+//       req.params.id, 
+//       { status: 'approved' }, 
+//       { new: true }
+//     ).populate('trainer company', 'name email');
+//     res.json({ success: true, training });
+//   } catch (error) {
+//     res.status(500).json({ success: false, message: error.message });
+//   }
+// };
+
+// exports.rejectTraining = async (req, res) => {
+//   try {
+//     const training = await Training.findByIdAndUpdate(
+//       req.params.id, 
+//       { status: 'cancelled' }, 
+//       { new: true }
+//     ).populate('trainer company', 'name email');
+//     res.json({ success: true, training });
+//   } catch (error) {
+//     res.status(500).json({ success: false, message: error.message });
+//   }
+// };
+
+// --- src/controllers/adminController.js ---
+
 const User = require('../models/User');
 const Training = require('../models/Training');
+const TrainerProfile = require('../models/TrainerProfile');
+const CompanyProfile = require('../models/CompanyProfile');
 
 // ===============================
 // GET ADMIN DASHBOARD STATS
 // ===============================
 exports.getAdminStats = async (req, res) => {
   try {
-    const totalUsers = await User.countDocuments();
-    const totalTrainers = await User.countDocuments({ role: 'trainer' });
-    const totalCompanies = await User.countDocuments({ role: 'company' });
-    
-    // Calculate volume based on your specific perDayPayment * durationDays
-    const trainings = await Training.find({ status: { $in: ['approved', 'ongoing', 'completed'] } });
+    const [totalUsers, totalTrainers, totalCompanies, trainings] = await Promise.all([
+      User.countDocuments(),
+      User.countDocuments({ role: 'trainer' }),
+      User.countDocuments({ role: 'company' }),
+      Training.find({ status: { $in: ['approved', 'ongoing', 'completed'] } })
+    ]);
+
     const totalVolume = trainings.reduce((acc, curr) => {
       return acc + ((curr.perDayPayment || 0) * (curr.durationDays || 0));
     }, 0);
@@ -352,12 +695,37 @@ exports.getAdminStats = async (req, res) => {
 };
 
 // ===============================
-// USER MANAGEMENT
+// USER MANAGEMENT (Enriched with Profiles)
 // ===============================
 exports.getAllUsers = async (req, res) => {
   try {
     const users = await User.find().select('-password').sort({ createdAt: -1 });
-    res.json({ success: true, count: users.length, users });
+
+    const enrichedUsers = await Promise.all(users.map(async (user) => {
+      let profileData = null;
+
+      if (user.role === 'trainer') {
+        profileData = await TrainerProfile.findOne({ user: user._id })
+          .select('verificationDoc isVerified location expertise experienceYears');
+      } else if (user.role === 'company') {
+        profileData = await CompanyProfile.findOne({ user: user._id })
+          .select('verificationDoc isVerified location industry');
+      }
+
+      return {
+        ...user.toObject(),
+        // Prioritize profile verification status
+        isVerified: profileData ? profileData.isVerified : user.isVerified,
+        // Ensure registrationDoc is either from profile or user model
+        verificationDoc: profileData?.verificationDoc || user.registrationDoc || null,
+        location: profileData ? profileData.location : "Not Provided",
+        expertise: profileData?.expertise || [],
+        experienceYears: profileData?.experienceYears || 0,
+        industry: profileData?.industry || "N/A"
+      };
+    }));
+
+    res.json({ success: true, count: enrichedUsers.length, users: enrichedUsers });
   } catch (error) {
     res.status(500).json({ success: false, message: error.message });
   }
@@ -367,10 +735,32 @@ exports.toggleVerification = async (req, res) => {
   try {
     const user = await User.findById(req.params.id);
     if (!user) return res.status(404).json({ success: false, message: "User not found" });
-    user.isVerified = !user.isVerified;
+
+    // Toggle the boolean value
+    const newStatus = !user.isVerified;
+
+    // 1. Update the Base User Model
+    user.isVerified = newStatus;
     await user.save();
-    res.json({ success: true, isVerified: user.isVerified });
+
+    // 2. Update the Role-Specific Profile Model
+    if (user.role === 'trainer') {
+      await TrainerProfile.findOneAndUpdate(
+        { user: user._id },
+        { isVerified: newStatus },
+        { new: true, upsert: false }
+      );
+    } else if (user.role === 'company') {
+      await CompanyProfile.findOneAndUpdate(
+        { user: user._id },
+        { isVerified: newStatus },
+        { new: true, upsert: false }
+      );
+    }
+
+    res.json({ success: true, isVerified: newStatus });
   } catch (error) {
+    console.error("Verification Toggle Error:", error);
     res.status(500).json({ success: false, message: error.message });
   }
 };
@@ -379,8 +769,10 @@ exports.toggleBlacklist = async (req, res) => {
   try {
     const user = await User.findById(req.params.id);
     if (!user) return res.status(404).json({ success: false, message: "User not found" });
+    
     user.status = user.status === 'active' ? 'blacklisted' : 'active';
     await user.save();
+    
     res.json({ success: true, status: user.status });
   } catch (error) {
     res.status(500).json({ success: false, message: error.message });
@@ -390,42 +782,11 @@ exports.toggleBlacklist = async (req, res) => {
 // ===============================
 // PROJECT & PAYMENT MANAGEMENT
 // ===============================
-// exports.getAllTrainings = async (req, res) => {
-//   try {
-//     const trainings = await Training.find()
-//       .populate('trainer', 'name email')
-//       .populate('company', 'name email') // This fetches the name from the User collection
-//       .sort({ createdAt: -1 });
-
-//     const formattedTrainings = trainings.map(t => {
-//       const totalPrice = (t.perDayPayment || 0) * (t.durationDays || 0);
-      
-//       return {
-//         ...t.toObject(), // Use toObject() to get a clean JS object
-//         title: t.technology || "General Training",
-//         price: totalPrice,
-//         // Explicitly map the company name so the frontend sees it clearly
-//         companyName: t.company ? t.company.name : "N/A", 
-//         trainerName: t.trainer ? t.trainer.name : "Unassigned"
-//       };
-//     });
-
-//     res.json({ 
-//       success: true, 
-//       count: formattedTrainings.length, 
-//       trainings: formattedTrainings 
-//     });
-//   } catch (error) {
-//     res.status(500).json({ success: false, message: error.message });
-//   }
-// };
-
 exports.getAllTrainings = async (req, res) => {
   try {
     const trainings = await Training.find()
       .populate('trainer', 'name email')
-      // This will now look into the CompanyProfile collection for the name
-      .populate('company', 'name') 
+      .populate('company', 'name email') 
       .sort({ createdAt: -1 });
 
     const formattedTrainings = trainings.map(t => {
@@ -435,7 +796,6 @@ exports.getAllTrainings = async (req, res) => {
         ...t.toObject(),
         title: t.technology || "General Training",
         price: totalPrice,
-        // If company is found in CompanyProfile table, use that name
         companyName: t.company ? t.company.name : "N/A", 
         trainerName: t.trainer ? t.trainer.name : "Unassigned"
       };

@@ -45,43 +45,48 @@ const companyProfileSchema = new mongoose.Schema(
       ref: 'User',
       required: true
     },
-
     name: {
       type: String,
       required: true,
       trim: true,
     },
-
     industry: {
       type: String,
       required: true,
       trim: true,
     },
-
     location: {
       type: String,
       required: true,
       trim: true,
     },
-
     description: {
       type: String,
       default: '',
     },
-
-    // ======= NEW REPUTATION SYSTEM FIELDS =======
+    // ======= ADDED FOR COMPLIANCE =======
+    gstNumber: { 
+      type: String,
+      default: 'Not Provided' 
+    },
+    website: { 
+      type: String,
+      default: '' 
+    },
+    verificationDoc: { 
+      type: String 
+    },
+    // ===================================
     trustScore: { 
       type: Number, 
-      default: 100, // Starts at 100%
+      default: 100,
       min: 0,
       max: 100 
     },
-
     isVerified: { 
       type: Boolean, 
       default: false 
     },
-    // ============================================
   },
   { timestamps: true }
 );

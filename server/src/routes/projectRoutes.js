@@ -42,7 +42,7 @@ const {
   getAllProjects,
   getProjectById,
   getOpenProjects,
-  filterProjects
+  filterProjects,
 } = require('../controllers/projectController');
 
 

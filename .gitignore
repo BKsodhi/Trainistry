@@ -1,2 +1,7 @@
 node_modules/
 .env
+
+# Ignore all code backup text files
+*.txt
+latest*_all_code.txt
+FinalCodes.txt

@@ -623,7 +623,8 @@ function CompanyProjects({ companyId, refreshFlag }) {
       if (!companyId) return;
       try {
         const res = await axios.get(
-          `${API_BASE_URL}/api/company/${companyId}/projects`,
+          // `${API_BASE_URL}/api/company/${companyId}/projects`,
+          `${API_BASE_URL}/api/company/my-projects`,
           { headers: { Authorization: `Bearer ${token}` } }
         );
         setProjects(res.data.data || []);

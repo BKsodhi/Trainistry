@@ -3615,32 +3615,7 @@ exports.getCompanyDashboardStats = async (req, res) => {
   }
 };
 
-// =====================================
-// GET MY COMPANY PROFILE
-// =====================================
-// exports.getMyCompany = async (req, res) => {
-//   try {
-//     const company = await CompanyProfile
-//       .findOne({ user: req.user._id })
-//       .populate("user", "name email phone");
 
-//     if (!company) {
-//       return res.status(404).json({ success: false, message: "Company profile not found" });
-//     }
-
-//     const warningCount = await Post.countDocuments({ 
-//       relatedCompany: company._id, 
-//       postType: 'warning' 
-//     });
-    
-//     company.trustScore = Math.max(0, 100 - (warningCount * 10));
-//     await company.save();
-
-//     res.status(200).json({ success: true, data: company });
-//   } catch (error) {
-//     res.status(500).json({ success: false, message: error.message });
-//   }
-// };
 // =====================================
 // GET MY COMPANY PROFILE (Updated to include Connections)
 // =====================================
@@ -3691,26 +3666,7 @@ exports.createCompany = async (req, res) => {
   }
 };
 
-// // =====================================
-// // POST PROJECT
-// // =====================================
-// exports.postProject = async (req, res) => {
-//   try {
-//     const company = await CompanyProfile.findOne({ user: req.user._id });
-//     if (!company) {
-//       return res.status(404).json({ success: false, message: "Company profile not found" });
-//     }
 
-//     const project = await Project.create({
-//       company: company._id,
-//       ...req.body
-//     });
-
-//     res.status(201).json({ success: true, data: project });
-//   } catch (error) {
-//     res.status(500).json({ success: false, message: error.message });
-//   }
-// };
 // =====================================
 // POST PROJECT (Updated with Tiered Scaling)
 // =====================================
@@ -3749,20 +3705,25 @@ exports.postProject = async (req, res) => {
   }
 };
 
-// =====================================
-// GET COMPANY PROJECTS (Updated to merge Application Status)
-// =====================================
+
 // exports.getCompanyProjects = async (req, res) => {
 //   try {
+//     // 1. Find the profile linked to the logged-in user
 //     const company = await CompanyProfile.findOne({ user: req.user._id });
+    
 //     if (!company) {
 //       return res.status(404).json({ success: false, message: "Company profile not found" });
 //     }
 
-//     // Get projects and convert to plain objects with .lean()
-//     const projects = await Project.find({ company: company._id }).sort({ createdAt: -1 }).lean();
+//     // DEBUG LOG: Compare this ID with the one in your MongoDB Project document
+//     console.log("Current Profile ID:", company._id.toString());
 
-//     // Merge payment/dispute data from the Application collection
+//     // 2. Fetch projects matching this specific profile ID
+//     const projects = await Project.find({ company: company._id })
+//       .sort({ createdAt: -1 })
+//       .lean();
+
+//     // 3. Merge Application Status (Disputes/Payments)
 //     const projectsWithAppData = await Promise.all(projects.map(async (proj) => {
 //       const selectedApp = await Application.findOne({ 
 //         project: proj._id, 
@@ -3779,51 +3740,46 @@ exports.postProject = async (req, res) => {
 
 //     res.status(200).json({ success: true, data: projectsWithAppData });
 //   } catch (error) {
+//     console.error("GET_PROJECTS_ERROR:", error);
 //     res.status(500).json({ success: false, message: error.message });
 //   }
 // };
+
 exports.getCompanyProjects = async (req, res) => {
   try {
-    // 1. Find the profile linked to the logged-in user
-    const company = await CompanyProfile.findOne({ user: req.user._id });
-    
-    if (!company) {
-      return res.status(404).json({ success: false, message: "Company profile not found" });
+    // 1. Safety Check: Is the user actually logged in?
+    if (!req.user || !req.user._id) {
+      return res.status(401).json({ success: false, message: "User context missing. Please re-login." });
     }
 
-    // DEBUG LOG: Compare this ID with the one in your MongoDB Project document
-    console.log("Current Profile ID:", company._id.toString());
+    // 2. Find the Company Profile
+    const company = await CompanyProfile.findOne({ user: req.user._id });
 
-    // 2. Fetch projects matching this specific profile ID
+    // 3. Safety Check: Does this user even have a profile?
+    if (!company) {
+      console.log("No company profile for user:", req.user._id);
+      return res.status(200).json({ success: true, data: [] }); // Return empty array instead of crashing
+    }
+
+    // 4. Fetch Projects
     const projects = await Project.find({ company: company._id })
-      .sort({ createdAt: -1 })
-      .lean();
+      .sort({ createdAt: -1 });
 
-    // 3. Merge Application Status (Disputes/Payments)
-    const projectsWithAppData = await Promise.all(projects.map(async (proj) => {
-      const selectedApp = await Application.findOne({ 
-        project: proj._id, 
-        status: { $in: ['selected', 'completed'] } 
-      }).select('isDisputed paymentStatus transactionId');
+    res.status(200).json({
+      success: true,
+      count: projects.length,
+      data: projects
+    });
 
-      return {
-        ...proj,
-        isDisputed: selectedApp ? selectedApp.isDisputed : false,
-        paymentStatus: selectedApp ? selectedApp.paymentStatus : 'pending',
-        transactionId: selectedApp ? selectedApp.transactionId : null
-      };
-    }));
-
-    res.status(200).json({ success: true, data: projectsWithAppData });
   } catch (error) {
-    console.error("GET_PROJECTS_ERROR:", error);
-    res.status(500).json({ success: false, message: error.message });
+    console.error("CRASH in getCompanyProjects:", error.message);
+    res.status(500).json({ success: false, message: "Server Error: " + error.message });
   }
 };
 
-// // =====================================
-// // GET PROJECT APPLICATIONS
-// // =====================================
+// =====================================
+// GET PROJECT APPLICATIONS (FIXED)
+// =====================================
 // exports.getProjectApplications = async (req, res) => {
 //   try {
 //     const applications = await Application.find({ project: req.params.projectId })
@@ -3831,6 +3787,7 @@ exports.getCompanyProjects = async (req, res) => {
 //         path: "trainer",
 //         populate: { path: "user", select: "name email phone" }
 //       })
+//       .populate("project") // <--- ADD THIS LINE TO FIX THE ₹0 ISSUE
 //       .sort({ createdAt: -1 });
 
 //     res.status(200).json({ success: true, data: applications });
@@ -3838,220 +3795,46 @@ exports.getCompanyProjects = async (req, res) => {
 //     res.status(500).json({ success: false, message: error.message });
 //   }
 // };
-// =====================================
-// GET PROJECT APPLICATIONS (FIXED)
-// =====================================
+// controllers/companyController.js
+// exports.getProjectApplications = async (req, res) => {
+//   try {
+//     const { projectId } = req.params;
+    
+//     // Find applications and populate the trainer and user info
+//     const applications = await Application.find({ project: projectId })
+//       .populate({
+//         path: 'trainer',
+//         populate: { path: 'user', select: 'name email' }
+//       })
+//       .populate('project');
+
+//     res.status(200).json({
+//       success: true,
+//       data: applications
+//     });
+//   } catch (error) {
+//     res.status(500).json({ success: false, message: error.message });
+//   }
+// };
 exports.getProjectApplications = async (req, res) => {
   try {
-    const applications = await Application.find({ project: req.params.projectId })
+    const { projectId } = req.params; // This matches :projectId in your router
+    
+    const applications = await Application.find({ project: projectId })
       .populate({
-        path: "trainer",
-        populate: { path: "user", select: "name email phone" }
+        path: 'trainer',
+        populate: { path: 'user', select: 'name email' }
       })
-      .populate("project") // <--- ADD THIS LINE TO FIX THE ₹0 ISSUE
-      .sort({ createdAt: -1 });
+      .populate('project');
 
-    res.status(200).json({ success: true, data: applications });
+    res.status(200).json({
+      success: true,
+      data: applications
+    });
   } catch (error) {
     res.status(500).json({ success: false, message: error.message });
   }
 };
-
-// // =====================================
-// // UPDATE APPLICATION STATUS
-// // =====================================
-// exports.updateApplicationStatus = async (req, res) => {
-//   try {
-//     const { applicationId } = req.params;
-//     const { status, feedback, date, time, link } = req.body;
-
-//     const application = await Application.findById(applicationId)
-//       .populate("project")
-//       .populate({
-//         path: "trainer",
-//         populate: { path: "user" }
-//       });
-
-//     if (!application) {
-//       return res.status(404).json({ success: false, message: "Application not found" });
-//     }
-
-//     application.status = status;
-//     if (feedback) application.feedback = feedback;
-    
-//     if (status === 'interview_scheduled') {
-//       application.interviewDate = date;
-//       application.interviewTime = time;
-//       application.meetingLink = link;
-//     }
-    
-//     await application.save();
-
-//     const trainerUser = application.trainer.user;
-//     let emailSubject = '';
-//     let emailHtml = '';
-
-//     if (status === 'selected') {
-//       emailSubject = `🎉 Selection Confirmed: ${application.project.title}`;
-//       emailHtml = `
-//         <div style="font-family: Arial, sans-serif; padding: 20px; border: 1px solid #ddd; border-radius: 10px;">
-//           <h2 style="color: #4338ca;">Congratulations ${trainerUser.name}!</h2>
-//           <p>You have been <b>Selected</b> for the industrial project: <strong>${application.project.title}</strong>.</p>
-//           <p>The company will reach out to you at <strong>${trainerUser.phone}</strong> to discuss the schedule.</p>
-//           <p>Best Regards,<br/><strong>Trainistry Team</strong></p>
-//         </div>`;
-//     } 
-//     else if (status === 'interview_scheduled') {
-//       emailSubject = `📅 Interview Scheduled: ${application.project.title}`;
-//       emailHtml = `
-//         <div style="font-family: Arial, sans-serif; padding: 20px; border: 1px solid #ddd; border-radius: 10px;">
-//           <h2 style="color: #f59e0b;">Interview Invitation</h2>
-//           <p>Hi ${trainerUser.name}, an interview has been scheduled for <strong>${application.project.title}</strong>.</p>
-//           <p><b>Date:</b> ${date}<br/><b>Time:</b> ${time}</p>
-//           <p><b>Meeting Link:</b> <a href="${link}">${link}</a></p>
-//           <p>Best Regards,<br/>Trainistry Team</p>
-//         </div>`;
-//     }
-//     else if (status === 'rejected') {
-//       emailSubject = `Update: ${application.project.title}`;
-//       emailHtml = `
-//         <div style="font-family: Arial, sans-serif; padding: 20px; border: 1px solid #ddd; border-radius: 10px;">
-//           <p>Hi ${trainerUser.name},</p>
-//           <p>The company has decided not to proceed with your application for <strong>${application.project.title}</strong>.</p>
-//           ${feedback ? `<p><b>Note:</b> ${feedback}</p>` : ''}
-//           <p>Keep applying!</p>
-//         </div>`;
-//     }
-
-//     if (emailSubject) {
-//       await sendEmail({
-//         email: trainerUser.email,
-//         subject: emailSubject,
-//         html: emailHtml
-//       });
-//     }
-
-//     res.status(200).json({ success: true, message: `Status updated to ${status} and Trainer notified.` });
-//   } catch (error) {
-//     res.status(500).json({ success: false, message: error.message });
-//   }
-// };
-// exports.updateApplicationStatus = async (req, res) => {
-//   try {
-//     const { applicationId } = req.params;
-//     const { status, feedback, date, time, link } = req.body;
-
-//     const application = await Application.findById(applicationId)
-//       .populate("project")
-//       .populate({
-//         path: "trainer",
-//         populate: { path: "user" }
-//       });
-
-//     if (!application) {
-//       return res.status(404).json({ success: false, message: "Application not found" });
-//     }
-
-//     const companyProfile = await CompanyProfile.findOne({ user: req.user._id });
-//     const trainerUser = application.trainer.user;
-
-//     application.status = status;
-//     if (feedback) application.feedback = feedback;
-    
-//     if (status === 'interview_scheduled') {
-//       application.interviewDate = date;
-//       application.interviewTime = time;
-//       application.meetingLink = link;
-//     }
-    
-//     await application.save();
-
-//     let emailSubject = '';
-//     let emailHtml = '';
-    
-//     // --- 1. SHORTLISTED ---
-//     if (status === 'shortlisted') {
-//       emailSubject = `⚡ Shortlisted: ${application.project.title}`;
-//       emailHtml = `<div style="font-family: Arial; padding: 20px; border: 1px solid #4338ca; border-radius: 10px;">
-//           <h2 style="color: #4338ca;">You're Shortlisted!</h2>
-//           <p>Hi ${trainerUser.name}, <strong>${companyProfile.name}</strong> has shortlisted you for: <strong>${application.project.title}</strong>.</p>
-//           <p>They will contact you shortly.</p>
-//         </div>`;
-//     } 
-
-//     // --- 2. SELECTED (The "Advance Requested" Mail) ---
-//     else if (status === 'selected') {
-//       const totalBudget = (application.expectedRate || application.project.perDayPayment) * application.project.durationDays;
-//       const advanceAmount = totalBudget * 0.5;
-
-//       await Project.findByIdAndUpdate(application.project._id, {
-//           status: 'assigned',
-//           advanceStatus: 'pending',
-//           advanceAmount: advanceAmount
-//       });
-
-//       emailSubject = `🎉 Selection Confirmed: ${application.project.title}`;
-//       emailHtml = `<div style="font-family: Arial; padding: 20px; border: 1px solid #10b981; border-radius: 10px;">
-//           <h2 style="color: #10b981;">Congratulations!</h2>
-//           <p>You have been selected for <strong>${application.project.title}</strong>.</p>
-//           <p><strong>Advance Payment:</strong> 50% advance (₹${advanceAmount.toLocaleString()}) has been requested from the company.</p>
-//           <p>You will receive a confirmation once the payment is processed.</p>
-//         </div>`;
-//     }
-
-//     // --- 3. HIRED (The "Payment Confirmed / Official Hire" Mail) ---
-//     else if (status === 'hired') {
-//       emailSubject = `✅ Payment Confirmed: You are Hired for ${application.project.title}!`;
-//       emailHtml = `
-//         <div style="font-family: Arial; padding: 20px; border: 1px solid #059669; border-radius: 10px; background-color: #f0fdf4;">
-//           <h2 style="color: #059669;">Welcome Aboard!</h2>
-//           <p>Hi ${trainerUser.name},</p>
-//           <p>Great news! <strong>${companyProfile.name}</strong> has confirmed your 50% advance payment for the project: <strong>${application.project.title}</strong>.</p>
-//           <p style="font-size: 1.1em; font-weight: bold;">You are now officially HIRED.</p>
-//           <hr style="border: 0; border-top: 1px solid #bdf1d4; margin: 20px 0;"/>
-//           <p><strong>Next Steps:</strong></p>
-//           <ul>
-//             <li>Coordinate with the company for the training schedule.</li>
-//             <li>Ensure all training materials are ready.</li>
-//             <li>Mark the project as "Started" on your dashboard.</li>
-//           </ul>
-//           <p>Best Regards,<br/><strong>Trainistry Team</strong></p>
-//         </div>`;
-//     }
-
-//     // --- 4. INTERVIEW ---
-//     else if (status === 'interview_scheduled') {
-//       emailSubject = `📅 Interview Scheduled: ${application.project.title}`;
-//       emailHtml = `<div style="font-family: Arial; padding: 20px; border: 1px solid #f59e0b; border-radius: 10px;">
-//           <h2 style="color: #f59e0b;">Interview Invitation</h2>
-//           <p><b>Date:</b> ${date}<br/><b>Time:</b> ${time}</p>
-//           <p><b>Link:</b> <a href="${link}">${link}</a></p>
-//         </div>`;
-//     }
-
-//     // --- 5. REJECTION ---
-//     else if (status === 'rejected') {
-//       emailSubject = `Update regarding: ${application.project.title}`;
-//       emailHtml = `<p>Hi ${trainerUser.name}, the company has decided not to proceed with your application at this time.</p>`;
-//     }
-
-//     // Send Email
-//     if (emailSubject) {
-//       await sendEmail({
-//         email: trainerUser.email,
-//         subject: emailSubject,
-//         from: `"${companyProfile.name} via Trainistry" <${process.env.EMAIL_USER}>`,
-//         replyTo: req.user.email, 
-//         html: emailHtml
-//       });
-//     }
-
-//     res.status(200).json({ success: true, message: `Status updated to ${status} and trainer notified.` });
-
-//   } catch (error) {
-//     res.status(500).json({ success: false, message: error.message });
-//   }
-// };
 exports.updateApplicationStatus = async (req, res) => {
   try {
     const { applicationId } = req.params;
@@ -4394,22 +4177,7 @@ exports.followCompany = async (req, res) => {
     res.status(500).json({ success: false, message: error.message });
   }
 };
-//Added new endpoint to confirm advance payment from the company side
-// exports.confirmAdvancePayment = async (req, res) => {
-//     try {
-//         const { projectId } = req.params;
-//         const { transactionId } = req.body;
 
-//         const project = await Project.findByIdAndUpdate(projectId, {
-//             advanceStatus: 'paid',
-//             advanceTransactionId: transactionId
-//         }, { new: true });
-
-//         res.status(200).json({ success: true, message: "Advance marked as paid. Trainer notified.", data: project });
-//     } catch (error) {
-//         res.status(500).json({ success: false, message: error.message });
-//     }
-// };
 exports.confirmAdvancePayment = async (req, res) => {
   try {
     const { projectId } = req.params;
@@ -4430,99 +4198,32 @@ exports.confirmAdvancePayment = async (req, res) => {
     res.status(500).json({ success: false, message: error.message });
   }
 };
-// // =====================================
-// // UPDATE COMPANY PROFILE
-// // =====================================
-// exports.updateCompanyProfile = async (req, res) => {
-//   try {
-//     const { name, industry, location, description } = req.body;
 
-//     // 1. Find the profile belonging to the logged-in user
-//     let profile = await CompanyProfile.findOne({ user: req.user._id });
-
-//     if (!profile) {
-//       return res.status(404).json({
-//         success: false,
-//         message: "Company profile not found"
-//       });
-//     }
-
-//     // 2. Update the fields if provided in the request body
-//     if (name) profile.name = name;
-//     if (industry) profile.industry = industry;
-//     if (location) profile.location = location;
-//     if (description) profile.description = description;
-
-//     // 3. Save the changes
-//     // This uses your existing CompanyProfile model constraints
-//     await profile.save();
-
-//     // 4. Return the updated profile with populated user data
-//     // This ensures your Frontend state (profile.user.followers, etc.) stays intact
-//     const updatedProfile = await CompanyProfile.findOne({ user: req.user._id })
-//       .populate("user", "name email phone followers following");
-
-//     res.status(200).json({
-//       success: true,
-//       message: "Profile updated successfully",
-//       data: updatedProfile
-//     });
-
-//   } catch (error) {
-//     console.error("UPDATE_PROFILE_ERROR:", error);
-//     res.status(500).json({
-//       success: false,
-//       message: error.message || "Server Error: Could not update profile"
-//     });
-//   }
-// };
-// =====================================
-// UPDATE COMPANY PROFILE (Updated for Verification Toggle)
-// =====================================
 exports.updateCompanyProfile = async (req, res) => {
   try {
-    // 1. Add 'isVerified' to the destructured body
-    const { name, industry, location, description, isVerified } = req.body;
+    const { name, industry, location, description, gstNumber, website } = req.body;
 
     let profile = await CompanyProfile.findOne({ user: req.user._id });
 
     if (!profile) {
-      return res.status(404).json({
-        success: false,
-        message: "Company profile not found"
-      });
+      return res.status(404).json({ success: false, message: "Profile not found" });
     }
 
-    // 2. Update the fields if provided in the request body
-    if (name) profile.name = name;
-    if (industry) profile.industry = industry;
-    if (location) profile.location = location;
-    if (description) profile.description = description;
-    
-    // 3. Handle the verification toggle
-    // We check if it's undefined to allow 'false' to be passed
-    if (isVerified !== undefined) {
-      profile.isVerified = isVerified;
-    }
+    // Explicitly update the new fields
+    profile.name = name || profile.name;
+    profile.industry = industry || profile.industry;
+    profile.location = location || profile.location;
+    profile.description = description || profile.description;
+    profile.gstNumber = gstNumber || profile.gstNumber;
+    profile.website = website || profile.website;
 
-    // 4. Save the changes
     await profile.save();
-
-    // 5. Return the updated profile with populated user data
-    const updatedProfile = await CompanyProfile.findOne({ user: req.user._id })
-      .populate("user", "name email phone followers following");
 
     res.status(200).json({
       success: true,
-      message: "Profile updated successfully",
-      data: updatedProfile
+      data: profile
     });
-
   } catch (error) {
-    console.error("UPDATE_PROFILE_ERROR:", error);
-    res.status(500).json({
-      success: false,
-      message: error.message || "Server Error: Could not update profile"
-    });
+    res.status(500).json({ success: false, message: error.message });
   }
 };

@@ -1,0 +1,272 @@
+TRAINISTRY/
+│
+├── client/
+│   ├── node_modules/
+│   ├── public/
+│   ├── src/
+│   │   ├── assets/
+│   │   │
+│   │   ├── components/
+│   │   │   ├── admin/
+│   │   │   ├── common/
+│   │   │   ├── company/
+│   │   │   │   ├── CompanyProjects.js
+│   │   │   │   ├── NotificationPanel.js
+│   │   │   │   ├── PostProjectForm.js
+│   │   │   ├── trainer/
+│   │   │
+│   │   ├── context/
+│   │   │   ├── AuthContext.js
+│   │   │
+│   │   ├── hooks/
+│   │   │
+│   │   ├── layouts/
+│   │   │   ├── DashboardLayout.js
+│   │   │   ├── MainLayout.js
+│   │   │
+│   │   ├── pages/
+│   │   │   ├── admin/
+│   │   │   │   ├── Dashboard.js
+│   │   │   │   ├── Projects.js
+│   │   │   │   ├── Reports.js
+│   │   │   │   ├── Users.js
+│   │   │   │
+│   │   │   ├── auth/
+│   │   │   │   ├── AccountType.js
+│   │   │   │   ├── CompanyRegister.js
+│   │   │   │   ├── ForgotPassword.js
+│   │   │   │   ├── Login.js
+│   │   │   │   ├── Register.js
+│   │   │   │   ├── TrainerRegister.js
+│   │   │   │
+│   │   │   ├── company/
+│   │   │   │   ├── Applications.js
+│   │   │   │   ├── CompanyDashboard.js
+│   │   │   │   ├── PostProject.js
+│   │   │   │   ├── ScheduleInterview.js
+│   │   │   │   ├── Shortlisted.js
+│   │   │   │
+│   │   │   ├── trainer/
+│   │   │   │   ├── Applications.js
+│   │   │   │   ├── Dashboard.js
+│   │   │   │   ├── Profile.js
+│   │   │   │   ├── Projects.js
+│   │   │   │   ├── ResumeUpload.js
+│   │   │   │
+│   │   │   ├── LandingPage.js
+│   │   │
+│   │   ├── routes/
+│   │   │   ├── AppRoutes.js
+│   │   │
+│   │   ├── services/
+│   │   │   ├── adminService.js
+│   │   │   ├── api.js
+│   │   │   ├── authService.js
+│   │   │   ├── companyService.js
+│   │   │   ├── notificationService.js
+│   │   │   ├── trainerService.js
+│   │   │
+│   │   ├── styles/
+│   │   │   ├── auth.css
+│   │   │   ├── companyDashboard.css
+│   │   │   ├── dashboard.css
+│   │   │   ├── forms.css
+│   │   │   ├── global.css
+│   │   │   ├── LandingPage.css
+│   │   │   ├── navbar.css
+│   │   │
+│   │   ├── utils/
+│   │   │
+│   │   ├── App.js
+│   │   ├── index.js
+│   │
+│   ├── package.json
+│   ├── package-lock.json
+│
+├── docs/
+│   ├── 01-problem-statement.md
+│   ├── 02-solution-approach.md
+│   ├── 03-system-architecture.md
+│   ├── 04-er-diagram.png
+│   ├── 05-api-documentation.md
+│   ├── 06-module-responsibilities.md
+│   ├── 07-ui-design-guidelines.md
+│   ├── dir str
+│
+├── server/
+│   ├── node_modules/
+│   ├── src/
+│   │   ├── config/
+│   │   │   ├── db.js
+│   │   │   ├── env.js
+│   │   │
+│   │   ├── constants/
+│   │   │   ├── roles.js
+│   │   │
+│   │   ├── controllers/
+│   │   │   ├── adminController.js
+│   │   │   ├── authController.js
+│   │   │   ├── companyController.js
+│   │   │   ├── notificationController.js
+│   │   │
+│   │   ├── middleware/
+│   │   │   ├── authMiddleware.js
+│   │   │   ├── errorMiddleware.js
+│   │   │   ├── roleMiddleware.js
+│   │   │
+│   │   ├── models/
+│   │   │   ├── Application.js
+│   │   │   ├── CompanyProfile.js
+│   │   │   ├── Notification.js
+│   │   │   ├── Project.js
+│   │   │   ├── TrainerProfile.js
+│   │   │   ├── User.js
+│   │   │
+│   │   ├── routes/
+│   │   │   ├── adminRoutes.js
+│   │   │   ├── authRoutes.js
+│   │   │   ├── companyRoutes.js
+│   │   │   ├── notificationRoutes.js
+│   │   │   ├── trainerRoutes.js
+│   │   │
+│   │   ├── services/
+│   │   │   ├── emailService.js
+│   │   │   ├── notificationService.js
+│   │   │
+│   │   ├── utils/
+│   │   │
+│   │   ├── app.js
+│   │
+│   ├── .env
+│   ├── server.js
+│   ├── package.json
+│   ├── package-lock.json
+│
+├── .gitignore
+├── README.md
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+TRAINSTRY
+├── client
+│   ├── public
+│   │   ├── favicon.io
+│   │   └── index.html
+│   ├── src
+│   │   ├── context
+│   │   │   └── AuthContext.js
+│   │   ├── layouts
+│   │   │   ├── DashboardLayout.js
+│   │   │   └── MainLayout.js
+│   │   ├── pages
+│   │   │   ├── admin
+│   │   │   │   ├── Dashboard.js
+│   │   │   │   ├── Projects.js
+│   │   │   │   ├── Reports.js
+│   │   │   │   └── Users.js
+│   │   │   ├── auth
+│   │   │   │   ├── AccountType.js
+│   │   │   │   ├── CompanyRegister.js
+│   │   │   │   ├── ForgotPassword.js
+│   │   │   │   ├── Login.js
+│   │   │   │   ├── Register.js
+│   │   │   │   └── TrainerRegister.js
+│   │   │   ├── company
+│   │   │   │   ├── Applications.js
+│   │   │   │   ├── CompanyDashboard.js
+│   │   │   │   ├── CompanyNetwork.js
+│   │   │   │   ├── CompanyProfile.js
+│   │   │   │   ├── PostProject.js
+│   │   │   │   ├── ProjectApplications.js
+│   │   │   │   ├── ScheduleInterview.js
+│   │   │   │   └── Shortlisted.js
+│   │   │   ├── trainer
+│   │   │   │   ├── ApplyForProject.js
+│   │   │   │   ├── AvailableProjects.js
+│   │   │   │   ├── Network.js
+│   │   │   │   ├── Profile.js
+│   │   │   │   ├── ProjectDetails.js
+│   │   │   │   ├── ResumeUpload.js
+│   │   │   │   ├── TrainerApplications.js
+│   │   │   │   ├── TrainerDashboard.js
+│   │   │   │   └── TrainerNotifications.js
+│   │   │   └── LandingPage.js
+│   │   ├── styles
+│   │   │   ├── auth.css
+│   │   │   ├── companyDashboard.css
+│   │   │   ├── dashboard.css
+│   │   │   ├── forms.css
+│   │   │   ├── global.css
+│   │   │   ├── LandingPage.css
+│   │   │   ├── navbar.css
+│   │   │   ├── Network.css
+│   │   │   └── TrainerDashboard.css
+│   │   ├── App.js
+│   │   └── index.js
+│   ├── package-lock.json
+│   └── package.json
+├── docs
+├── server
+│   ├── src
+│   │   ├── config
+│   │   │   ├── db.js
+│   │   │   └── env.js
+│   │   ├── constants
+│   │   ├── controllers
+│   │   │   ├── achievementController.js
+│   │   │   ├── adminController.js
+│   │   │   ├── authController.js
+│   │   │   ├── companyController.js
+│   │   │   ├── notificationController.js
+│   │   │   ├── projectController.js
+│   │   │   └── trainerController.js
+│   │   ├── middleware
+│   │   │   ├── authMiddleware.js
+│   │   │   ├── errorMiddleware.js
+│   │   │   ├── roleMiddleware.js
+│   │   │   └── uploadMiddleware.js
+│   │   ├── models
+│   │   │   ├── Achievement.js
+│   │   │   ├── Application.js
+│   │   │   ├── CompanyProfile.js
+│   │   │   ├── Notification.js
+│   │   │   ├── Post.js
+│   │   │   ├── Project.js
+│   │   │   ├── TrainerProfile.js
+│   │   │   └── User.js
+│   │   ├── routes
+│   │   │   ├── achievementRoutes.js
+│   │   │   ├── adminRoutes.js
+│   │   │   ├── authRoutes.js
+│   │   │   ├── companyRoutes.js
+│   │   │   ├── notificationRoutes.js
+│   │   │   ├── postRoutes.js
+│   │   │   ├── projectRoutes.js
+│   │   │   └── trainerRoutes.js
+│   │   ├── services
+│   │   │   ├── emailService.js
+│   │   │   └── notificationService.js
+│   │   ├── uploads
+│   │   │   ├── resumes
+│   │   │   └── [Multiple .png/pdf files]
+│   │   ├── utils
+│   │   │   ├── cronService.js
+│   │   │   └── emailService.js
+│   │   └── app.js
+│   ├── .env
+│   ├── .gitignore
+│   ├── package-lock.json
+│   ├── package.json
+│   └── server.js
+└── .gitignore

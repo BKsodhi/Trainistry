@@ -2874,24 +2874,44 @@ function CompanyDashboard() {
   const [companyProfile, setCompanyProfile] = useState({});
   const [refreshTrigger, setRefreshTrigger] = useState(false);
   
-  const companyId = localStorage.getItem("companyId");
+  // Replace your old companyId line with this:
+const companyId = localStorage.getItem("companyId") || localStorage.getItem("userId");
+
+console.log("Dashboard loaded with ID:", companyId);
   const token = localStorage.getItem("token");
   
-  const fetchData = async () => {
-    try {
-      const [statsRes, projectsRes, profileRes] = await Promise.all([
-        axios.get("http://localhost:5000/api/company/stats", { headers: { Authorization: `Bearer ${token}` } }),
-        axios.get(`http://localhost:5000/api/company/${companyId}/projects`, { headers: { Authorization: `Bearer ${token}` } }),
-        axios.get(`http://localhost:5000/api/company/me`, { headers: { Authorization: `Bearer ${token}` } })
-      ]);
+  // const fetchData = async () => {
+  //   try {
+  //     const [statsRes, projectsRes, profileRes] = await Promise.all([
+  //       axios.get("http://localhost:5000/api/company/stats", { headers: { Authorization: `Bearer ${token}` } }),
+  //       axios.get(`http://localhost:5000/api/company/${companyId}/projects`, { headers: { Authorization: `Bearer ${token}` } }),
+  //       axios.get(`http://localhost:5000/api/company/me`, { headers: { Authorization: `Bearer ${token}` } })
+  //     ]);
 
-      setStats(statsRes.data.data);
-      setProjects(projectsRes.data.data);
-      setCompanyProfile(profileRes.data.data);
-    } catch (err) {
-      console.error("Error fetching dashboard data:", err);
-    }
-  };
+  //     setStats(statsRes.data.data);
+  //     setProjects(projectsRes.data.data);
+  //     setCompanyProfile(profileRes.data.data);
+  //   } catch (err) {
+  //     console.error("Error fetching dashboard data:", err);
+  //   }
+  // };
+  const fetchData = async () => {
+  try {
+    // Note: We are removing the explicit companyId from the URL 
+    // to match a cleaner route: /api/company/my-projects
+    const [statsRes, projectsRes, profileRes] = await Promise.all([
+      axios.get("http://localhost:5000/api/company/stats", { headers: { Authorization: `Bearer ${token}` } }),
+      axios.get(`http://localhost:5000/api/company/my-projects`, { headers: { Authorization: `Bearer ${token}` } }),
+      axios.get(`http://localhost:5000/api/company/me`, { headers: { Authorization: `Bearer ${token}` } })
+    ]);
+
+    setStats(statsRes.data.data);
+    setProjects(projectsRes.data.data);
+    setCompanyProfile(profileRes.data.data);
+  } catch (err) {
+    console.error("Error fetching dashboard data:", err);
+  }
+};
 
   useEffect(() => {
     if (token && companyId) fetchData();
@@ -2914,7 +2934,8 @@ function CompanyDashboard() {
       case "home":
         return <DashboardHome stats={stats} projects={projects} trustScore={currentTrustScore} onRefresh={fetchData} companyProfile={companyProfile} />;
       case "projects":
-        return <CompanyProjects companyId={companyId} refresh={refreshTrigger} />;
+        // return <CompanyProjects companyId={companyId} refresh={refreshTrigger} />;
+        return <CompanyProjects companyId={companyId} refreshFlag={refreshTrigger} />;
       case "post":
         return <PostProjectForm companyId={companyId} onPost={onProjectPost} />;
       case "network":

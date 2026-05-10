@@ -315,7 +315,8 @@ app.use(express.json());
 const dirs = [
   path.join(__dirname, 'src/uploads'),
   path.join(__dirname, 'src/uploads/resumes'),
-  path.join(__dirname, 'src/uploads/profiles')
+  path.join(__dirname, 'src/uploads/profiles'),
+  path.join(__dirname, 'src/uploads/verification')
 ];
 
 dirs.forEach(dir => {
@@ -329,6 +330,9 @@ dirs.forEach(dir => {
  * STATIC FILES MIDDLEWARE
  * This allows the frontend to access files via http://localhost:5000/uploads/...
  */
+// This makes sure both path styles work
+app.use('/src/uploads', express.static(path.join(__dirname, 'src/uploads')));
+// app.use('/uploads', express.static(path.join(__dirname, 'src', 'uploads')));
 app.use('/uploads', express.static(path.join(__dirname, 'src', 'uploads')));
 
 // =====================================

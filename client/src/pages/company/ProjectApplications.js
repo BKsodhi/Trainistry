@@ -1823,9 +1823,12 @@ function ProjectApplications() {
   const [interviewData, setInterviewData] = useState({ date: "", time: "", link: "" });
 
   const token = localStorage.getItem("token");
-  const companyId = localStorage.getItem("companyId");
-  const API_BASE_URL = "http://localhost:5000";
+  // const companyId = localStorage.getItem("companyId");
+  // const API_BASE_URL = "http://localhost:5000";
+const companyId = localStorage.getItem("companyId") || localStorage.getItem("userId"); 
+const API_BASE_URL = "http://localhost:5000";
 
+console.log("Fetching apps for Company:", companyId, "Project:", projectId);
   // Helper to check if advance flow is needed based on payment terms
   const requiresAdvance = (app) => {
     return app?.project?.paymentTerms?.toLowerCase().includes("advance");
@@ -1844,23 +1847,46 @@ function ProjectApplications() {
     window.open(finalUrl, "_blank", "noopener,noreferrer");
   };
 
+  // useEffect(() => {
+  //   const fetchApplications = async () => {
+  //     if (!companyId || !projectId) return;
+  //     try {
+  //       const res = await axios.get(
+  //         `${API_BASE_URL}/api/company/${companyId}/projects/${projectId}/applications`,
+  //         { headers: { Authorization: `Bearer ${token}` } }
+  //       );
+  //       setApplications(Array.isArray(res.data.data) ? res.data.data : []);
+  //     } catch (err) {
+  //       console.error("Error fetching applications:", err);
+  //     } finally {
+  //       setLoading(false);
+  //     }
+  //   };
+  //   fetchApplications();
+  // }, [projectId, companyId, token]);
+
   useEffect(() => {
-    const fetchApplications = async () => {
-      if (!companyId || !projectId) return;
-      try {
-        const res = await axios.get(
-          `${API_BASE_URL}/api/company/${companyId}/projects/${projectId}/applications`,
-          { headers: { Authorization: `Bearer ${token}` } }
-        );
-        setApplications(Array.isArray(res.data.data) ? res.data.data : []);
-      } catch (err) {
-        console.error("Error fetching applications:", err);
-      } finally {
-        setLoading(false);
-      }
-    };
-    fetchApplications();
-  }, [projectId, companyId, token]);
+  const fetchApplications = async () => {
+    if (!projectId) return;
+
+    try {
+      setLoading(true);
+      // REMOVED ${companyId} from the URL to match your new router.get('/projects/:projectId/applications', ...)
+      const res = await axios.get(
+        `${API_BASE_URL}/api/company/projects/${projectId}/applications`,
+        { headers: { Authorization: `Bearer ${token}` } }
+      );
+      
+      console.log("Applications received:", res.data.data);
+      setApplications(Array.isArray(res.data.data) ? res.data.data : []);
+    } catch (err) {
+      console.error("Fetch Error:", err.response?.data || err.message);
+    } finally {
+      setLoading(false);
+    }
+  };
+  fetchApplications();
+}, [projectId, token]);
 
   const updateStatus = async (applicationId, status) => {
     const feedback = status === "rejected" ? window.prompt("Optional feedback for the trainer:") : null;
