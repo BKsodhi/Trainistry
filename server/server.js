@@ -388,11 +388,26 @@ app.use((err, req, res, next) => {
   });
 });
 
+// // ===================
+// // Start Server
+// // ===================
+// const PORT = process.env.PORT || 5000;
+// app.listen(PORT, () => {
+//   console.log(`🚀 Server running on port ${PORT}`);
+//   console.log(`📧 Email Service: ${process.env.EMAIL_USER ? 'Configured' : 'NOT CONFIGURED'}`);
+// });
 // ===================
-// Start Server
+// Start Server (Wrapped for Testing)
 // ===================
 const PORT = process.env.PORT || 5000;
-app.listen(PORT, () => {
-  console.log(`🚀 Server running on port ${PORT}`);
-  console.log(`📧 Email Service: ${process.env.EMAIL_USER ? 'Configured' : 'NOT CONFIGURED'}`);
-});
+let server;
+// ONLY start the server if this file is run directly (not required by Jest)
+if (process.env.NODE_ENV !== 'test') {
+  app.listen(PORT, () => {
+    console.log(`🚀 Server running on port ${PORT}`);
+    console.log(`📧 Email Service: ${process.env.EMAIL_USER ? 'Configured' : 'NOT CONFIGURED'}`);
+  });
+}
+
+// THIS IS THE KEY: Export the app instance
+module.exports = app;
