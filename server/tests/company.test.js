@@ -28,7 +28,7 @@ describe('Trainistry Integration Tests', () => {
     expect(res.statusCode).toEqual(401);
   });
 
-  // TEST 3: Email Test Route (Sir's Requirement)
+  // TEST 3: Email Test Route 
   it('should have a working email test endpoint', async () => {
     const res = await request(app).get('/api/test-email');
     // We accept 200 (Sent) or 500 (Config error) as long as the route exists
