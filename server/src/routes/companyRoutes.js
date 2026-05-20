@@ -204,6 +204,123 @@
 
 // module.exports = router;
 
+// const express = require('express');
+// const router = express.Router();
+// const { protect, authorize } = require('../middleware/authMiddleware');
+
+// const {
+//   getCompanyDashboardStats,
+//   getMyCompany,
+//   createCompany,
+//   updateCompanyProfile,
+//   getCompanies,
+//   getCompanyById,
+//   postProject,
+//   getCompanyProjects, // We will use this for both routes
+//   getProjectApplications,
+//   updateApplicationStatus,
+//   updateProjectStatus,
+//   resolveDispute,
+//   searchCompanies,
+//   followCompany,
+//   scheduleInterview,
+//   confirmAdvancePayment
+// } = require('../controllers/companyController');
+
+// // --- Profile & Stats ---
+// router.get('/stats', protect, authorize('company'), getCompanyDashboardStats);
+// router.get('/me', protect, authorize('company'), getMyCompany);
+// router.post('/', protect, authorize('company'), createCompany);
+// router.put('/profile', protect, authorize('company'), updateCompanyProfile);
+
+// // --- Projects Management ---
+
+// // NEW: This is the route your dashboard is calling!
+// router.get('/my-projects', protect, authorize('company'), getCompanyProjects);
+
+// // Legacy/Admin routes (keeping for backward compatibility)
+// router.post('/:companyId/projects', protect, authorize('company'), postProject);
+// router.get('/:companyId/projects', protect, authorize('company'), getCompanyProjects);
+
+// // Status updates
+// router.put('/projects/:projectId/status', protect, authorize('company'), updateProjectStatus);
+// router.put('/projects/:projectId/confirm-advance', protect, authorize('company'), confirmAdvancePayment);
+
+// // --- Application Management ---
+// // router.get('/:companyId/projects/:projectId/applications', protect, authorize('company'), getProjectApplications);
+// router.get('/projects/:projectId/applications', protect, authorize('company'), getProjectApplications);
+// router.put('/applications/:applicationId/status', protect, authorize('company'), updateApplicationStatus);
+// router.post('/applications/:applicationId/schedule', protect, authorize('company'), scheduleInterview);
+// router.put('/applications/:applicationId/resolve', protect, resolveDispute);
+
+// // --- Social/Public ---
+// router.get('/search', searchCompanies);
+// router.get('/', getCompanies);
+// router.get('/:id', getCompanyById);
+// router.put('/follow/:targetId', protect, followCompany);
+
+// module.exports = router;
+
+// const express = require('express');
+// const router = express.Router();
+// const { protect, authorize } = require('../middleware/authMiddleware');
+
+// const {
+//   getCompanyDashboardStats,
+//   getMyCompany,
+//   createCompany,
+//   updateCompanyProfile,
+//   getCompanies,
+//   getCompanyById,
+//   postProject,
+//   getCompanyProjects,
+//   getProjectApplications,
+//   updateApplicationStatus,
+//   updateProjectStatus,
+//   resolveDispute,
+//   searchCompanies,
+//   followCompany,
+//   scheduleInterview,
+//   confirmAdvancePayment,
+//   getCompanyPaymentStats // 🌟 ADDED THIS IMPORT LINE HERE TO PREVENT THE CRASH
+// } = require('../controllers/companyController');
+
+// // --- Profile & Stats ---
+// router.get('/stats', protect, authorize('company'), getCompanyDashboardStats);
+// router.get('/me', protect, authorize('company'), getMyCompany);
+// router.post('/', protect, authorize('company'), createCompany);
+// router.put('/profile', protect, authorize('company'), updateCompanyProfile);
+
+// // NEW FEATURE ENDPOINT: Public payment reputation stats
+// router.get('/payment-stats/:id', getCompanyPaymentStats); 
+
+// // --- Projects Management ---
+
+// // This is the route your dashboard is calling!
+// router.get('/my-projects', protect, authorize('company'), getCompanyProjects);
+
+// // Legacy/Admin routes (keeping for backward compatibility)
+// router.post('/:companyId/projects', protect, authorize('company'), postProject);
+// router.get('/:companyId/projects', protect, authorize('company'), getCompanyProjects);
+
+// // Status updates
+// router.put('/projects/:projectId/status', protect, authorize('company'), updateProjectStatus);
+// router.put('/projects/:projectId/confirm-advance', protect, authorize('company'), confirmAdvancePayment);
+
+// // --- Application Management ---
+// router.get('/projects/:projectId/applications', protect, authorize('company'), getProjectApplications);
+// router.put('/applications/:applicationId/status', protect, authorize('company'), updateApplicationStatus);
+// router.post('/applications/:applicationId/schedule', protect, authorize('company'), scheduleInterview);
+// router.put('/applications/:applicationId/resolve', protect, resolveDispute);
+
+// // --- Social/Public ---
+// router.get('/search', searchCompanies);
+// router.get('/', getCompanies);
+// router.get('/:id', getCompanyById);
+// router.put('/follow/:targetId', protect, followCompany);
+
+// module.exports = router;
+
 const express = require('express');
 const router = express.Router();
 const { protect, authorize } = require('../middleware/authMiddleware');
@@ -216,7 +333,7 @@ const {
   getCompanies,
   getCompanyById,
   postProject,
-  getCompanyProjects, // We will use this for both routes
+  getCompanyProjects,
   getProjectApplications,
   updateApplicationStatus,
   updateProjectStatus,
@@ -224,7 +341,12 @@ const {
   searchCompanies,
   followCompany,
   scheduleInterview,
-  confirmAdvancePayment
+  confirmAdvancePayment,
+  getCompanyPaymentStats,
+  // ⭐ NEW IMPORTS FOR SIDEBAR TABS & RATING SYSTEM
+  getShortlistedApplications,
+  getScheduledInterviews,
+  rateTrainer
 } = require('../controllers/companyController');
 
 // --- Profile & Stats ---
@@ -233,9 +355,11 @@ router.get('/me', protect, authorize('company'), getMyCompany);
 router.post('/', protect, authorize('company'), createCompany);
 router.put('/profile', protect, authorize('company'), updateCompanyProfile);
 
-// --- Projects Management ---
+// Public payment reputation stats
+router.get('/payment-stats/:id', getCompanyPaymentStats); 
 
-// NEW: This is the route your dashboard is calling!
+// --- Projects Management ---
+// Dashboard active projects overview call
 router.get('/my-projects', protect, authorize('company'), getCompanyProjects);
 
 // Legacy/Admin routes (keeping for backward compatibility)
@@ -247,11 +371,15 @@ router.put('/projects/:projectId/status', protect, authorize('company'), updateP
 router.put('/projects/:projectId/confirm-advance', protect, authorize('company'), confirmAdvancePayment);
 
 // --- Application Management ---
-// router.get('/:companyId/projects/:projectId/applications', protect, authorize('company'), getProjectApplications);
 router.get('/projects/:projectId/applications', protect, authorize('company'), getProjectApplications);
 router.put('/applications/:applicationId/status', protect, authorize('company'), updateApplicationStatus);
 router.post('/applications/:applicationId/schedule', protect, authorize('company'), scheduleInterview);
 router.put('/applications/:applicationId/resolve', protect, resolveDispute);
+
+// ⭐ NEW FEATURE ENDPOINTS FOR SIDEBAR TABS & RATING ENGINE
+router.get('/applications/shortlisted', protect, authorize('company'), getShortlistedApplications);
+router.get('/applications/scheduled-interviews', protect, authorize('company'), getScheduledInterviews);
+router.post('/rate-trainer', protect, authorize('company'), rateTrainer);
 
 // --- Social/Public ---
 router.get('/search', searchCompanies);

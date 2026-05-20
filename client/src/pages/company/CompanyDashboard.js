@@ -2621,11 +2621,382 @@
 
 // export default CompanyDashboard;
 
+// import React, { useState, useEffect } from "react";
+// import PostProjectForm from "../../components/company/PostProjectForm";
+// import CompanyProjects from "../../components/company/CompanyProjects";
+// import CompanyNetwork from "./CompanyNetwork"; 
+// import CompanyProfile from "./CompanyProfile"; // Import the profile page we just built
+// import axios from "axios";
+// import jsPDF from "jspdf";
+// import "../../styles/companyDashboard.css";
+
+// // ====== Utility: PDF Contract Generator (Step 7: Automation) =====
+// const downloadContract = (proj, company) => {
+//   const doc = new jsPDF();
+  
+//   doc.setFontSize(20);
+//   doc.setTextColor(67, 56, 202); // Trainistry Brand Color
+//   doc.text("TRAINISTRY SERVICE AGREEMENT", 105, 20, { align: "center" });
+  
+//   doc.setFontSize(12);
+//   doc.setTextColor(0, 0, 0);
+//   doc.text(`Date: ${new Date().toLocaleDateString()}`, 20, 40);
+  
+//   const text = `
+//     This professional training agreement is established between:
+//     CLIENT: ${company.name || "Registered Corporate Entity"}
+//     PROJECT: ${proj.technology || proj.title}
+    
+//     1. SCOPE OF WORK:
+//        The assigned trainer will deliver technical training on ${proj.technology || proj.title}.
+//        Duration: ${proj.durationDays || 0} Days.
+    
+//     2. FINANCIAL TERMS:
+//        Total Budget: INR ${(proj.perDayPayment || 0) * (proj.durationDays || 0)}
+//        Daily Payout: INR ${proj.perDayPayment || 0}
+//        Advance Status: 50% Upfront Verified.
+    
+//     3. PAYMENT COMPLIANCE:
+//        The Client agrees to settle the remaining 50% within 15 days of project completion.
+//        Failure to do so will result in a Trust Score penalty and platform restriction.
+//   `;
+  
+//   doc.text(text, 20, 50);
+//   doc.text("__________________________", 20, 150);
+//   doc.text("Authorized Signatory", 20, 160);
+  
+//   doc.save(`Contract_${proj.technology || "Project"}.pdf`);
+// };
+
+// // ====== Component: DashboardHome (With Payment tracking & Trust Score) =====
+// function DashboardHome({ stats, projects, trustScore, onRefresh, companyProfile }) {
+//   const token = localStorage.getItem("token");
+
+//   const getPaymentDeadlineInfo = (project) => {
+//     if (project.status?.toLowerCase() !== 'completed' || !project.paymentDeadline) return null;
+    
+//     const deadline = new Date(project.paymentDeadline);
+//     const today = new Date();
+//     const diffTime = deadline - today;
+//     const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+    
+//     return {
+//       days: diffDays,
+//       date: deadline.toLocaleDateString('en-IN'),
+//       isUrgent: diffDays <= 3,
+//       isOverdue: diffDays <= 0
+//     };
+//   };
+
+//   const handleResolveDispute = async (projectId, techName) => {
+//     const transactionId = window.prompt(`Enter Transaction ID for ${techName}:`);
+//     if (!transactionId) return;
+
+//     try {
+//       await axios.put(`http://localhost:5000/api/company/applications/${projectId}/resolve`, 
+//         { transactionId }, 
+//         { headers: { Authorization: `Bearer ${token}` } }
+//       );
+//       alert("Dispute resolved! Trust Score restored.");
+//       onRefresh(); 
+//     } catch (err) {
+//       alert(err.response?.data?.message || "Error resolving dispute");
+//     }
+//   };
+
+//   return (
+//     <div className="dashboard-home-content">
+//       <div className="stats-grid">
+//         <div className="dashboard-card glass">
+//           <p>Total Postings</p>
+//           <h3>{stats.totalPostings || 0}</h3>
+//         </div>
+//         <div className="dashboard-card glass">
+//           <p>Active Projects</p>
+//           <h3>{stats.activeProjects || 0}</h3>
+//         </div>
+        
+//         <div className="dashboard-card glass" style={{ borderLeft: trustScore < 100 ? '4px solid #ef4444' : '4px solid #10b981' }}>
+//           <p>Payment Trust Score</p>
+//           <h3 style={{ color: trustScore < 100 ? '#ef4444' : '#10b981' }}>
+//             {trustScore !== undefined ? trustScore : 100}%
+//           </h3>
+//         </div>
+
+//         <div className="dashboard-card glass">
+//           <p>Interviews Scheduled</p>
+//           <h3>{stats.interviewsScheduled || 0}</h3>
+//         </div>
+//       </div>
+
+//       {/* ====== NEW SECTION: Milestones & Documentation ====== */}
+//       <div className="automation-section glass" style={{ marginTop: '20px', padding: '20px' }}>
+//         <h3 style={{ marginBottom: '15px', color: '#4338ca' }}>🚀 Active Project Milestones & Documentation</h3>
+//         <div className="project-grid" style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(300px, 1fr))', gap: '15px' }}>
+//           {projects?.filter(p => ['ongoing', 'approved', 'assigned'].includes(p.status?.toLowerCase())).map(proj => (
+//             <div key={proj._id} className="mini-card glass" style={{ padding: '15px', border: '1px solid rgba(255,255,255,0.1)', borderRadius: '12px' }}>
+//               <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+//                 <strong style={{ fontSize: '0.9rem' }}>{proj.technology || proj.title}</strong>
+//                 <span className="badge" style={{ fontSize: '0.7rem', background: '#4338ca', padding: '2px 8px', borderRadius: '4px' }}>{proj.status}</span>
+//               </div>
+//               <div style={{ marginTop: '10px' }}>
+//                 <div style={{ height: '6px', background: '#334155', borderRadius: '3px', overflow: 'hidden' }}>
+//                     <div style={{ width: '50%', background: '#4338ca', height: '100%' }}></div>
+//                 </div>
+//                 <small style={{ color: '#94a3b8', fontSize: '0.75rem', marginTop: '5px', display: 'block' }}>Status: In-Progress</small>
+//               </div>
+//               <button 
+//                 onClick={() => downloadContract(proj, companyProfile)}
+//                 style={{ 
+//                   marginTop: '15px', 
+//                   width: '100%', 
+//                   padding: '8px', 
+//                   borderRadius: '6px', 
+//                   background: 'rgba(67, 56, 202, 0.2)', 
+//                   border: '1px solid #4338ca', 
+//                   color: '#fff', 
+//                   cursor: 'pointer',
+//                   fontSize: '0.8rem'
+//                 }}
+//               >
+//                 📄 Download Signed Contract
+//               </button>
+//             </div>
+//           ))}
+//           {projects?.filter(p => ['ongoing', 'approved', 'assigned'].includes(p.status?.toLowerCase())).length === 0 && (
+//             <p style={{ color: '#64748b', fontSize: '0.9rem' }}>No active projects requiring documentation.</p>
+//           )}
+//         </div>
+//       </div>
+
+//       <div className="payment-tracking glass" style={{ marginTop: '20px', padding: '20px' }}>
+//         <h3 style={{ marginBottom: '15px', color: '#4338ca' }}>💳 Payment Tracking (15-Day Rule)</h3>
+//         <div className="deadline-list">
+//           {projects?.filter(p => p.status?.toLowerCase() === 'completed' || p.isDisputed).length > 0 ? (
+//             projects.filter(p => p.status?.toLowerCase() === 'completed' || p.isDisputed).map(proj => {
+//               const info = getPaymentDeadlineInfo(proj);
+//               return (
+//                 <div key={proj._id} className="payment-item" style={{ 
+//                   display: 'flex', justifyContent: 'space-between', alignItems: 'center',
+//                   borderBottom: '1px solid rgba(255,255,255,0.1)', padding: '12px 10px',
+//                   backgroundColor: proj.isDisputed && proj.paymentStatus !== 'cleared' ? 'rgba(239, 68, 68, 0.1)' : 'transparent',
+//                   borderRadius: '8px'
+//                 }}>
+//                   <div style={{ display: 'flex', flexDirection: 'column' }}>
+//                     <strong>{proj.technology || proj.title}</strong>
+//                     {proj.isDisputed && proj.paymentStatus !== 'cleared' && (
+//                       <div style={{ display: 'flex', gap: '10px', alignItems: 'center', marginTop: '5px' }}>
+//                         <span style={{ color: '#ef4444', fontSize: '0.7rem', fontWeight: 'bold', backgroundColor: 'rgba(239, 68, 68, 0.2)', padding: '2px 8px', borderRadius: '4px' }}>
+//                           ⚠️ DISPUTE RAISED
+//                         </span>
+//                         <button onClick={() => handleResolveDispute(proj._id, proj.technology)} style={{ backgroundColor: '#4338ca', color: 'white', border: 'none', padding: '3px 10px', borderRadius: '4px', fontSize: '0.7rem', cursor: 'pointer' }}>
+//                           Resolve & Pay
+//                         </button>
+//                       </div>
+//                     )}
+//                   </div>
+                  
+//                   <span style={{ 
+//                     color: (proj.isDisputed && proj.paymentStatus !== 'cleared') || info?.isOverdue ? '#ef4444' : (info?.isUrgent ? '#f59e0b' : '#10b981'), 
+//                     fontWeight: 'bold', textAlign: 'right'
+//                   }}>
+//                     {proj.paymentStatus === 'cleared' ? (
+//                       <div style={{ display: 'flex', flexDirection: 'column' }}>
+//                         <span>✅ Paid</span>
+//                         {proj.transactionId && <small style={{ fontSize: '0.65rem', color: '#64748b' }}>ID: {proj.transactionId}</small>}
+//                       </div>
+//                     ) : (
+//                       <>
+//                         {proj.isDisputed ? "Under Dispute" : (info?.isOverdue ? "Overdue" : `Due in ${info?.days} days`)}
+//                         {info && <small style={{ color: '#64748b', marginLeft: '10px', fontWeight: 'normal' }}>({info?.date})</small>}
+//                       </>
+//                     )}
+//                   </span>
+//                 </div>
+//               );
+//             })
+//           ) : (
+//             <p style={{ color: '#64748b', textAlign: 'center', padding: '10px' }}>No pending payments or active disputes.</p>
+//           )}
+//         </div>
+//       </div>
+//     </div>
+//   );
+// }
+
+// // ====== Component: NotificationPanel ======
+// function NotificationPanel({ companyId }) {
+//   const [notifications, setNotifications] = useState([]);
+//   const token = localStorage.getItem("token");
+
+//   const fetchNotifications = async () => {
+//     try {
+//       const res = await axios.get("http://localhost:5000/api/notifications/company", {
+//         headers: { Authorization: `Bearer ${token}` },
+//       });
+//       setNotifications(res.data.data || []);
+//     } catch (err) { console.error(err); }
+//   };
+
+//   const markAsRead = async (id) => {
+//     try {
+//       setNotifications((prev) => prev.map((note) => note._id === id ? { ...note, isRead: true } : note));
+//       await axios.put(`http://localhost:5000/api/notifications/${id}/read`, {}, { 
+//         headers: { Authorization: `Bearer ${token}` } 
+//       });
+//     } catch (err) { console.error(err); }
+//   };
+
+//   useEffect(() => {
+//     fetchNotifications();
+//     const interval = setInterval(fetchNotifications, 10000);
+//     return () => clearInterval(interval);
+//   }, []);
+
+//   return (
+//     <div className="notifications-list">
+//       {notifications.length > 0 ? (
+//         notifications.map((note) => (
+//           <div key={note._id} onClick={() => markAsRead(note._id)} className={`notification glass ${note.isRead ? "read" : "unread"}`}>
+//             {note.message}
+//           </div>
+//         ))
+//       ) : ( <p style={{ textAlign: 'center', color: '#64748b' }}>No notifications yet.</p> )}
+//     </div>
+//   );
+// }
+
+// // ================= Main CompanyDashboard =================
+// function CompanyDashboard() {
+//   const [activeTab, setActiveTab] = useState("home");
+//   const [stats, setStats] = useState({});
+//   const [projects, setProjects] = useState([]); 
+//   const [companyProfile, setCompanyProfile] = useState({});
+//   const [refreshTrigger, setRefreshTrigger] = useState(false);
+  
+//   // Replace your old companyId line with this:
+// const companyId = localStorage.getItem("companyId") || localStorage.getItem("userId");
+
+// console.log("Dashboard loaded with ID:", companyId);
+//   const token = localStorage.getItem("token");
+  
+//   // const fetchData = async () => {
+//   //   try {
+//   //     const [statsRes, projectsRes, profileRes] = await Promise.all([
+//   //       axios.get("http://localhost:5000/api/company/stats", { headers: { Authorization: `Bearer ${token}` } }),
+//   //       axios.get(`http://localhost:5000/api/company/${companyId}/projects`, { headers: { Authorization: `Bearer ${token}` } }),
+//   //       axios.get(`http://localhost:5000/api/company/me`, { headers: { Authorization: `Bearer ${token}` } })
+//   //     ]);
+
+//   //     setStats(statsRes.data.data);
+//   //     setProjects(projectsRes.data.data);
+//   //     setCompanyProfile(profileRes.data.data);
+//   //   } catch (err) {
+//   //     console.error("Error fetching dashboard data:", err);
+//   //   }
+//   // };
+//   const fetchData = async () => {
+//   try {
+//     // Note: We are removing the explicit companyId from the URL 
+//     // to match a cleaner route: /api/company/my-projects
+//     const [statsRes, projectsRes, profileRes] = await Promise.all([
+//       axios.get("http://localhost:5000/api/company/stats", { headers: { Authorization: `Bearer ${token}` } }),
+//       axios.get(`http://localhost:5000/api/company/my-projects`, { headers: { Authorization: `Bearer ${token}` } }),
+//       axios.get(`http://localhost:5000/api/company/me`, { headers: { Authorization: `Bearer ${token}` } })
+//     ]);
+
+//     setStats(statsRes.data.data);
+//     setProjects(projectsRes.data.data);
+//     setCompanyProfile(profileRes.data.data);
+//   } catch (err) {
+//     console.error("Error fetching dashboard data:", err);
+//   }
+// };
+
+//   useEffect(() => {
+//     if (token && companyId) fetchData();
+//   }, [token, refreshTrigger, companyId, activeTab]);
+
+//   const handleLogout = () => {
+//     localStorage.clear();
+//     window.location.href = "/login";
+//   };
+
+//   const onProjectPost = () => {
+//     setRefreshTrigger(!refreshTrigger);
+//     setActiveTab("projects");
+//   };
+  
+//   const renderContent = () => {
+//     const currentTrustScore = companyProfile?.trustScore ?? 100;
+
+//     switch (activeTab) {
+//       case "home":
+//         return <DashboardHome stats={stats} projects={projects} trustScore={currentTrustScore} onRefresh={fetchData} companyProfile={companyProfile} />;
+//       case "projects":
+//         // return <CompanyProjects companyId={companyId} refresh={refreshTrigger} />;
+//         return <CompanyProjects companyId={companyId} refreshFlag={refreshTrigger} />;
+//       case "post":
+//         return <PostProjectForm companyId={companyId} onPost={onProjectPost} />;
+//       case "network":
+//         return <CompanyNetwork />; 
+//       case "profile":
+//         return <CompanyProfile />; 
+//       case "notifications":
+//         return <NotificationPanel companyId={companyId} />;
+//       default:
+//         return <DashboardHome stats={stats} projects={projects} trustScore={currentTrustScore} onRefresh={fetchData} companyProfile={companyProfile} />;
+//     }
+//   };
+
+//   return (
+//     <div className="company-dashboard">
+//       <aside className="sidebar">
+//         <h2 className="sidebar-logo">Trainistry</h2>
+//         <nav className="nav-menu">
+//           <button className={activeTab === "home" ? "active" : ""} onClick={() => setActiveTab("home")}>Dashboard Overview</button>
+//           <button className={activeTab === "projects" ? "active" : ""} onClick={() => setActiveTab("projects")}>My Project Postings</button>
+//           <button className={activeTab === "post" ? "active" : ""} onClick={() => setActiveTab("post")}>Create Requirement</button>
+//           <button className={activeTab === "network" ? "active" : ""} onClick={() => setActiveTab("network")}>Industrial Network</button>
+//           <button className={activeTab === "profile" ? "active" : ""} onClick={() => setActiveTab("profile")}>My Profile</button>
+//           <button className={activeTab === "notifications" ? "active" : ""} onClick={() => setActiveTab("notifications")}>
+//             Notifications {stats.unreadNotifications > 0 && <span className="badge">{stats.unreadNotifications}</span>}
+//           </button>
+//         </nav>
+//         <div className="sidebar-bottom">
+//           <button className="logout-btn" onClick={handleLogout}>Logout</button>
+//         </div>
+//       </aside>
+
+//       <main className="main-content">
+//         <header className="dashboard-header">
+//           <h1>
+//             {activeTab === "home" && "Corporate Insights"}
+//             {activeTab === "projects" && "Project Management"}
+//             {activeTab === "post" && "New Requirement"}
+//             {activeTab === "network" && "Talent Marketplace"}
+//             {activeTab === "profile" && "Company Identity"}
+//             {activeTab === "notifications" && "Recent Updates"}
+//           </h1>
+//         </header>
+//         <div className="content-area">
+//           {renderContent()}
+//         </div>
+//       </main>
+//     </div>
+//   );
+// }
+
+// export default CompanyDashboard;
+
 import React, { useState, useEffect } from "react";
 import PostProjectForm from "../../components/company/PostProjectForm";
 import CompanyProjects from "../../components/company/CompanyProjects";
 import CompanyNetwork from "./CompanyNetwork"; 
-import CompanyProfile from "./CompanyProfile"; // Import the profile page we just built
+import CompanyProfile from "./CompanyProfile"; 
+// ⭐ NEW IMPORTS: Bringing in the two newly built operations components
+import Shortlisted from "./Shortlisted";
+import ScheduleInterview from "./ScheduleInterview";
 import axios from "axios";
 import jsPDF from "jspdf";
 import "../../styles/companyDashboard.css";
@@ -2671,7 +3042,7 @@ const downloadContract = (proj, company) => {
 // ====== Component: DashboardHome (With Payment tracking & Trust Score) =====
 function DashboardHome({ stats, projects, trustScore, onRefresh, companyProfile }) {
   const token = localStorage.getItem("token");
-
+  
   const getPaymentDeadlineInfo = (project) => {
     if (project.status?.toLowerCase() !== 'completed' || !project.paymentDeadline) return null;
     
@@ -2729,7 +3100,7 @@ function DashboardHome({ stats, projects, trustScore, onRefresh, companyProfile 
         </div>
       </div>
 
-      {/* ====== NEW SECTION: Milestones & Documentation ====== */}
+      {/* ====== Active Project Milestones & Documentation ====== */}
       <div className="automation-section glass" style={{ marginTop: '20px', padding: '20px' }}>
         <h3 style={{ marginBottom: '15px', color: '#4338ca' }}>🚀 Active Project Milestones & Documentation</h3>
         <div className="project-grid" style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(300px, 1fr))', gap: '15px' }}>
@@ -2874,44 +3245,24 @@ function CompanyDashboard() {
   const [companyProfile, setCompanyProfile] = useState({});
   const [refreshTrigger, setRefreshTrigger] = useState(false);
   
-  // Replace your old companyId line with this:
-const companyId = localStorage.getItem("companyId") || localStorage.getItem("userId");
-
-console.log("Dashboard loaded with ID:", companyId);
+  const companyId = localStorage.getItem("companyId") || localStorage.getItem("userId");
   const token = localStorage.getItem("token");
   
-  // const fetchData = async () => {
-  //   try {
-  //     const [statsRes, projectsRes, profileRes] = await Promise.all([
-  //       axios.get("http://localhost:5000/api/company/stats", { headers: { Authorization: `Bearer ${token}` } }),
-  //       axios.get(`http://localhost:5000/api/company/${companyId}/projects`, { headers: { Authorization: `Bearer ${token}` } }),
-  //       axios.get(`http://localhost:5000/api/company/me`, { headers: { Authorization: `Bearer ${token}` } })
-  //     ]);
-
-  //     setStats(statsRes.data.data);
-  //     setProjects(projectsRes.data.data);
-  //     setCompanyProfile(profileRes.data.data);
-  //   } catch (err) {
-  //     console.error("Error fetching dashboard data:", err);
-  //   }
-  // };
   const fetchData = async () => {
-  try {
-    // Note: We are removing the explicit companyId from the URL 
-    // to match a cleaner route: /api/company/my-projects
-    const [statsRes, projectsRes, profileRes] = await Promise.all([
-      axios.get("http://localhost:5000/api/company/stats", { headers: { Authorization: `Bearer ${token}` } }),
-      axios.get(`http://localhost:5000/api/company/my-projects`, { headers: { Authorization: `Bearer ${token}` } }),
-      axios.get(`http://localhost:5000/api/company/me`, { headers: { Authorization: `Bearer ${token}` } })
-    ]);
+    try {
+      const [statsRes, projectsRes, profileRes] = await Promise.all([
+        axios.get("http://localhost:5000/api/company/stats", { headers: { Authorization: `Bearer ${token}` } }),
+        axios.get(`http://localhost:5000/api/company/my-projects`, { headers: { Authorization: `Bearer ${token}` } }),
+        axios.get(`http://localhost:5000/api/company/me`, { headers: { Authorization: `Bearer ${token}` } })
+      ]);
 
-    setStats(statsRes.data.data);
-    setProjects(projectsRes.data.data);
-    setCompanyProfile(profileRes.data.data);
-  } catch (err) {
-    console.error("Error fetching dashboard data:", err);
-  }
-};
+      setStats(statsRes.data.data);
+      setProjects(projectsRes.data.data);
+      setCompanyProfile(profileRes.data.data);
+    } catch (err) {
+      console.error("Error fetching dashboard data:", err);
+    }
+  };
 
   useEffect(() => {
     if (token && companyId) fetchData();
@@ -2934,10 +3285,14 @@ console.log("Dashboard loaded with ID:", companyId);
       case "home":
         return <DashboardHome stats={stats} projects={projects} trustScore={currentTrustScore} onRefresh={fetchData} companyProfile={companyProfile} />;
       case "projects":
-        // return <CompanyProjects companyId={companyId} refresh={refreshTrigger} />;
         return <CompanyProjects companyId={companyId} refreshFlag={refreshTrigger} />;
       case "post":
         return <PostProjectForm companyId={companyId} onPost={onProjectPost} />;
+      // ⭐ NEW INJECTIONS: Connecting states directly to our custom layout panels
+      case "shortlisted":
+        return <Shortlisted />;
+      case "interviews":
+        return <ScheduleInterview />;
       case "network":
         return <CompanyNetwork />; 
       case "profile":
@@ -2957,6 +3312,11 @@ console.log("Dashboard loaded with ID:", companyId);
           <button className={activeTab === "home" ? "active" : ""} onClick={() => setActiveTab("home")}>Dashboard Overview</button>
           <button className={activeTab === "projects" ? "active" : ""} onClick={() => setActiveTab("projects")}>My Project Postings</button>
           <button className={activeTab === "post" ? "active" : ""} onClick={() => setActiveTab("post")}>Create Requirement</button>
+          
+          {/* ⭐ NEW SIDEBAR ACTIONS: Easy access options for company managers */}
+          <button className={activeTab === "shortlisted" ? "active" : ""} onClick={() => setActiveTab("shortlisted")}>Shortlisted Hub</button>
+          <button className={activeTab === "interviews" ? "active" : ""} onClick={() => setActiveTab("interviews")}>Interview Board</button>
+          
           <button className={activeTab === "network" ? "active" : ""} onClick={() => setActiveTab("network")}>Industrial Network</button>
           <button className={activeTab === "profile" ? "active" : ""} onClick={() => setActiveTab("profile")}>My Profile</button>
           <button className={activeTab === "notifications" ? "active" : ""} onClick={() => setActiveTab("notifications")}>
@@ -2970,10 +3330,13 @@ console.log("Dashboard loaded with ID:", companyId);
 
       <main className="main-content">
         <header className="dashboard-header">
-          <h1>
+          {/* ⭐ SYNCHRONIZED HEADER LABELS */}
+          <h1 className="text-2xl font-bold text-indigo-950">
             {activeTab === "home" && "Corporate Insights"}
             {activeTab === "projects" && "Project Management"}
             {activeTab === "post" && "New Requirement"}
+            {activeTab === "shortlisted" && "Shortlisted Candidates Pipeline"}
+            {activeTab === "interviews" && "Active Meeting & Interview Board"}
             {activeTab === "network" && "Talent Marketplace"}
             {activeTab === "profile" && "Company Identity"}
             {activeTab === "notifications" && "Recent Updates"}

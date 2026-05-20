@@ -71,6 +71,8 @@ const notificationSchema = new mongoose.Schema(
       'interview_scheduled',
       'application_selected',
       'application_rejected',
+      'selected',            
+      'rejected',
       'dispute_raised',    
       'warning_posted',    
       'payment_deadline',  

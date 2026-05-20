@@ -606,6 +606,229 @@
 // export default CompanyProjects;
 
 
+// import React, { useEffect, useState } from "react";
+// import axios from "axios";
+// import { useNavigate } from "react-router-dom";
+// import "../../styles/companyDashboard.css";
+
+// function CompanyProjects({ companyId, refreshFlag }) {
+//   const [projects, setProjects] = useState([]);
+//   const [loading, setLoading] = useState(true);
+//   const navigate = useNavigate();
+//   const token = localStorage.getItem("token");
+//   const API_BASE_URL = "http://localhost:5000";
+
+//   useEffect(() => {
+//     const fetchProjects = async () => {
+//       if (!companyId) return;
+//       try {
+//         const res = await axios.get(
+//           // `${API_BASE_URL}/api/company/${companyId}/projects`,
+//           `${API_BASE_URL}/api/company/my-projects`,
+//           { headers: { Authorization: `Bearer ${token}` } }
+//         );
+//         setProjects(res.data.data || []);
+//       } catch (err) {
+//         console.error("Error fetching projects:", err.response || err);
+//       } finally {
+//         setLoading(false);
+//       }
+//     };
+//     fetchProjects();
+//   }, [companyId, refreshFlag, token]);
+
+//   const handleMarkCompleted = async (projectId) => {
+//     if (!window.confirm("Are you sure? This will notify the trainer and start the 15-day payment window.")) return;
+
+//     try {
+//       const res = await axios.put(
+//         `${API_BASE_URL}/api/company/projects/${projectId}/status`,
+//         { status: "completed" },
+//         { headers: { Authorization: `Bearer ${token}` } }
+//       );
+
+//       if (res.data.success) {
+//         alert("Project marked as Completed. Payment deadline set for 15 days from now.");
+
+//         setProjects((prev) =>
+//           prev.map((p) =>
+//             p._id === projectId ? { ...p, status: "completed" } : p
+//           )
+//         );
+//       }
+//     } catch (err) {
+//       console.error("Error updating project status:", err);
+//       const errorMsg =
+//         err.response?.data?.message || "Failed to update status.";
+//       alert(errorMsg);
+//     }
+//   };
+
+//   const handleConfirmAdvance = async (project) => {
+//     const advanceAmount = (
+//       project.perDayPayment *
+//       project.durationDays *
+//       0.5
+//     ).toLocaleString();
+
+//     const txId = window.prompt(
+//       `Enter Transaction ID for 50% Advance (₹${advanceAmount}):`
+//     );
+
+//     if (!txId) return;
+
+//     try {
+//       await axios.put(
+//         `${API_BASE_URL}/api/company/projects/${project._id}/confirm-advance`,
+//         { transactionId: txId },
+//         { headers: { Authorization: `Bearer ${token}` } }
+//       );
+
+//       alert("Advance Confirmed!");
+
+//       // update UI instantly
+//       setProjects((prev) =>
+//         prev.map((p) =>
+//           p._id === project._id
+//             ? { ...p, advanceStatus: "paid" }
+//             : p
+//         )
+//       );
+//     } catch (error) {
+//       console.error("Advance confirmation error:", error);
+//       alert("Failed to confirm advance");
+//     }
+//   };
+
+//   if (loading)
+//     return <div className="loading-text">Loading your projects...</div>;
+
+//   if (!projects.length) {
+//     return (
+//       <div
+//         className="dashboard-card glass"
+//         style={{ textAlign: "center" }}
+//       >
+//         <p>You haven't posted any requirements yet.</p>
+//       </div>
+//     );
+//   }
+
+//   return (
+//     <div className="projects-grid">
+//       {projects.map((project) => (
+//         <div key={project._id} className="project-card glass">
+//           <div className="project-card-header">
+//             <span
+//               className={`status-badge status-${
+//                 project.status?.toLowerCase() || "open"
+//               }`}
+//             >
+//               {project.status || "Open"}
+//             </span>
+
+//             <p className="project-date">
+//               Posted:{" "}
+//               {new Date(
+//                 project.createdAt || Date.now()
+//               ).toLocaleDateString()}
+//             </p>
+//           </div>
+
+//           <h3 className="project-title">
+//             {project.title || project.technology}
+//           </h3>
+
+//           <div className="project-details">
+//             <div className="detail-item">
+//               <span className="detail-label">
+//                 Location:
+//               </span>
+//               <span className="detail-value">
+//                 {project.location || "Remote"}
+//               </span>
+//             </div>
+
+//             <div className="detail-item">
+//               <span className="detail-label">
+//                 Starts:
+//               </span>
+//               <span className="detail-value">
+//                 {project.startDate
+//                   ? new Date(
+//                       project.startDate
+//                     ).toLocaleDateString()
+//                   : "TBD"}
+//               </span>
+//             </div>
+
+//             <div className="detail-item">
+//               <span className="detail-label">
+//                 Duration:
+//               </span>
+//               <span className="detail-value">
+//                 {project.durationDays} Days
+//               </span>
+//             </div>
+
+//             <div className="detail-item">
+//               <span className="detail-label">
+//                 Budget:
+//               </span>
+//               <span className="detail-value">
+//                 ₹{project.perDayPayment} /day
+//               </span>
+//             </div>
+//           </div>
+
+//           <div className="project-card-footer">
+//             <div className="project-card-actions">
+
+//               <button
+//                 className="view-applications-btn"
+//                 onClick={() =>
+//                   navigate(
+//                     `/company/project/${project._id}/applications`
+//                   )
+//                 }
+//               >
+//                 View Applications
+//               </button>
+
+//               {project.advanceStatus === "pending" && (
+//                 <button
+//                   className="confirm-advance-btn"
+//                   onClick={() =>
+//                     handleConfirmAdvance(project)
+//                   }
+//                 >
+//                   Confirm 50% Advance
+//                 </button>
+//               )}
+
+//               {project.status?.toLowerCase() !==
+//                 "completed" && (
+//                 <button
+//                   className="mark-complete-btn"
+//                   onClick={() =>
+//                     handleMarkCompleted(project._id)
+//                   }
+//                 >
+//                   Mark Completed
+//                 </button>
+//               )}
+
+//             </div>
+//           </div>
+//         </div>
+//       ))}
+//     </div>
+//   );
+// }
+
+// export default CompanyProjects;
+
+
 import React, { useEffect, useState } from "react";
 import axios from "axios";
 import { useNavigate } from "react-router-dom";
@@ -623,7 +846,6 @@ function CompanyProjects({ companyId, refreshFlag }) {
       if (!companyId) return;
       try {
         const res = await axios.get(
-          // `${API_BASE_URL}/api/company/${companyId}/projects`,
           `${API_BASE_URL}/api/company/my-projects`,
           { headers: { Authorization: `Bearer ${token}` } }
         );
@@ -686,7 +908,6 @@ function CompanyProjects({ companyId, refreshFlag }) {
 
       alert("Advance Confirmed!");
 
-      // update UI instantly
       setProjects((prev) =>
         prev.map((p) =>
           p._id === project._id
@@ -738,6 +959,14 @@ function CompanyProjects({ companyId, refreshFlag }) {
           <h3 className="project-title">
             {project.title || project.technology}
           </h3>
+
+          {/* --- 🌟 ADDED: PAYMENT TRANSPARENCY CLOCK BADGE RIGHT HERE 🌟 --- */}
+          {project.status?.toLowerCase() === "completed" && project.paymentClock && (
+            <div className={`payment-clock-badge ${project.paymentClock.indicator}`}>
+              <span className="dot"></span>
+              <span className="text">{project.paymentClock.text}</span>
+            </div>
+          )}
 
           <div className="project-details">
             <div className="detail-item">
@@ -806,8 +1035,7 @@ function CompanyProjects({ companyId, refreshFlag }) {
                 </button>
               )}
 
-              {project.status?.toLowerCase() !==
-                "completed" && (
+              {project.status?.toLowerCase() !== "completed" && (
                 <button
                   className="mark-complete-btn"
                   onClick={() =>
@@ -827,4 +1055,3 @@ function CompanyProjects({ companyId, refreshFlag }) {
 }
 
 export default CompanyProjects;
-

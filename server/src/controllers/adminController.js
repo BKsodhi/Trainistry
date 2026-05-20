@@ -811,6 +811,59 @@ exports.getAllTrainings = async (req, res) => {
   }
 };
 
+// ===============================
+// GET ALL TRAINERS
+// ===============================
+exports.getAllTrainers = async (req, res) => {
+  try {
+    const trainers = await User.find({ role: 'trainer' }).select('-password').sort({ createdAt: -1 });
+
+    const enrichedTrainers = await Promise.all(trainers.map(async (user) => {
+      const profileData = await TrainerProfile.findOne({ user: user._id })
+        .select('verificationDoc isVerified location expertise experienceYears');
+
+      return {
+        ...user.toObject(),
+        isVerified: profileData ? profileData.isVerified : user.isVerified,
+        verificationDoc: profileData?.verificationDoc || user.registrationDoc || null,
+        location: profileData ? profileData.location : "Not Provided",
+        expertise: profileData?.expertise || [],
+        experienceYears: profileData?.experienceYears || 0,
+      };
+    }));
+
+    res.json({ success: true, count: enrichedTrainers.length, users: enrichedTrainers });
+  } catch (error) {
+    res.status(500).json({ success: false, message: error.message });
+  }
+};
+
+// ===============================
+// GET ALL COMPANIES
+// ===============================
+exports.getAllCompanies = async (req, res) => {
+  try {
+    const companies = await User.find({ role: 'company' }).select('-password').sort({ createdAt: -1 });
+
+    const enrichedCompanies = await Promise.all(companies.map(async (user) => {
+      const profileData = await CompanyProfile.findOne({ user: user._id })
+        .select('verificationDoc isVerified location industry');
+
+      return {
+        ...user.toObject(),
+        isVerified: profileData ? profileData.isVerified : user.isVerified,
+        verificationDoc: profileData?.verificationDoc || user.registrationDoc || null,
+        location: profileData ? profileData.location : "Not Provided",
+        industry: profileData?.industry || "N/A"
+      };
+    }));
+
+    res.json({ success: true, count: enrichedCompanies.length, users: enrichedCompanies });
+  } catch (error) {
+    res.status(500).json({ success: false, message: error.message });
+  }
+};
+
 exports.approveTraining = async (req, res) => {
   try {
     const training = await Training.findByIdAndUpdate(

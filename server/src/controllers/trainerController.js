@@ -2660,56 +2660,111 @@ exports.getTrainerDashboard = async (req, res) => {
   }
 };
 
+// exports.getMyProfile = async (req, res) => {
+//   try {
+//     const profile = await TrainerProfile.findOne({ user: req.user._id })
+//       .populate({
+//         path: 'user',
+//         select: 'name email role followers following',
+//         populate: [
+//           { path: 'followers', select: 'name role' },
+//           { path: 'following', select: 'name role' }
+//         ]
+//       });
+
+//     if (!profile) return res.status(404).json({ success: false, message: 'Profile not found' });
+//     res.status(200).json({ success: true, data: profile });
+//   } catch (error) {
+//     res.status(500).json({ success: false, message: error.message });
+//   }
+// };
 exports.getMyProfile = async (req, res) => {
   try {
+    // --- REPLACE YOUR EXISTING FIND/POPULATE WITH THIS ---
     const profile = await TrainerProfile.findOne({ user: req.user._id })
       .populate({
         path: 'user',
-        select: 'name email role followers following',
-        populate: [
-          { path: 'followers', select: 'name role' },
-          { path: 'following', select: 'name role' }
-        ]
+        select: 'name email role followers following'
+      })
+      .populate({
+        path: 'feedbacks.sender',
+        select: 'name companyName' // This grabs the name of the company from the User/Company model
       });
 
     if (!profile) return res.status(404).json({ success: false, message: 'Profile not found' });
+    
     res.status(200).json({ success: true, data: profile });
   } catch (error) {
     res.status(500).json({ success: false, message: error.message });
   }
 };
+// exports.updateMyProfile = async (req, res) => {
+//   try {
+//     const profile = await TrainerProfile.findOne({ user: req.user._id });
+//     if (!profile) return res.status(404).json({ success: false, message: 'Profile not found' });
 
+//     const { expertise, experienceYears, location, bio, availability } = req.body;
+
+//     if (expertise) {
+//       try {
+//         profile.expertise = JSON.parse(expertise);
+//       } catch (e) {
+//         profile.expertise = expertise;
+//       }
+//     }
+
+//     if (experienceYears !== undefined) profile.experienceYears = experienceYears;
+//     if (location !== undefined) profile.location = location;
+//     if (bio !== undefined) profile.bio = bio;
+//     if (availability && ['available', 'busy'].includes(availability)) profile.availability = availability;
+
+//     if (req.file) {
+//       profile.resumeUrl = `http://localhost:5000/uploads/resumes/${req.file.filename}`;
+//     }
+
+//     const updatedProfile = await profile.save();
+//     res.status(200).json({ success: true, data: updatedProfile, availability: updatedProfile.availability });
+//   } catch (error) {
+//     res.status(500).json({ success: false, message: error.message });
+//   }
+// };
 exports.updateMyProfile = async (req, res) => {
   try {
+    console.log("Request Body:", req.body); // DEBUG
+    console.log("Uploaded File:", req.file); // DEBUG
+
     const profile = await TrainerProfile.findOne({ user: req.user._id });
     if (!profile) return res.status(404).json({ success: false, message: 'Profile not found' });
 
     const { expertise, experienceYears, location, bio, availability } = req.body;
 
+    // Use logic to update only if data exists
     if (expertise) {
       try {
-        profile.expertise = JSON.parse(expertise);
+        profile.expertise = Array.isArray(expertise) ? expertise : JSON.parse(expertise);
       } catch (e) {
-        profile.expertise = expertise;
+        console.error("Expertise parse error:", e);
       }
     }
-
-    if (experienceYears !== undefined) profile.experienceYears = experienceYears;
+    
+    if (experienceYears !== undefined) profile.experienceYears = Number(experienceYears);
     if (location !== undefined) profile.location = location;
     if (bio !== undefined) profile.bio = bio;
-    if (availability && ['available', 'busy'].includes(availability)) profile.availability = availability;
-
+    if (availability) profile.availability = availability;
     if (req.file) {
       profile.resumeUrl = `http://localhost:5000/uploads/resumes/${req.file.filename}`;
     }
 
-    const updatedProfile = await profile.save();
-    res.status(200).json({ success: true, data: updatedProfile, availability: updatedProfile.availability });
+    // Force Mongoose to skip the pre-save middleware if it's causing issues
+    // or call .save() and see the result
+    const updatedProfile = await profile.save(); 
+    
+    res.status(200).json({ success: true, data: updatedProfile });
   } catch (error) {
+    console.error("CONTROLLER_ERROR:", error); // Check here for Mongoose validation errors
     res.status(500).json({ success: false, message: error.message });
   }
 };
-
 // ===============================
 // PROJECTS & APPLICATIONS
 // ===============================
@@ -3001,6 +3056,35 @@ exports.raiseDispute = async (req, res) => {
     });
 
     res.status(200).json({ success: true, message: "Dispute raised. Trainistry Admin has been notified." });
+  } catch (error) {
+    res.status(500).json({ success: false, message: error.message });
+  }
+};
+exports.addCompanyFeedback = async (req, res) => {
+  try {
+    const { trainerId, rating, comment } = req.body;
+    
+    // 1. Verify the sender is a Company
+    if (req.user.role !== 'company') {
+      return res.status(403).json({ success: false, message: "Only companies can provide professional feedback" });
+    }
+
+    // 2. Find the trainer profile
+    const profile = await TrainerProfile.findById(trainerId);
+    if (!profile) return res.status(404).json({ success: false, message: "Trainer profile not found" });
+
+    // 3. Add feedback to the array (ensure your schema supports 'rating')
+    profile.feedbacks.push({ 
+      sender: req.user._id, 
+      rating: rating, 
+      comment: comment, 
+      createdAt: Date.now() 
+    });
+
+    // 4. Save (This will trigger your pre-save middleware to recalculate averageRating)
+    await profile.save();
+    
+    res.status(200).json({ success: true, data: profile });
   } catch (error) {
     res.status(500).json({ success: false, message: error.message });
   }

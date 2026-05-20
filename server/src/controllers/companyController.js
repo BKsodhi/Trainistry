@@ -3558,7 +3558,1343 @@
 //   }
 // };
 
+// const CompanyProfile = require("../models/CompanyProfile");
+// const Project = require("../models/Project");
+// const Application = require("../models/Application");
+// const Notification = require("../models/Notification");
+// const User = require("../models/User");
+// const Post = require("../models/Post"); 
+// const sendEmail = require("../utils/emailService");
+
+// // =====================================
+// // GET COMPANY DASHBOARD STATS
+// // =====================================
+// exports.getCompanyDashboardStats = async (req, res) => {
+//   try {
+//     const company = await CompanyProfile.findOne({ user: req.user._id });
+//     if (!company) {
+//       return res.status(404).json({ success: false, message: "Company profile not found" });
+//     }
+
+//     const projects = await Project.find({ company: company._id });
+//     const projectIds = projects.map(p => p._id);
+
+//     const warningCount = await Post.countDocuments({ 
+//       relatedCompany: company._id, 
+//       postType: 'warning' 
+//     });
+    
+//     const calculatedScore = Math.max(0, 100 - (warningCount * 10));
+
+//     if (company.trustScore !== calculatedScore) {
+//       company.trustScore = calculatedScore;
+//       await company.save();
+//     }
+    
+//     const stats = {
+//       totalPostings: projects.length,
+//       activeProjects: projects.filter(p => p.status === 'open' || p.status === 'assigned').length,
+//       paymentTrustScore: calculatedScore, 
+//       shortlistedTrainers: await Application.countDocuments({ 
+//         project: { $in: projectIds }, 
+//         status: 'shortlisted' 
+//       }),
+//       interviewsScheduled: await Application.countDocuments({ 
+//         project: { $in: projectIds }, 
+//         status: 'interview_scheduled' 
+//       }),
+//       activeDisputes: await Application.countDocuments({
+//         project: { $in: projectIds },
+//         isDisputed: true
+//       })
+//     };
+
+//     res.status(200).json({ success: true, data: stats });
+//   } catch (error) {
+//     res.status(500).json({ success: false, message: error.message });
+//   }
+// };
+
+
+// // =====================================
+// // GET MY COMPANY PROFILE (Updated to include Connections)
+// // =====================================
+// exports.getMyCompany = async (req, res) => {
+//   try {
+//     const company = await CompanyProfile
+//       .findOne({ user: req.user._id })
+//       // ADDED 'followers' and 'following' to the populate list here:
+//       .populate("user", "name email phone followers following");
+
+//     if (!company) {
+//       return res.status(404).json({ success: false, message: "Company profile not found" });
+//     }
+
+//     const warningCount = await Post.countDocuments({ 
+//       relatedCompany: company._id, 
+//       postType: 'warning' 
+//     });
+    
+//     company.trustScore = Math.max(0, 100 - (warningCount * 10));
+//     await company.save();
+
+//     res.status(200).json({ success: true, data: company });
+//   } catch (error) {
+//     res.status(500).json({ success: false, message: error.message });
+//   }
+// };
+
+// // =====================================
+// // CREATE COMPANY PROFILE
+// // =====================================
+// exports.createCompany = async (req, res) => {
+//   try {
+//     const existing = await CompanyProfile.findOne({ user: req.user._id });
+//     if (existing) {
+//       return res.status(400).json({ success: false, message: "Company profile already exists" });
+//     }
+
+//     const company = await CompanyProfile.create({
+//       user: req.user._id,
+//       trustScore: 100, 
+//       ...req.body
+//     });
+
+//     res.status(201).json({ success: true, data: company });
+//   } catch (error) {
+//     res.status(500).json({ success: false, message: error.message });
+//   }
+// };
+
+
+// // =====================================
+// // POST PROJECT (Updated with Tiered Scaling)
+// // =====================================
+// exports.postProject = async (req, res) => {
+//   try {
+//     const company = await CompanyProfile.findOne({ user: req.user._id });
+//     if (!company) {
+//       return res.status(404).json({ success: false, message: "Company profile not found" });
+//     }
+
+//     // ADDED: Tiered Scaling Logic
+//     // We check how many 'open' projects this company already has
+//     const activeProjectCount = await Project.countDocuments({ 
+//       company: company._id, 
+//       status: 'open' 
+//     });
+
+//     // Limit check (e.g., 10 projects for the free/standard tier)
+//     if (activeProjectCount >= 10) {
+//       return res.status(403).json({ 
+//         success: false, 
+//         message: "Project limit reached. Free accounts are limited to 10 active postings. Please contact support to upgrade to Premium." 
+//       });
+//     }
+
+//     const project = await Project.create({
+//       company: company._id,
+//       ...req.body
+//     });
+
+//     res.status(201).json({ success: true, data: project });
+//   } catch (error) {
+//     // If the Numerical Limits (min/max) we added to the Model fail, 
+//     // this catch block will send that specific error message to the user.
+//     res.status(400).json({ success: false, message: error.message });
+//   }
+// };
+
+
+// // exports.getCompanyProjects = async (req, res) => {
+// //   try {
+// //     // 1. Find the profile linked to the logged-in user
+// //     const company = await CompanyProfile.findOne({ user: req.user._id });
+    
+// //     if (!company) {
+// //       return res.status(404).json({ success: false, message: "Company profile not found" });
+// //     }
+
+// //     // DEBUG LOG: Compare this ID with the one in your MongoDB Project document
+// //     console.log("Current Profile ID:", company._id.toString());
+
+// //     // 2. Fetch projects matching this specific profile ID
+// //     const projects = await Project.find({ company: company._id })
+// //       .sort({ createdAt: -1 })
+// //       .lean();
+
+// //     // 3. Merge Application Status (Disputes/Payments)
+// //     const projectsWithAppData = await Promise.all(projects.map(async (proj) => {
+// //       const selectedApp = await Application.findOne({ 
+// //         project: proj._id, 
+// //         status: { $in: ['selected', 'completed'] } 
+// //       }).select('isDisputed paymentStatus transactionId');
+
+// //       return {
+// //         ...proj,
+// //         isDisputed: selectedApp ? selectedApp.isDisputed : false,
+// //         paymentStatus: selectedApp ? selectedApp.paymentStatus : 'pending',
+// //         transactionId: selectedApp ? selectedApp.transactionId : null
+// //       };
+// //     }));
+
+// //     res.status(200).json({ success: true, data: projectsWithAppData });
+// //   } catch (error) {
+// //     console.error("GET_PROJECTS_ERROR:", error);
+// //     res.status(500).json({ success: false, message: error.message });
+// //   }
+// // };
+
+// exports.getCompanyProjects = async (req, res) => {
+//   try {
+//     // 1. Safety Check: Is the user actually logged in?
+//     if (!req.user || !req.user._id) {
+//       return res.status(401).json({ success: false, message: "User context missing. Please re-login." });
+//     }
+
+//     // 2. Find the Company Profile
+//     const company = await CompanyProfile.findOne({ user: req.user._id });
+
+//     // 3. Safety Check: Does this user even have a profile?
+//     if (!company) {
+//       console.log("No company profile for user:", req.user._id);
+//       return res.status(200).json({ success: true, data: [] }); // Return empty array instead of crashing
+//     }
+
+//     // 4. Fetch Projects
+//     const projects = await Project.find({ company: company._id })
+//       .sort({ createdAt: -1 });
+
+//     res.status(200).json({
+//       success: true,
+//       count: projects.length,
+//       data: projects
+//     });
+
+//   } catch (error) {
+//     console.error("CRASH in getCompanyProjects:", error.message);
+//     res.status(500).json({ success: false, message: "Server Error: " + error.message });
+//   }
+// };
+
+// // =====================================
+// // GET PROJECT APPLICATIONS (FIXED)
+// // =====================================
+// // exports.getProjectApplications = async (req, res) => {
+// //   try {
+// //     const applications = await Application.find({ project: req.params.projectId })
+// //       .populate({
+// //         path: "trainer",
+// //         populate: { path: "user", select: "name email phone" }
+// //       })
+// //       .populate("project") // <--- ADD THIS LINE TO FIX THE ₹0 ISSUE
+// //       .sort({ createdAt: -1 });
+
+// //     res.status(200).json({ success: true, data: applications });
+// //   } catch (error) {
+// //     res.status(500).json({ success: false, message: error.message });
+// //   }
+// // };
+// // controllers/companyController.js
+// // exports.getProjectApplications = async (req, res) => {
+// //   try {
+// //     const { projectId } = req.params;
+    
+// //     // Find applications and populate the trainer and user info
+// //     const applications = await Application.find({ project: projectId })
+// //       .populate({
+// //         path: 'trainer',
+// //         populate: { path: 'user', select: 'name email' }
+// //       })
+// //       .populate('project');
+
+// //     res.status(200).json({
+// //       success: true,
+// //       data: applications
+// //     });
+// //   } catch (error) {
+// //     res.status(500).json({ success: false, message: error.message });
+// //   }
+// // };
+// exports.getProjectApplications = async (req, res) => {
+//   try {
+//     const { projectId } = req.params; // This matches :projectId in your router
+    
+//     const applications = await Application.find({ project: projectId })
+//       .populate({
+//         path: 'trainer',
+//         populate: { path: 'user', select: 'name email' }
+//       })
+//       .populate('project');
+
+//     res.status(200).json({
+//       success: true,
+//       data: applications
+//     });
+//   } catch (error) {
+//     res.status(500).json({ success: false, message: error.message });
+//   }
+// };
+// exports.updateApplicationStatus = async (req, res) => {
+//   try {
+//     const { applicationId } = req.params;
+//     const { status, feedback, date, time, link } = req.body;
+
+//     const application = await Application.findById(applicationId)
+//       .populate("project")
+//       .populate({
+//         path: "trainer",
+//         populate: { path: "user" }
+//       });
+
+//     if (!application) {
+//       return res.status(404).json({ success: false, message: "Application not found" });
+//     }
+
+//     const companyProfile = await CompanyProfile.findOne({ user: req.user._id });
+//     const trainerUser = application.trainer.user;
+
+//     application.status = status;
+//     if (feedback) application.feedback = feedback;
+    
+//     if (status === 'interview_scheduled') {
+//       application.interviewDate = date;
+//       application.interviewTime = time;
+//       application.meetingLink = link;
+//     }
+    
+//     await application.save();
+
+//     let emailSubject = '';
+//     let emailHtml = '';
+    
+//     // --- 1. SHORTLISTED ---
+//     if (status === 'shortlisted') {
+//       emailSubject = `⚡ Shortlisted: ${application.project.title}`;
+//       emailHtml = `<div style="font-family: Arial; padding: 20px; border: 1px solid #4338ca; border-radius: 10px;">
+//           <h2 style="color: #4338ca;">You're Shortlisted!</h2>
+//           <p>Hi ${trainerUser.name}, <strong>${companyProfile.name}</strong> has shortlisted you for: <strong>${application.project.title}</strong>.</p>
+//           <p>They will contact you shortly.</p>
+//         </div>`;
+//     } 
+
+//     // --- 2. SELECTED (Conditional Advance Check) ---
+//     else if (status === 'selected') {
+//       // CHECK: Does the project form mention "advance"?
+//       const hasAdvanceRequirement = application.project.paymentTerms?.toLowerCase().includes('advance');
+
+//       if (hasAdvanceRequirement) {
+//         // TRIGGER ADVANCE FEATURE
+//         const totalBudget = (application.expectedRate || application.project.perDayPayment) * application.project.durationDays;
+//         const advanceAmount = totalBudget * 0.5;
+
+//         await Project.findByIdAndUpdate(application.project._id, {
+//             status: 'assigned',
+//             advanceStatus: 'pending',
+//             advanceAmount: advanceAmount
+//         });
+
+//         emailSubject = `🎉 Selection Confirmed: ${application.project.title}`;
+//         emailHtml = `<div style="font-family: Arial; padding: 20px; border: 1px solid #10b981; border-radius: 10px;">
+//             <h2 style="color: #10b981;">Congratulations!</h2>
+//             <p>You have been selected for <strong>${application.project.title}</strong>.</p>
+//             <p><strong>Advance Payment:</strong> A 50% advance (₹${advanceAmount.toLocaleString()}) has been requested from the company.</p>
+//             <p>You will receive a confirmation once the payment is processed.</p>
+//           </div>`;
+//       } else {
+//         // DEFAULT FLOW (15-Day Rule applies by default)
+//         await Project.findByIdAndUpdate(application.project._id, {
+//             status: 'assigned',
+//             advanceStatus: 'none' // No advance UI will show up on frontend
+//         });
+
+//         emailSubject = `🎉 Selection Confirmed: ${application.project.title}`;
+//         emailHtml = `<div style="font-family: Arial; padding: 20px; border: 1px solid #4338ca; border-radius: 10px;">
+//             <h2 style="color: #4338ca;">Congratulations!</h2>
+//             <p>You have been selected for <strong>${application.project.title}</strong>.</p>
+//             <p>The company will contact you regarding the schedule. Payment will be processed as per the standard 15-day completion rule.</p>
+//           </div>`;
+//       }
+//     }
+
+//     // --- 3. HIRED ---
+//     else if (status === 'hired') {
+//       emailSubject = `✅ Payment Confirmed: You are Hired for ${application.project.title}!`;
+//       emailHtml = `
+//         <div style="font-family: Arial; padding: 20px; border: 1px solid #059669; border-radius: 10px; background-color: #f0fdf4;">
+//           <h2 style="color: #059669;">Welcome Aboard!</h2>
+//           <p>Hi ${trainerUser.name},</p>
+//           <p>Great news! <strong>${companyProfile.name}</strong> has confirmed your 50% advance payment for the project: <strong>${application.project.title}</strong>.</p>
+//           <p style="font-size: 1.1em; font-weight: bold;">You are now officially HIRED.</p>
+//           <hr style="border: 0; border-top: 1px solid #bdf1d4; margin: 20px 0;"/>
+//           <p>Best Regards,<br/><strong>Trainistry Team</strong></p>
+//         </div>`;
+//     }
+
+//     // --- 4. INTERVIEW ---
+//     else if (status === 'interview_scheduled') {
+//       emailSubject = `📅 Interview Scheduled: ${application.project.title}`;
+//       emailHtml = `<div style="font-family: Arial; padding: 20px; border: 1px solid #f59e0b; border-radius: 10px;">
+//           <h2 style="color: #f59e0b;">Interview Invitation</h2>
+//           <p><b>Date:</b> ${date}<br/><b>Time:</b> ${time}</p>
+//           <p><b>Link:</b> <a href="${link}">${link}</a></p>
+//         </div>`;
+//     }
+
+//     // --- 5. REJECTION ---
+//     else if (status === 'rejected') {
+//       emailSubject = `Update regarding: ${application.project.title}`;
+//       emailHtml = `<p>Hi ${trainerUser.name}, the company has decided not to proceed with your application at this time.</p>`;
+//     }
+
+//     // Send Email
+//     if (emailSubject) {
+//       await sendEmail({
+//         email: trainerUser.email,
+//         subject: emailSubject,
+//         from: `"${companyProfile.name} via Trainistry" <${process.env.EMAIL_USER}>`,
+//         replyTo: req.user.email, 
+//         html: emailHtml
+//       });
+//     }
+
+//     res.status(200).json({ success: true, message: `Status updated to ${status} and trainer notified.` });
+
+//   } catch (error) {
+//     res.status(500).json({ success: false, message: error.message });
+//   }
+// };
+// // =====================================
+// // UPDATE PROJECT STATUS (15-Day Rule)
+// // =====================================
+// exports.updateProjectStatus = async (req, res) => {
+//   try {
+//     const { projectId } = req.params;
+//     const { status } = req.body;
+
+//     const project = await Project.findById(projectId);
+//     if (!project) return res.status(404).json({ success: false, message: "Project not found" });
+
+//     project.status = status.toLowerCase();
+
+//     if (status.toLowerCase() === 'completed') {
+//       const now = new Date();
+//       const deadline = new Date(now);
+//       deadline.setDate(deadline.getDate() + 15);
+//       project.paymentDeadline = deadline;
+
+//       await Application.updateMany(
+//         { project: projectId, status: 'selected' },
+//         { 
+//           status: 'completed', 
+//           projectEndDate: now,
+//           paymentDeadline: deadline 
+//         }
+//       );
+//     }
+
+//     await project.save();
+    
+//     res.status(200).json({ 
+//       success: true, 
+//       message: status.toLowerCase() === 'completed' ? "Project and Application completed. Payment deadline set." : "Status updated" 
+//     });
+//   } catch (error) {
+//     console.error("Project Update Error:", error);
+//     res.status(500).json({ success: false, message: error.message });
+//   }
+// };
+
+// // =====================================
+// // SCHEDULE INTERVIEW
+// // =====================================
+// exports.scheduleInterview = async (req, res) => {
+//   try {
+//     const { applicationId } = req.params;
+//     const { date, time, link } = req.body; 
+
+//     const application = await Application.findById(applicationId)
+//       .populate("project")
+//       .populate({ path: "trainer", populate: { path: "user" } });
+
+//     if (!application) return res.status(404).json({ success: false, message: "Application not found" });
+
+//     application.status = "interview_scheduled"; 
+//     application.interviewDate = date; 
+//     application.interviewTime = time;
+//     application.meetingLink = link;
+//     await application.save();
+
+//     await Notification.create({
+//       recipient: application.trainer.user._id,
+//       recipientType: "trainer",
+//       message: `Interview scheduled for "${application.project.title}" on ${date} at ${time}.`,
+//       type: "interview_scheduled"
+//     });
+
+//     res.status(200).json({ success: true, message: "Interview scheduled" });
+//   } catch (error) {
+//     res.status(500).json({ success: false, message: error.message });
+//   }
+// };
+
+// // =====================================
+// // RESOLVE DISPUTE (Updated with Email)
+// // =====================================
+// exports.resolveDispute = async (req, res) => {
+//   try {
+//     const projectId = req.params.applicationId;
+//     const { transactionId } = req.body;
+
+//     const application = await Application.findOne({ 
+//       project: projectId, 
+//       isDisputed: true 
+//     }).populate({
+//       path: 'trainer',
+//       populate: { path: 'user', select: 'name email' }
+//     }).populate('project', 'title company');
+
+//     if (!application) {
+//       return res.status(404).json({ 
+//         success: false, 
+//         message: "No active dispute found for this project." 
+//       });
+//     }
+
+//     application.isDisputed = false;
+//     application.paymentStatus = 'cleared'; 
+//     application.status = 'completed'; 
+//     application.transactionId = transactionId;
+//     await application.save();
+
+//     await Post.deleteMany({ 
+//       relatedCompany: application.project.company || application.project, 
+//       postType: 'warning'
+//     });
+
+//     const trainerUser = application.trainer.user;
+//     const emailHtml = `
+//       <div style="font-family: Arial, sans-serif; padding: 20px; border: 1px solid #4338ca; border-radius: 10px;">
+//         <h2 style="color: #10b981;">💰 Payment Received!</h2>
+//         <p>Hi ${trainerUser.name},</p>
+//         <p>The company has resolved the dispute for the project: <strong>${application.project.title}</strong>.</p>
+//         <p><b>Transaction Reference:</b> ${transactionId}</p>
+//         <p>The payment has been marked as <b>Cleared</b> on your dashboard.</p>
+//         <p>Best Regards,<br/><strong>Trainistry Team</strong></p>
+//       </div>`;
+
+//     await sendEmail({
+//       email: trainerUser.email,
+//       subject: `✅ Dispute Resolved & Payment Cleared: ${application.project.title}`,
+//       html: emailHtml
+//     });
+
+//     await Notification.create({
+//       recipient: trainerUser._id,
+//       recipientType: "trainer",
+//       message: `Dispute Resolved: Payment received for "${application.project.title}". Ref: ${transactionId}`,
+//       type: "payment_resolved" 
+//     });
+
+//     res.status(200).json({ success: true, message: "Dispute resolved and Trainer notified via email." });
+
+//   } catch (error) {
+//     console.error("Resolution Error:", error.message);
+//     res.status(500).json({ success: false, message: error.message });
+//   }
+// };
+
+// // =====================================
+// // GET COMPANIES / BY ID
+// // =====================================
+// exports.getCompanies = async (req, res) => {
+//   try {
+//     const companies = await CompanyProfile.find().populate("user", "name email");
+//     res.status(200).json({ success: true, data: companies });
+//   } catch (error) {
+//     res.status(500).json({ success: false, message: error.message });
+//   }
+// };
+
+// exports.getCompanyById = async (req, res) => {
+//   try {
+//     const company = await CompanyProfile.findById(req.params.id).populate("user", "name email phone");
+//     res.status(200).json({ success: true, data: company });
+//   } catch (error) {
+//     res.status(500).json({ success: false, message: error.message });
+//   }
+// };
+// // =====================================
+// // SEARCH COMPANIES
+// // =====================================
+// exports.searchCompanies = async (req, res) => {
+//   try {
+//     const { name } = req.query;
+
+//     if (!name || name.trim().length === 0) {
+//       return res.status(200).json({ success: true, data: [] });
+//     }
+
+//     // UPDATED: Changed 'companyName' to 'name' to match your Model
+//     const companies = await CompanyProfile.find({
+//       $or: [
+//         { name: { $regex: name.trim(), $options: "i" } },
+//         { location: { $regex: name.trim(), $options: "i" } }
+//       ]
+//     }).populate("user", "name email");
+
+//     res.status(200).json({ success: true, data: companies });
+//   } catch (error) {
+//     console.error("Search Error:", error);
+//     res.status(500).json({ success: false, message: error.message });
+//   }
+// };
+
+// exports.followCompany = async (req, res) => {
+//   try {
+//     const targetUserId = req.params.targetId;
+//     const currentUserId = req.user._id;
+
+//     if (targetUserId === currentUserId.toString()) {
+//       return res.status(400).json({ success: false, message: "You cannot connect with yourself" });
+//     }
+
+//     const user = await User.findById(currentUserId);
+//     const isFollowing = user.following && user.following.includes(targetUserId);
+
+//     // Use findByIdAndUpdate to bypass full document validation
+//     await User.findByIdAndUpdate(currentUserId, {
+//       [isFollowing ? '$pull' : '$addToSet']: { following: targetUserId }
+//     });
+
+//     res.status(200).json({ 
+//       success: true, 
+//       isFollowing: !isFollowing,
+//       message: isFollowing ? "Unfollowed" : "Followed" 
+//     });
+//   } catch (error) {
+//     console.error("FOLLOW_ERROR:", error);
+//     res.status(500).json({ success: false, message: error.message });
+//   }
+// };
+
+// exports.confirmAdvancePayment = async (req, res) => {
+//   try {
+//     const { projectId } = req.params;
+//     const { transactionId } = req.body;
+
+//     const project = await Project.findByIdAndUpdate(
+//       projectId,
+//       { 
+//         advanceStatus: 'paid', 
+//         status: 'ongoing', // Project moves from 'assigned' to 'ongoing'
+//         advanceTransactionId: transactionId 
+//       },
+//       { new: true }
+//     );
+
+//     res.status(200).json({ success: true, message: "Advance confirmed. Project is now ongoing!", project });
+//   } catch (error) {
+//     res.status(500).json({ success: false, message: error.message });
+//   }
+// };
+
+// exports.updateCompanyProfile = async (req, res) => {
+//   try {
+//     const { name, industry, location, description, gstNumber, website } = req.body;
+
+//     let profile = await CompanyProfile.findOne({ user: req.user._id });
+
+//     if (!profile) {
+//       return res.status(404).json({ success: false, message: "Profile not found" });
+//     }
+
+//     // Explicitly update the new fields
+//     profile.name = name || profile.name;
+//     profile.industry = industry || profile.industry;
+//     profile.location = location || profile.location;
+//     profile.description = description || profile.description;
+//     profile.gstNumber = gstNumber || profile.gstNumber;
+//     profile.website = website || profile.website;
+
+//     await profile.save();
+
+//     res.status(200).json({
+//       success: true,
+//       data: profile
+//     });
+//   } catch (error) {
+//     res.status(500).json({ success: false, message: error.message });
+//   }
+// };
+
+// const CompanyProfile = require("../models/CompanyProfile");
+// const Project = require("../models/Project");
+// const Application = require("../models/Application");
+// const Notification = require("../models/Notification");
+// const User = require("../models/User");
+// const Post = require("../models/Post"); 
+// const sendEmail = require("../utils/emailService");
+
+// // =====================================
+// // GET COMPANY DASHBOARD STATS
+// // =====================================
+// exports.getCompanyDashboardStats = async (req, res) => {
+//   try {
+//     const company = await CompanyProfile.findOne({ user: req.user._id });
+//     if (!company) {
+//       return res.status(404).json({ success: false, message: "Company profile not found" });
+//     }
+
+//     const projects = await Project.find({ company: company._id });
+//     const projectIds = projects.map(p => p._id);
+
+//     const warningCount = await Post.countDocuments({ 
+//       relatedCompany: company._id, 
+//       postType: 'warning' 
+//     });
+    
+//     const calculatedScore = Math.max(0, 100 - (warningCount * 10));
+
+//     if (company.trustScore !== calculatedScore) {
+//       company.trustScore = calculatedScore;
+//       await company.save();
+//     }
+    
+//     const stats = {
+//       totalPostings: projects.length,
+//       activeProjects: projects.filter(p => p.status === 'open' || p.status === 'assigned').length,
+//       paymentTrustScore: calculatedScore, 
+//       shortlistedTrainers: await Application.countDocuments({ 
+//         project: { $in: projectIds }, 
+//         status: 'shortlisted' 
+//       }),
+//       interviewsScheduled: await Application.countDocuments({ 
+//         project: { $in: projectIds }, 
+//         status: 'interview_scheduled' 
+//       }),
+//       activeDisputes: await Application.countDocuments({
+//         project: { $in: projectIds },
+//         isDisputed: true
+//       })
+//     };
+
+//     res.status(200).json({ success: true, data: stats });
+//   } catch (error) {
+//     res.status(500).json({ success: false, message: error.message });
+//   }
+// };
+
+// // =====================================
+// // GET MY COMPANY PROFILE (Updated to include Connections)
+// // =====================================
+// exports.getMyCompany = async (req, res) => {
+//   try {
+//     const company = await CompanyProfile
+//       .findOne({ user: req.user._id })
+//       .populate("user", "name email phone followers following");
+
+//     if (!company) {
+//       return res.status(404).json({ success: false, message: "Company profile not found" });
+//     }
+
+//     const warningCount = await Post.countDocuments({ 
+//       relatedCompany: company._id, 
+//       postType: 'warning' 
+//     });
+    
+//     company.trustScore = Math.max(0, 100 - (warningCount * 10));
+//     await company.save();
+
+//     res.status(200).json({ success: true, data: company });
+//   } catch (error) {
+//     res.status(500).json({ success: false, message: error.message });
+//   }
+// };
+
+// // =====================================
+// // CREATE COMPANY PROFILE
+// // =====================================
+// exports.createCompany = async (req, res) => {
+//   try {
+//     const existing = await CompanyProfile.findOne({ user: req.user._id });
+//     if (existing) {
+//       return res.status(400).json({ success: false, message: "Company profile already exists" });
+//     }
+
+//     const company = await CompanyProfile.create({
+//       user: req.user._id,
+//       trustScore: 100, 
+//       ...req.body
+//     });
+
+//     res.status(201).json({ success: true, data: company });
+//   } catch (error) {
+//     res.status(500).json({ success: false, message: error.message });
+//   }
+// };
+
+// // =====================================
+// // POST PROJECT (Updated with Tiered Scaling)
+// // =====================================
+// exports.postProject = async (req, res) => {
+//   try {
+//     const company = await CompanyProfile.findOne({ user: req.user._id });
+//     if (!company) {
+//       return res.status(404).json({ success: false, message: "Company profile not found" });
+//     }
+
+//     const activeProjectCount = await Project.countDocuments({ 
+//       company: company._id, 
+//       status: 'open' 
+//     });
+
+//     if (activeProjectCount >= 10) {
+//       return res.status(403).json({ 
+//         success: false, 
+//         message: "Project limit reached. Free accounts are limited to 10 active postings. Please contact support to upgrade to Premium." 
+//       });
+//     }
+
+//     const project = await Project.create({
+//       company: company._id,
+//       ...req.body
+//     });
+
+//     res.status(201).json({ success: true, data: project });
+//   } catch (error) {
+//     res.status(400).json({ success: false, message: error.message });
+//   }
+// };
+
+// // ==========================================================
+// // GET COMPANY PROJECTS (With Transparency Clock & Mock Offsets)
+// // ==========================================================
+// exports.getCompanyProjects = async (req, res) => {
+//   try {
+//     if (!req.user || !req.user._id) {
+//       return res.status(401).json({ success: false, message: "User context missing. Please re-login." });
+//     }
+
+//     const company = await CompanyProfile.findOne({ user: req.user._id });
+
+//     if (!company) {
+//       console.log("No company profile for user:", req.user._id);
+//       return res.status(200).json({ success: true, data: [] });
+//     }
+
+//     const projects = await Project.find({ company: company._id })
+//       .sort({ createdAt: -1 })
+//       .lean();
+
+//     const projectsWithPaymentClock = projects.map(project => {
+//       if (project.status === 'completed' && project.paymentDeadline) {
+//         const now = new Date();
+//         const paymentDeadlineDate = new Date(project.paymentDeadline);
+        
+//         // Calculate standard elapsed difference from the target deadline
+//         let timeDiff = now.getTime() - paymentDeadlineDate.getTime();
+        
+//         // ====================================================================
+//         // 🧪 EVALUATION DEMO TOGGLES: Uncomment ONLY ONE line at a time to test
+//         // ====================================================================
+//         // 1. To test 🟡 DUE SOON state (Simulates 10 days passing post-completion):
+//         // timeDiff = timeDiff + (10 * 24 * 60 * 60 * 1000); 
+
+//         // 2. To test 🔴 OVERDUE state (Simulates 16 days passing post-completion):
+//         // timeDiff = timeDiff + (16 * 24 * 60 * 60 * 1000);
+//         // ====================================================================
+
+//         const daysPassed = Math.floor(timeDiff / (1000 * 60 * 60 * 24)); 
+
+//         let paymentClock = {};
+//         if (daysPassed <= 5) {
+//           paymentClock = { indicator: 'green', text: 'On Time' };
+//         } else if (daysPassed >= 6 && daysPassed <= 14) {
+//           paymentClock = { indicator: 'yellow', text: 'Due Soon' };
+//         } else { 
+//           paymentClock = { indicator: 'red', text: 'Overdue' };
+//         }
+        
+//         return { ...project, paymentClock };
+//       }
+//       return project;
+//     });
+
+//     return res.status(200).json({
+//       success: true,
+//       count: projectsWithPaymentClock.length,
+//       data: projectsWithPaymentClock
+//     });
+
+//   } catch (error) {
+//     console.error("CRASH in getCompanyProjects:", error.message);
+//     return res.status(500).json({ success: false, message: "Server Error: " + error.message });
+//   }
+// };
+
+// // =====================================
+// // GET PROJECT APPLICATIONS
+// // =====================================
+// exports.getProjectApplications = async (req, res) => {
+//   try {
+//     const { projectId } = req.params;
+    
+//     const applications = await Application.find({ project: projectId })
+//       .populate({
+//         path: 'trainer',
+//         populate: { path: 'user', select: 'name email' }
+//       })
+//       .populate('project');
+
+//     res.status(200).json({
+//       success: true,
+//       data: applications
+//     });
+//   } catch (error) {
+//     res.status(500).json({ success: false, message: error.message });
+//   }
+// };
+
+// // =====================================
+// // UPDATE APPLICATION STATUS
+// // =====================================
+// exports.updateApplicationStatus = async (req, res) => {
+//   try {
+//     const { applicationId } = req.params;
+//     const { status, feedback, date, time, link } = req.body;
+
+//     const application = await Application.findById(applicationId)
+//       .populate("project")
+//       .populate({
+//         path: "trainer",
+//         populate: { path: "user" }
+//       });
+
+//     if (!application) {
+//       return res.status(404).json({ success: false, message: "Application not found" });
+//     }
+
+//     const companyProfile = await CompanyProfile.findOne({ user: req.user._id });
+//     const trainerUser = application.trainer.user;
+
+//     application.status = status;
+//     if (feedback) application.feedback = feedback;
+    
+//     if (status === 'interview_scheduled') {
+//       application.interviewDate = date;
+//       application.interviewTime = time;
+//       application.meetingLink = link;
+//     }
+    
+//     await application.save();
+
+//     let emailSubject = '';
+//     let emailHtml = '';
+    
+//     if (status === 'shortlisted') {
+//       emailSubject = `⚡ Shortlisted: ${application.project.title}`;
+//       emailHtml = `<div style="font-family: Arial; padding: 20px; border: 1px solid #4338ca; border-radius: 10px;">
+//           <h2 style="color: #4338ca;">You're Shortlisted!</h2>
+//           <p>Hi ${trainerUser.name}, <strong>${companyProfile.name}</strong> has shortlisted you for: <strong>${application.project.title}</strong>.</p>
+//           <p>They will contact you shortly.</p>
+//         </div>`;
+//     } 
+//     else if (status === 'selected') {
+//       const hasAdvanceRequirement = application.project.paymentTerms?.toLowerCase().includes('advance');
+
+//       if (hasAdvanceRequirement) {
+//         const totalBudget = (application.expectedRate || application.project.perDayPayment) * application.project.durationDays;
+//         const advanceAmount = totalBudget * 0.5;
+
+//         await Project.findByIdAndUpdate(application.project._id, {
+//             status: 'assigned',
+//             advanceStatus: 'pending',
+//             advanceAmount: advanceAmount
+//         });
+
+//         emailSubject = `🎉 Selection Confirmed: ${application.project.title}`;
+//         emailHtml = `<div style="font-family: Arial; padding: 20px; border: 1px solid #10b981; border-radius: 10px;">
+//             <h2 style="color: #10b981;">Congratulations!</h2>
+//             <p>You have been selected for <strong>${application.project.title}</strong>.</p>
+//             <p><strong>Advance Payment:</strong> A 50% advance (₹${advanceAmount.toLocaleString()}) has been requested from the company.</p>
+//             <p>You will receive a confirmation once the payment is processed.</p>
+//           </div>`;
+//       } else {
+//         await Project.findByIdAndUpdate(application.project._id, {
+//             status: 'assigned',
+//             advanceStatus: 'none'
+//         });
+
+//         emailSubject = `🎉 Selection Confirmed: ${application.project.title}`;
+//         emailHtml = `<div style="font-family: Arial; padding: 20px; border: 1px solid #4338ca; border-radius: 10px;">
+//             <h2 style="color: #4338ca;">Congratulations!</h2>
+//             <p>You have been selected for <strong>${application.project.title}</strong>.</p>
+//             <p>The company will contact you regarding the schedule. Payment will be processed as per the standard 15-day completion rule.</p>
+//           </div>`;
+//       }
+//     }
+//     else if (status === 'hired') {
+//       emailSubject = `✅ Payment Confirmed: You are Hired for ${application.project.title}!`;
+//       emailHtml = `
+//         <div style="font-family: Arial; padding: 20px; border: 1px solid #059669; border-radius: 10px; background-color: #f0fdf4;">
+//           <h2 style="color: #059669;">Welcome Aboard!</h2>
+//           <p>Hi ${trainerUser.name},</p>
+//           <p>Great news! <strong>${companyProfile.name}</strong> has confirmed your 50% advance payment for the project: <strong>${application.project.title}</strong>.</p>
+//           <p style="font-size: 1.1em; font-weight: bold;">You are now officially HIRED.</p>
+//           <hr style="border: 0; border-top: 1px solid #bdf1d4; margin: 20px 0;"/>
+//           <p>Best Regards,<br/><strong>Trainistry Team</strong></p>
+//         </div>`;
+//     }
+//     else if (status === 'interview_scheduled') {
+//       emailSubject = `📅 Interview Scheduled: ${application.project.title}`;
+//       emailHtml = `<div style="font-family: Arial; padding: 20px; border: 1px solid #f59e0b; border-radius: 10px;">
+//           <h2 style="color: #f59e0b;">Interview Invitation</h2>
+//           <p><b>Date:</b> ${date}<br/><b>Time:</b> ${time}</p>
+//           <p><b>Link:</b> <a href="${link}">${link}</a></p>
+//         </div>`;
+//     }
+//     else if (status === 'rejected') {
+//       emailSubject = `Update regarding: ${application.project.title}`;
+//       emailHtml = `<p>Hi ${trainerUser.name}, the company has decided not to proceed with your application at this time.</p>`;
+//     }
+
+//     if (emailSubject) {
+//       await sendEmail({
+//         email: trainerUser.email,
+//         subject: emailSubject,
+//         from: `"${companyProfile.name} via Trainistry" <${process.env.EMAIL_USER}>`,
+//         replyTo: req.user.email, 
+//         html: emailHtml
+//       });
+//     }
+
+//     res.status(200).json({ success: true, message: `Status updated to ${status} and trainer notified.` });
+
+//   } catch (error) {
+//     res.status(500).json({ success: false, message: error.message });
+//   }
+// };
+
+// // =====================================
+// // UPDATE PROJECT STATUS (15-Day Rule)
+// // =====================================
+// exports.updateProjectStatus = async (req, res) => {
+//   try {
+//     const { projectId } = req.params;
+//     const { status } = req.body;
+
+//     const project = await Project.findById(projectId);
+//     if (!project) return res.status(404).json({ success: false, message: "Project not found" });
+
+//     project.status = status.toLowerCase();
+
+//     if (status.toLowerCase() === 'completed') {
+//       const now = new Date();
+//       const deadline = new Date(now);
+//       deadline.setDate(deadline.getDate() + 15);
+//       project.paymentDeadline = deadline;
+
+//       await Application.updateMany(
+//         { project: projectId, status: 'selected' },
+//         { 
+//           status: 'completed', 
+//           projectEndDate: now,
+//           paymentDeadline: deadline 
+//         }
+//       );
+//     }
+
+//     await project.save();
+    
+//     res.status(200).json({ 
+//       success: true, 
+//       message: status.toLowerCase() === 'completed' ? "Project and Application completed. Payment deadline set." : "Status updated" 
+//     });
+//   } catch (error) {
+//     console.error("Project Update Error:", error);
+//     res.status(500).json({ success: false, message: error.message });
+//   }
+// };
+
+// // =====================================
+// // SCHEDULE INTERVIEW
+// // =====================================
+// exports.scheduleInterview = async (req, res) => {
+//   try {
+//     const { applicationId } = req.params;
+//     const { date, time, link } = req.body; 
+
+//     const application = await Application.findById(applicationId)
+//       .populate("project")
+//       .populate({ path: "trainer", populate: { path: "user" } });
+
+//     if (!application) return res.status(404).json({ success: false, message: "Application not found" });
+
+//     application.status = "interview_scheduled"; 
+//     application.interviewDate = date; 
+//     application.interviewTime = time;
+//     application.meetingLink = link;
+//     await application.save();
+
+//     await Notification.create({
+//       recipient: application.trainer.user._id,
+//       recipientType: "trainer",
+//       message: `Interview scheduled for "${application.project.title}" on ${date} at ${time}.`,
+//       type: "interview_scheduled"
+//     });
+
+//     res.status(200).json({ success: true, message: "Interview scheduled" });
+//   } catch (error) {
+//     res.status(500).json({ success: false, message: error.message });
+//   }
+// };
+
+// // =====================================
+// // RESOLVE DISPUTE (Updated with Email)
+// // =====================================
+// exports.resolveDispute = async (req, res) => {
+//   try {
+//     const projectId = req.params.applicationId;
+//     const { transactionId } = req.body;
+
+//     const application = await Application.findOne({ 
+//       project: projectId, 
+//       isDisputed: true 
+//     }).populate({
+//       path: 'trainer',
+//       populate: { path: 'user', select: 'name email' }
+//     }).populate('project', 'title company');
+
+//     if (!application) {
+//       return res.status(404).json({ 
+//         success: false, 
+//         message: "No active dispute found for this project." 
+//       });
+//     }
+
+//     application.isDisputed = false;
+//     application.paymentStatus = 'cleared'; 
+//     application.status = 'completed'; 
+//     application.transactionId = transactionId;
+//     await application.save();
+
+//     await Post.deleteMany({ 
+//       relatedCompany: application.project.company || application.project, 
+//       postType: 'warning'
+//     });
+
+//     const trainerUser = application.trainer.user;
+//     const emailHtml = `
+//       <div style="font-family: Arial, sans-serif; padding: 20px; border: 1px solid #4338ca; border-radius: 10px;">
+//         <h2 style="color: #10b981;">💰 Payment Received!</h2>
+//         <p>Hi ${trainerUser.name},</p>
+//         <p>The company has resolved the dispute for the project: <strong>${application.project.title}</strong>.</p>
+//         <p><b>Transaction Reference:</b> ${transactionId}</p>
+//         <p>The payment has been marked as <b>Cleared</b> on your dashboard.</p>
+//         <p>Best Regards,<br/><strong>Trainistry Team</strong></p>
+//       </div>`;
+
+//     await sendEmail({
+//       email: trainerUser.email,
+//       subject: `✅ Dispute Resolved & Payment Cleared: ${application.project.title}`,
+//       html: emailHtml
+//     });
+
+//     await Notification.create({
+//       recipient: trainerUser._id,
+//       recipientType: "trainer",
+//       message: `Dispute Resolved: Payment received for "${application.project.title}". Ref: ${transactionId}`,
+//       type: "payment_resolved" 
+//     });
+
+//     res.status(200).json({ success: true, message: "Dispute resolved and Trainer notified via email." });
+
+//   } catch (error) {
+//     console.error("Resolution Error:", error.message);
+//     res.status(500).json({ success: false, message: error.message });
+//   }
+// };
+
+// // =====================================
+// // GET COMPANIES / BY ID
+// // =====================================
+// exports.getCompanies = async (req, res) => {
+//   try {
+//     const companies = await CompanyProfile.find().populate("user", "name email");
+//     res.status(200).json({ success: true, data: companies });
+//   } catch (error) {
+//     res.status(500).json({ success: false, message: error.message });
+//   }
+// };
+
+// exports.getCompanyById = async (req, res) => {
+//   try {
+//     const company = await CompanyProfile.findById(req.params.id).populate("user", "name email phone");
+//     res.status(200).json({ success: true, data: company });
+//   } catch (error) {
+//     res.status(500).json({ success: false, message: error.message });
+//   }
+// };
+
+// // =====================================
+// // SEARCH COMPANIES
+// // =====================================
+// exports.searchCompanies = async (req, res) => {
+//   try {
+//     const { name } = req.query;
+
+//     if (!name || name.trim().length === 0) {
+//       return res.status(200).json({ success: true, data: [] });
+//     }
+
+//     const companies = await CompanyProfile.find({
+//       $or: [
+//         { name: { $regex: name.trim(), $options: "i" } },
+//         { location: { $regex: name.trim(), $options: "i" } }
+//       ]
+//     }).populate("user", "name email");
+
+//     res.status(200).json({ success: true, data: companies });
+//   } catch (error) {
+//     console.error("Search Error:", error);
+//     res.status(500).json({ success: false, message: error.message });
+//   }
+// };
+
+// // =====================================
+// // FOLLOW COMPANY
+// // =====================================
+// exports.followCompany = async (req, res) => {
+//   try {
+//     const targetUserId = req.params.targetId;
+//     const currentUserId = req.user._id;
+
+//     if (targetUserId === currentUserId.toString()) {
+//       return res.status(400).json({ success: false, message: "You cannot connect with yourself" });
+//     }
+
+//     const user = await User.findById(currentUserId);
+//     const isFollowing = user.following && user.following.includes(targetUserId);
+
+//     await User.findByIdAndUpdate(currentUserId, {
+//       [isFollowing ? '$pull' : '$addToSet']: { following: targetUserId }
+//     });
+
+//     res.status(200).json({ 
+//       success: true, 
+//       isFollowing: !isFollowing,
+//       message: isFollowing ? "Unfollowed" : "Followed" 
+//     });
+//   } catch (error) {
+//     console.error("FOLLOW_ERROR:", error);
+//     res.status(500).json({ success: false, message: error.message });
+//   }
+// };
+
+// // =====================================
+// // CONFIRM ADVANCE PAYMENT
+// // =====================================
+// exports.confirmAdvancePayment = async (req, res) => {
+//   try {
+//     const { projectId } = req.params;
+//     const { transactionId } = req.body;
+
+//     const project = await Project.findByIdAndUpdate(
+//       projectId,
+//       { 
+//         advanceStatus: 'paid', 
+//         status: 'ongoing', 
+//         advanceTransactionId: transactionId 
+//       },
+//       { new: true }
+//     );
+
+//     res.status(200).json({ success: true, message: "Advance confirmed. Project is now ongoing!", project });
+//   } catch (error) {
+//     res.status(500).json({ success: false, message: error.message });
+//   }
+// };
+
+// // =====================================
+// // UPDATE COMPANY PROFILE
+// // =====================================
+// exports.updateCompanyProfile = async (req, res) => {
+//   try {
+//     const { name, industry, location, description, gstNumber, website } = req.body;
+
+//     let profile = await CompanyProfile.findOne({ user: req.user._id });
+
+//     if (!profile) {
+//       return res.status(404).json({ success: false, message: "Profile not found" });
+//     }
+
+//     profile.name = name || profile.name;
+//     profile.industry = industry || profile.industry;
+//     profile.location = location || profile.location;
+//     profile.description = description || profile.description;
+//     profile.gstNumber = gstNumber || profile.gstNumber;
+//     profile.website = website || profile.website;
+
+//     await profile.save();
+
+//     res.status(200).json({
+//       success: true,
+//       data: profile
+//     });
+//   } catch (error) {
+//     res.status(500).json({ success: false, message: error.message });
+//   }
+// };
+
+// // =====================================
+// // GET COMPANY PAYMENT STATS FOR PUBLIC PROFILE
+// // =====================================
+// exports.getCompanyPaymentStats = async (req, res) => {
+//   try {
+//     const companyId = req.params.id;
+
+//     const projects = await Project.find({ company: companyId });
+
+//     let totalCompleted = 0;
+//     let onTimePayments = 0;
+//     let delayedPayments = 0;
+
+//     projects.forEach(project => {
+//       if (project.status === 'completed') {
+//         totalCompleted++;
+        
+//         if (project.paymentStatus === 'paid') {
+//           onTimePayments++;
+//         } else if (project.paymentStatus === 'overdue') {
+//           delayedPayments++;
+//         } else if (project.paymentStatus === 'pending') {
+//           const now = new Date();
+//           if (project.paymentDeadline && now > new Date(project.paymentDeadline)) {
+//             delayedPayments++;
+//           } else {
+//             onTimePayments++; 
+//           }
+//         }
+//       }
+//     });
+
+//     return res.status(200).json({
+//       success: true,
+//       stats: {
+//         totalCompleted,
+//         onTimePayments,
+//         delayedPayments
+//       }
+//     });
+//   } catch (error) {
+//     console.error("Error in getCompanyPaymentStats:", error.message);
+//     return res.status(500).json({ success: false, message: "Server Error: " + error.message });
+//   }
+// };
+
 const CompanyProfile = require("../models/CompanyProfile");
+const TrainerProfile = require("../models/TrainerProfile"); // Added to support rating framework updates
 const Project = require("../models/Project");
 const Application = require("../models/Application");
 const Notification = require("../models/Notification");
@@ -3615,7 +4951,6 @@ exports.getCompanyDashboardStats = async (req, res) => {
   }
 };
 
-
 // =====================================
 // GET MY COMPANY PROFILE (Updated to include Connections)
 // =====================================
@@ -3623,7 +4958,6 @@ exports.getMyCompany = async (req, res) => {
   try {
     const company = await CompanyProfile
       .findOne({ user: req.user._id })
-      // ADDED 'followers' and 'following' to the populate list here:
       .populate("user", "name email phone followers following");
 
     if (!company) {
@@ -3666,7 +5000,6 @@ exports.createCompany = async (req, res) => {
   }
 };
 
-
 // =====================================
 // POST PROJECT (Updated with Tiered Scaling)
 // =====================================
@@ -3677,14 +5010,11 @@ exports.postProject = async (req, res) => {
       return res.status(404).json({ success: false, message: "Company profile not found" });
     }
 
-    // ADDED: Tiered Scaling Logic
-    // We check how many 'open' projects this company already has
     const activeProjectCount = await Project.countDocuments({ 
       company: company._id, 
       status: 'open' 
     });
 
-    // Limit check (e.g., 10 projects for the free/standard tier)
     if (activeProjectCount >= 10) {
       return res.status(403).json({ 
         success: false, 
@@ -3699,126 +5029,70 @@ exports.postProject = async (req, res) => {
 
     res.status(201).json({ success: true, data: project });
   } catch (error) {
-    // If the Numerical Limits (min/max) we added to the Model fail, 
-    // this catch block will send that specific error message to the user.
     res.status(400).json({ success: false, message: error.message });
   }
 };
 
-
-// exports.getCompanyProjects = async (req, res) => {
-//   try {
-//     // 1. Find the profile linked to the logged-in user
-//     const company = await CompanyProfile.findOne({ user: req.user._id });
-    
-//     if (!company) {
-//       return res.status(404).json({ success: false, message: "Company profile not found" });
-//     }
-
-//     // DEBUG LOG: Compare this ID with the one in your MongoDB Project document
-//     console.log("Current Profile ID:", company._id.toString());
-
-//     // 2. Fetch projects matching this specific profile ID
-//     const projects = await Project.find({ company: company._id })
-//       .sort({ createdAt: -1 })
-//       .lean();
-
-//     // 3. Merge Application Status (Disputes/Payments)
-//     const projectsWithAppData = await Promise.all(projects.map(async (proj) => {
-//       const selectedApp = await Application.findOne({ 
-//         project: proj._id, 
-//         status: { $in: ['selected', 'completed'] } 
-//       }).select('isDisputed paymentStatus transactionId');
-
-//       return {
-//         ...proj,
-//         isDisputed: selectedApp ? selectedApp.isDisputed : false,
-//         paymentStatus: selectedApp ? selectedApp.paymentStatus : 'pending',
-//         transactionId: selectedApp ? selectedApp.transactionId : null
-//       };
-//     }));
-
-//     res.status(200).json({ success: true, data: projectsWithAppData });
-//   } catch (error) {
-//     console.error("GET_PROJECTS_ERROR:", error);
-//     res.status(500).json({ success: false, message: error.message });
-//   }
-// };
-
+// ==========================================================
+// GET COMPANY PROJECTS (With Transparency Clock & Mock Offsets)
+// ==========================================================
 exports.getCompanyProjects = async (req, res) => {
   try {
-    // 1. Safety Check: Is the user actually logged in?
     if (!req.user || !req.user._id) {
       return res.status(401).json({ success: false, message: "User context missing. Please re-login." });
     }
 
-    // 2. Find the Company Profile
     const company = await CompanyProfile.findOne({ user: req.user._id });
 
-    // 3. Safety Check: Does this user even have a profile?
     if (!company) {
       console.log("No company profile for user:", req.user._id);
-      return res.status(200).json({ success: true, data: [] }); // Return empty array instead of crashing
+      return res.status(200).json({ success: true, data: [] });
     }
 
-    // 4. Fetch Projects
     const projects = await Project.find({ company: company._id })
-      .sort({ createdAt: -1 });
+      .sort({ createdAt: -1 })
+      .lean();
 
-    res.status(200).json({
+    const projectsWithPaymentClock = projects.map(project => {
+      if (project.status === 'completed' && project.paymentDeadline) {
+        const now = new Date();
+        const paymentDeadlineDate = new Date(project.paymentDeadline);
+        
+        let timeDiff = now.getTime() - paymentDeadlineDate.getTime();
+        const daysPassed = Math.floor(timeDiff / (1000 * 60 * 60 * 24)); 
+
+        let paymentClock = {};
+        if (daysPassed <= 5) {
+          paymentClock = { indicator: 'green', text: 'On Time' };
+        } else if (daysPassed >= 6 && daysPassed <= 14) {
+          paymentClock = { indicator: 'yellow', text: 'Due Soon' };
+        } else { 
+          paymentClock = { indicator: 'red', text: 'Overdue' };
+        }
+        
+        return { ...project, paymentClock };
+      }
+      return project;
+    });
+
+    return res.status(200).json({
       success: true,
-      count: projects.length,
-      data: projects
+      count: projectsWithPaymentClock.length,
+      data: projectsWithPaymentClock
     });
 
   } catch (error) {
     console.error("CRASH in getCompanyProjects:", error.message);
-    res.status(500).json({ success: false, message: "Server Error: " + error.message });
+    return res.status(500).json({ success: false, message: "Server Error: " + error.message });
   }
 };
 
 // =====================================
-// GET PROJECT APPLICATIONS (FIXED)
+// GET PROJECT APPLICATIONS
 // =====================================
-// exports.getProjectApplications = async (req, res) => {
-//   try {
-//     const applications = await Application.find({ project: req.params.projectId })
-//       .populate({
-//         path: "trainer",
-//         populate: { path: "user", select: "name email phone" }
-//       })
-//       .populate("project") // <--- ADD THIS LINE TO FIX THE ₹0 ISSUE
-//       .sort({ createdAt: -1 });
-
-//     res.status(200).json({ success: true, data: applications });
-//   } catch (error) {
-//     res.status(500).json({ success: false, message: error.message });
-//   }
-// };
-// controllers/companyController.js
-// exports.getProjectApplications = async (req, res) => {
-//   try {
-//     const { projectId } = req.params;
-    
-//     // Find applications and populate the trainer and user info
-//     const applications = await Application.find({ project: projectId })
-//       .populate({
-//         path: 'trainer',
-//         populate: { path: 'user', select: 'name email' }
-//       })
-//       .populate('project');
-
-//     res.status(200).json({
-//       success: true,
-//       data: applications
-//     });
-//   } catch (error) {
-//     res.status(500).json({ success: false, message: error.message });
-//   }
-// };
 exports.getProjectApplications = async (req, res) => {
   try {
-    const { projectId } = req.params; // This matches :projectId in your router
+    const { projectId } = req.params;
     
     const applications = await Application.find({ project: projectId })
       .populate({
@@ -3835,6 +5109,70 @@ exports.getProjectApplications = async (req, res) => {
     res.status(500).json({ success: false, message: error.message });
   }
 };
+
+// =================================================================
+// ⭐ NEW ADDITION: GET ALL SHORTLISTED APPLICATIONS ACROSS PROJECTS
+// =================================================================
+exports.getShortlistedApplications = async (req, res) => {
+  try {
+    const company = await CompanyProfile.findOne({ user: req.user._id });
+    if (!company) {
+      return res.status(404).json({ success: false, message: "Company profile not found" });
+    }
+
+    const projects = await Project.find({ company: company._id });
+    const projectIds = projects.map(p => p._id);
+
+    const applications = await Application.find({
+      project: { $in: projectIds },
+      status: "shortlisted"
+    })
+    .populate({
+      path: "trainer",
+      populate: { path: "user", select: "name email phone" }
+    })
+    .populate("project")
+    .sort({ updatedAt: -1 });
+
+    res.status(200).json({ success: true, data: applications });
+  } catch (error) {
+    res.status(500).json({ success: false, message: error.message });
+  }
+};
+
+// =================================================================
+// ⭐ NEW ADDITION: GET ALL SCHEDULED INTERVIEW APPLICATIONS ACROSS PROJECTS
+// =================================================================
+exports.getScheduledInterviews = async (req, res) => {
+  try {
+    const company = await CompanyProfile.findOne({ user: req.user._id });
+    if (!company) {
+      return res.status(404).json({ success: false, message: "Company profile not found" });
+    }
+
+    const projects = await Project.find({ company: company._id });
+    const projectIds = projects.map(p => p._id);
+
+    const applications = await Application.find({
+      project: { $in: projectIds },
+      status: "interview_scheduled"
+    })
+    .populate({
+      path: "trainer",
+      populate: { path: "user", select: "name email phone" }
+    })
+    .populate("project")
+    .sort({ interviewDate: 1 });
+
+    res.status(200).json({ success: true, data: applications });
+  } catch (error) {
+    res.status(500).json({ success: false, message: error.message });
+  }
+};
+
+// =====================================
+// UPDATE APPLICATION STATUS (Enhanced with In-App Alerts)
+// =====================================
 exports.updateApplicationStatus = async (req, res) => {
   try {
     const { applicationId } = req.params;
@@ -3867,9 +5205,10 @@ exports.updateApplicationStatus = async (req, res) => {
 
     let emailSubject = '';
     let emailHtml = '';
+    let notificationText = '';
     
-    // --- 1. SHORTLISTED ---
     if (status === 'shortlisted') {
+      notificationText = `⚡ You have been shortlisted by ${companyProfile.name} for "${application.project.title}".`;
       emailSubject = `⚡ Shortlisted: ${application.project.title}`;
       emailHtml = `<div style="font-family: Arial; padding: 20px; border: 1px solid #4338ca; border-radius: 10px;">
           <h2 style="color: #4338ca;">You're Shortlisted!</h2>
@@ -3877,14 +5216,11 @@ exports.updateApplicationStatus = async (req, res) => {
           <p>They will contact you shortly.</p>
         </div>`;
     } 
-
-    // --- 2. SELECTED (Conditional Advance Check) ---
     else if (status === 'selected') {
-      // CHECK: Does the project form mention "advance"?
       const hasAdvanceRequirement = application.project.paymentTerms?.toLowerCase().includes('advance');
+      notificationText = `🎉 Selection Confirmed for "${application.project.title}"! Please verify terms.`;
 
       if (hasAdvanceRequirement) {
-        // TRIGGER ADVANCE FEATURE
         const totalBudget = (application.expectedRate || application.project.perDayPayment) * application.project.durationDays;
         const advanceAmount = totalBudget * 0.5;
 
@@ -3902,10 +5238,9 @@ exports.updateApplicationStatus = async (req, res) => {
             <p>You will receive a confirmation once the payment is processed.</p>
           </div>`;
       } else {
-        // DEFAULT FLOW (15-Day Rule applies by default)
         await Project.findByIdAndUpdate(application.project._id, {
             status: 'assigned',
-            advanceStatus: 'none' // No advance UI will show up on frontend
+            advanceStatus: 'none'
         });
 
         emailSubject = `🎉 Selection Confirmed: ${application.project.title}`;
@@ -3916,9 +5251,8 @@ exports.updateApplicationStatus = async (req, res) => {
           </div>`;
       }
     }
-
-    // --- 3. HIRED ---
     else if (status === 'hired') {
+      notificationText = `✅ Advance confirmed! You are officially HIRED for "${application.project.title}".`;
       emailSubject = `✅ Payment Confirmed: You are Hired for ${application.project.title}!`;
       emailHtml = `
         <div style="font-family: Arial; padding: 20px; border: 1px solid #059669; border-radius: 10px; background-color: #f0fdf4;">
@@ -3930,9 +5264,8 @@ exports.updateApplicationStatus = async (req, res) => {
           <p>Best Regards,<br/><strong>Trainistry Team</strong></p>
         </div>`;
     }
-
-    // --- 4. INTERVIEW ---
     else if (status === 'interview_scheduled') {
+      notificationText = `📅 Interview scheduled for "${application.project.title}" on ${date} at ${time}.`;
       emailSubject = `📅 Interview Scheduled: ${application.project.title}`;
       emailHtml = `<div style="font-family: Arial; padding: 20px; border: 1px solid #f59e0b; border-radius: 10px;">
           <h2 style="color: #f59e0b;">Interview Invitation</h2>
@@ -3940,14 +5273,22 @@ exports.updateApplicationStatus = async (req, res) => {
           <p><b>Link:</b> <a href="${link}">${link}</a></p>
         </div>`;
     }
-
-    // --- 5. REJECTION ---
     else if (status === 'rejected') {
+      notificationText = `Update regarding your application for "${application.project.title}".`;
       emailSubject = `Update regarding: ${application.project.title}`;
       emailHtml = `<p>Hi ${trainerUser.name}, the company has decided not to proceed with your application at this time.</p>`;
     }
 
-    // Send Email
+    // ⭐ Save real-time In-App notification data record inside MongoDB
+    if (notificationText) {
+      await Notification.create({
+        recipient: trainerUser._id,
+        recipientType: "trainer",
+        message: notificationText,
+        type: status
+      });
+    }
+
     if (emailSubject) {
       await sendEmail({
         email: trainerUser.email,
@@ -3964,6 +5305,7 @@ exports.updateApplicationStatus = async (req, res) => {
     res.status(500).json({ success: false, message: error.message });
   }
 };
+
 // =====================================
 // UPDATE PROJECT STATUS (15-Day Rule)
 // =====================================
@@ -4033,6 +5375,56 @@ exports.scheduleInterview = async (req, res) => {
     });
 
     res.status(200).json({ success: true, message: "Interview scheduled" });
+  } catch (error) {
+    res.status(500).json({ success: false, message: error.message });
+  }
+};
+
+// =================================================================
+// ⭐ UPDATED: SUBMIT TRAINER RATING (SaaS Bidirectional Trust)
+// =================================================================
+exports.rateTrainer = async (req, res) => {
+  try {
+    const { trainerId, projectId, stars, reviewText } = req.body;
+
+    // Find the profile using the user reference ID
+    const trainerProfile = await TrainerProfile.findOne({ user: trainerId });
+    if (!trainerProfile) {
+      return res.status(404).json({ success: false, message: "Trainer profile target missing." });
+    }
+
+    // 1. Check if this company user has already sent feedback inside the 'feedbacks' array
+    const alreadyRated = trainerProfile.feedbacks.some(
+      f => f.sender?.toString() === req.user._id.toString()
+    );
+    
+    if (alreadyRated) {
+      return res.status(400).json({ 
+        success: false, 
+        message: "You have already recorded feedback for this contract allocation." 
+      });
+    }
+
+    // 2. Map data fields precisely to the 'feedbacks' schema structure
+    const newFeedback = {
+      sender: req.user._id,
+      rating: Number(stars),   // Maps cleanly to schema's validation bounds (1-5)
+      comment: reviewText      // Maps cleanly to schema's comment string
+    };
+
+    trainerProfile.feedbacks.push(newFeedback);
+
+    // 3. Save the document 
+    // The pre('save') hook inside TrainerProfile.js automatically handles calculating
+    // averageRating and totalReviews cleanly before writing to MongoDB!
+    await trainerProfile.save();
+
+    res.status(200).json({ 
+      success: true, 
+      message: "Feedback performance recorded safely.", 
+      averageRating: trainerProfile.averageRating,
+      totalReviews: trainerProfile.totalReviews
+    });
   } catch (error) {
     res.status(500).json({ success: false, message: error.message });
   }
@@ -4124,6 +5516,7 @@ exports.getCompanyById = async (req, res) => {
     res.status(500).json({ success: false, message: error.message });
   }
 };
+
 // =====================================
 // SEARCH COMPANIES
 // =====================================
@@ -4135,7 +5528,6 @@ exports.searchCompanies = async (req, res) => {
       return res.status(200).json({ success: true, data: [] });
     }
 
-    // UPDATED: Changed 'companyName' to 'name' to match your Model
     const companies = await CompanyProfile.find({
       $or: [
         { name: { $regex: name.trim(), $options: "i" } },
@@ -4150,6 +5542,9 @@ exports.searchCompanies = async (req, res) => {
   }
 };
 
+// =====================================
+// FOLLOW COMPANY
+// =====================================
 exports.followCompany = async (req, res) => {
   try {
     const targetUserId = req.params.targetId;
@@ -4162,7 +5557,6 @@ exports.followCompany = async (req, res) => {
     const user = await User.findById(currentUserId);
     const isFollowing = user.following && user.following.includes(targetUserId);
 
-    // Use findByIdAndUpdate to bypass full document validation
     await User.findByIdAndUpdate(currentUserId, {
       [isFollowing ? '$pull' : '$addToSet']: { following: targetUserId }
     });
@@ -4178,6 +5572,9 @@ exports.followCompany = async (req, res) => {
   }
 };
 
+// =====================================
+// CONFIRM ADVANCE PAYMENT
+// =====================================
 exports.confirmAdvancePayment = async (req, res) => {
   try {
     const { projectId } = req.params;
@@ -4187,7 +5584,7 @@ exports.confirmAdvancePayment = async (req, res) => {
       projectId,
       { 
         advanceStatus: 'paid', 
-        status: 'ongoing', // Project moves from 'assigned' to 'ongoing'
+        status: 'ongoing', 
         advanceTransactionId: transactionId 
       },
       { new: true }
@@ -4199,6 +5596,9 @@ exports.confirmAdvancePayment = async (req, res) => {
   }
 };
 
+// =====================================
+// UPDATE COMPANY PROFILE
+// =====================================
 exports.updateCompanyProfile = async (req, res) => {
   try {
     const { name, industry, location, description, gstNumber, website } = req.body;
@@ -4209,7 +5609,6 @@ exports.updateCompanyProfile = async (req, res) => {
       return res.status(404).json({ success: false, message: "Profile not found" });
     }
 
-    // Explicitly update the new fields
     profile.name = name || profile.name;
     profile.industry = industry || profile.industry;
     profile.location = location || profile.location;
@@ -4225,5 +5624,51 @@ exports.updateCompanyProfile = async (req, res) => {
     });
   } catch (error) {
     res.status(500).json({ success: false, message: error.message });
+  }
+};
+
+// =====================================
+// GET COMPANY PAYMENT STATS FOR PUBLIC PROFILE
+// =====================================
+exports.getCompanyPaymentStats = async (req, res) => {
+  try {
+    const companyId = req.params.id;
+
+    const projects = await Project.find({ company: companyId });
+
+    let totalCompleted = 0;
+    let onTimePayments = 0;
+    let delayedPayments = 0;
+
+    projects.forEach(project => {
+      if (project.status === 'completed') {
+        totalCompleted++;
+        
+        if (project.paymentStatus === 'paid') {
+          onTimePayments++;
+        } else if (project.paymentStatus === 'overdue') {
+          delayedPayments++;
+        } else if (project.paymentStatus === 'pending') {
+          const now = new Date();
+          if (project.paymentDeadline && now > new Date(project.paymentDeadline)) {
+            delayedPayments++;
+          } else {
+            onTimePayments++; 
+          }
+        }
+      }
+    });
+
+    return res.status(200).json({
+      success: true,
+      stats: {
+        totalCompleted,
+        onTimePayments,
+        delayedPayments
+      }
+    });
+  } catch (error) {
+    console.error("Error in getCompanyPaymentStats:", error.message);
+    return res.status(500).json({ success: false, message: "Server Error: " + error.message });
   }
 };
