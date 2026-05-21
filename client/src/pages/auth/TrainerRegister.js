@@ -296,7 +296,7 @@ function TrainerRegister() {
       data.append("location", formData.location);
       data.append("verificationDoc", verificationDoc);
 
-      await axios.post("http://localhost:5000/api/auth/register", data, {
+      await axios.post("/api/auth/register", data, {
         headers: { "Content-Type": "multipart/form-data" }
       });
 

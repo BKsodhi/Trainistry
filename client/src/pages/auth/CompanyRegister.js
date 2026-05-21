@@ -476,7 +476,7 @@ function CompanyRegister() {
         data.append("verificationDoc", registrationDoc);
       }
 
-      const response = await axios.post("http://localhost:5000/api/auth/register", data, {
+      const response = await axios.post("/api/auth/register", data, {
         headers: { "Content-Type": "multipart/form-data" }
       });
 
