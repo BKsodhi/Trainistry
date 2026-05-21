@@ -3610,6 +3610,7 @@ import { useNavigate } from "react-router-dom";
 import axios from "axios";
 import jsPDF from "jspdf";
 import autoTable from "jspdf-autotable"; 
+import TrainerNotifications from "./TrainerNotifications";
 import TrainerNotificationPanel from "./TrainerNotificationPanel"; // Adjust path if it's in a subfolder 
 import "../../styles/TrainerDashboard.css"; 
 
@@ -3620,6 +3621,7 @@ function TrainerDashboard() {
   const [loading, setLoading] = useState(true);
 
   const [activeTab, setActiveTab] = useState("dashboard");
+  const [sidebarOpen, setSidebarOpen] = useState(false);
   
   // Track notifications and toggle state for the bell dropdown
   const [notifications, setNotifications] = useState([]);
@@ -3645,7 +3647,7 @@ function TrainerDashboard() {
         axios.get("http://localhost:5000/api/trainer/dashboard", config),
         axios.get("http://localhost:5000/api/trainer/projects", config),
         axios.get("http://localhost:5000/api/trainer/applications", config),
-        axios.get("http://localhost:5000/api/notifications", config).catch(() => ({ data: { data: [] } }))
+        axios.get("http://localhost:5000/api/notifications/trainer", config).catch(() => ({ data: { data: [] } }))
       ]);
       
       setData({
@@ -3805,7 +3807,7 @@ function TrainerDashboard() {
 
   return (
     <div className="trainer-dashboard">
-      <aside className="sidebar">
+      <aside className={`sidebar ${sidebarOpen ? "active" : ""}`}>
         <div className="logo">Trainistry</div>
         <nav>
           <button className="sidebar-btn active">Find Projects</button>
@@ -3816,15 +3818,30 @@ function TrainerDashboard() {
         </nav>
         <button className="logout-btn" onClick={() => { localStorage.removeItem("token"); navigate("/login"); }}>Logout</button>
       </aside>
+      {sidebarOpen && (
+  <div
+    className="sidebar-overlay"
+    onClick={() => setSidebarOpen(false)}
+  ></div>
+)}
 
       <main className="main-content">
   {activeTab === "notifications" ? (
     <TrainerNotificationPanel token={token} />
   ) : (
     <>
+    
       <header className="header-section" style={{ position: "relative" }}>
+        <div style={{ display: "flex", alignItems: "center", gap: "15px" }}>
+          <button
+            className="menu-toggle"
+            onClick={() => setSidebarOpen(true)}
+          >
+            ☰
+          </button>
+
         <h1>Welcome, {data.profile?.user?.name || 'Trainer'}</h1>
-        
+        </div>
         <div style={{ display: "flex", gap: "25px", alignItems: "center" }}>
           {/* Real-time Notification Bell UI component */}
           <div className="notification-bell-container" style={{ position: "relative", cursor: "pointer" }}>
