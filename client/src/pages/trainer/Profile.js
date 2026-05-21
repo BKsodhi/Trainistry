@@ -2446,7 +2446,7 @@ import { useNavigate } from "react-router-dom";
 import axios from "axios";
 
 import TrainerNotificationPanel from "./TrainerNotificationPanel";
-import ReviewList from "../../components/ReviewList";
+// import ReviewList from "../../components/ReviewList";
 
 import "../../styles/TrainerDashboard.css";
 
