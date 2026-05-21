@@ -304,7 +304,14 @@ connectDB();
 // ===================
 // Middleware
 // ===================
-app.use(cors());
+// app.use(cors());
+app.use(cors({
+  origin: ["https://trainistry-where-trainers-meet-industry.onrender.com", "https://your-frontend-project.vercel.app"], 
+  credentials: true,
+  methods: ["GET", "POST", "PUT", "DELETE"],
+  allowedHeaders: ["Content-Type", "Authorization"]
+}));
+
 app.use(express.json()); 
 
 /**
