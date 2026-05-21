@@ -253,9 +253,10 @@ import ProjectDetails from "./pages/trainer/ProjectDetails";
 import Profile from "./pages/trainer/Profile"; 
 import Network from "./pages/trainer/Network";
 
+
 // Admin Import ✅
 import AdminDashboard from "./pages/admin/AdminDashboard";
-
+axios.defaults.baseURL = import.meta.env.VITE_API_URL || "https://trainistry-where-trainers-meet-industry.onrender.com";
 // Simple Protected Route Component
 const ProtectedRoute = ({ children, allowedRole }) => {
   const token = localStorage.getItem("token");
