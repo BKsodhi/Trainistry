@@ -233,7 +233,7 @@ const projectSchema = new mongoose.Schema(
     //Advance paymets 
     advanceStatus: {
     type: String,
-    enum: ['not_required', 'pending', 'paid'],
+    enum: ['not_required', 'pending', 'paid','none'],
     default: 'not_required' // Set to 'pending' during the selection process
     },
     advanceAmount: {

@@ -2994,6 +2994,7 @@ import PostProjectForm from "../../components/company/PostProjectForm";
 import CompanyProjects from "../../components/company/CompanyProjects";
 import CompanyNetwork from "./CompanyNetwork"; 
 import CompanyProfile from "./CompanyProfile"; 
+import TrainersDirectory from "./TrainersDirectory";
 // ⭐ NEW IMPORTS: Bringing in the two newly built operations components
 import Shortlisted from "./Shortlisted";
 import ScheduleInterview from "./ScheduleInterview";
@@ -3295,6 +3296,8 @@ function CompanyDashboard() {
         return <ScheduleInterview />;
       case "network":
         return <CompanyNetwork />; 
+      case "trainers":
+        return <TrainersDirectory />;
       case "profile":
         return <CompanyProfile />; 
       case "notifications":
@@ -3318,6 +3321,9 @@ function CompanyDashboard() {
           <button className={activeTab === "interviews" ? "active" : ""} onClick={() => setActiveTab("interviews")}>Interview Board</button>
           
           <button className={activeTab === "network" ? "active" : ""} onClick={() => setActiveTab("network")}>Industrial Network</button>
+          <button className={activeTab === "trainers" ? "active" : ""} onClick={() => setActiveTab("trainers")}>
+            Talent Directory
+          </button>
           <button className={activeTab === "profile" ? "active" : ""} onClick={() => setActiveTab("profile")}>My Profile</button>
           <button className={activeTab === "notifications" ? "active" : ""} onClick={() => setActiveTab("notifications")}>
             Notifications {stats.unreadNotifications > 0 && <span className="badge">{stats.unreadNotifications}</span>}

@@ -5672,3 +5672,15 @@ exports.getCompanyPaymentStats = async (req, res) => {
     return res.status(500).json({ success: false, message: "Server Error: " + error.message });
   }
 };
+
+exports.getAllTrainers = async (req, res) => {
+  try {
+    // Find all users with role 'trainer'
+    const trainers = await User.find({ role: 'trainer' })
+      .select('name email phone') // Only get necessary fields
+      .lean();
+    res.status(200).json({ success: true, data: trainers });
+  } catch (err) {
+    res.status(500).json({ success: false, message: "Error fetching trainers" });
+  }
+};

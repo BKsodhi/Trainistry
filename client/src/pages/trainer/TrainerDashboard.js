@@ -3610,12 +3610,16 @@ import { useNavigate } from "react-router-dom";
 import axios from "axios";
 import jsPDF from "jspdf";
 import autoTable from "jspdf-autotable"; 
+import TrainerNotificationPanel from "./TrainerNotificationPanel"; // Adjust path if it's in a subfolder 
 import "../../styles/TrainerDashboard.css"; 
 
 function TrainerDashboard() {
+  
   const [data, setData] = useState(null);
   const [projects, setProjects] = useState([]);
   const [loading, setLoading] = useState(true);
+
+  const [activeTab, setActiveTab] = useState("dashboard");
   
   // Track notifications and toggle state for the bell dropdown
   const [notifications, setNotifications] = useState([]);
@@ -3807,67 +3811,84 @@ function TrainerDashboard() {
           <button className="sidebar-btn active">Find Projects</button>
           <button className="sidebar-btn" onClick={() => navigate("/trainer/network")}>Industrial Network</button>
           <button className="sidebar-btn" onClick={() => navigate("/trainer/applications")}>My Applications</button>
+          <button className="sidebar-btn" onClick={() => setActiveTab("notifications")}>Notifications</button>
           <button className="sidebar-btn" onClick={() => navigate("/trainer/profile")}>My Profile</button>
         </nav>
         <button className="logout-btn" onClick={() => { localStorage.removeItem("token"); navigate("/login"); }}>Logout</button>
       </aside>
 
       <main className="main-content">
-        <header className="header-section" style={{ position: "relative" }}>
-          <h1>Welcome, {data.profile?.user?.name || 'Trainer'}</h1>
-          
-          <div style={{ display: "flex", gap: "25px", alignItems: "center" }}>
-            {/* Real-time Notification Bell UI component */}
-            <div className="notification-bell-container" style={{ position: "relative", cursor: "pointer" }}>
-              <div className="bell-icon" onClick={() => setShowNotifDropdown(!showNotifDropdown)} style={{ fontSize: "22px", position: "relative" }}>
-                🔔
-                {unreadCount > 0 && (
-                  <span style={{ position: "absolute", top: "-5px", right: "-5px", background: "#ef4444", color: "white", borderRadius: "50%", padding: "2px 6px", fontSize: "10px", fontWeight: "bold" }}>
-                    {unreadCount}
-                  </span>
-                )}
-              </div>
-
-              {showNotifDropdown && (
-                <div className="filter-dropdown glass" style={{ position: "absolute", right: 0, top: "35px", width: "320px", zIndex: 100, maxHeight: "400px", overflowY: "auto", padding: "15px" }}>
-                  <h4 style={{ margin: "0 0 10px 0", borderBottom: "1px solid var(--border-soft)", paddingBottom: "5px", color: "var(--text-main)" }}>Notifications</h4>
-                  {notifications.length === 0 ? (
-                    <p style={{ fontSize: "13px", color: "var(--text-muted)", margin: 0 }}>No alerts logged on your timeline.</p>
-                  ) : (
-                    notifications.map(notif => (
-                      <div 
-                        key={notif._id} 
-                        onClick={() => handleMarkAsRead(notif._id)}
-                        style={{ 
-                          padding: "10px", 
-                          borderRadius: "8px", 
-                          background: notif.isRead ? "transparent" : "rgba(99,102,241,0.05)", 
-                          borderBottom: "1px solid #f1f5f9", 
-                          marginBottom: "5px", 
-                          fontSize: "13px", 
-                          color: "var(--text-main)" 
-                        }}
-                      >
-                        <p style={{ margin: 0, fontWeight: notif.isRead ? "normal" : "bold" }}>{notif.message}</p>
-                        <span style={{ fontSize: "10px", color: "var(--text-muted)" }}>{new Date(notif.createdAt).toLocaleDateString()}</span>
-                      </div>
-                    ))
-                  )}
-                </div>
+  {activeTab === "notifications" ? (
+    <TrainerNotificationPanel token={token} />
+  ) : (
+    <>
+      <header className="header-section" style={{ position: "relative" }}>
+        <h1>Welcome, {data.profile?.user?.name || 'Trainer'}</h1>
+        
+        <div style={{ display: "flex", gap: "25px", alignItems: "center" }}>
+          {/* Real-time Notification Bell UI component */}
+          <div className="notification-bell-container" style={{ position: "relative", cursor: "pointer" }}>
+            <div className="bell-icon" onClick={() => setShowNotifDropdown(!showNotifDropdown)} style={{ fontSize: "22px", position: "relative" }}>
+              🔔
+              {unreadCount > 0 && (
+                <span style={{ position: "absolute", top: "-5px", right: "-5px", background: "#ef4444", color: "white", borderRadius: "50%", padding: "2px 6px", fontSize: "10px", fontWeight: "bold" }}>
+                  {unreadCount}
+                </span>
               )}
             </div>
 
-            <div className="availability-control">
-              <span className="status-label">Status:</span>
-              <div className={`status-toggle-wrapper ${data.profile?.availability}`} onClick={handleToggle}>
-                <div className="toggle-slider">
-                  <span className={`status-indicator ${data.profile?.availability}`}></span>
-                </div>
-                <span className="status-text">{data.profile?.availability === 'available' ? 'Available' : 'Busy'}</span>
+            {showNotifDropdown && (
+              <div className="filter-dropdown glass" style={{ position: "absolute", right: 0, top: "35px", width: "320px", zIndex: 100, maxHeight: "400px", overflowY: "auto", padding: "15px" }}>
+                <h4 style={{ margin: "0 0 10px 0", borderBottom: "1px solid var(--border-soft)", paddingBottom: "5px", color: "var(--text-main)" }}>
+                  Notifications
+                </h4>
+
+                {notifications.length === 0 ? (
+                  <p style={{ fontSize: "13px", color: "var(--text-muted)", margin: 0 }}>
+                    No alerts logged on your timeline.
+                  </p>
+                ) : (
+                  notifications.map(notif => (
+                    <div 
+                      key={notif._id} 
+                      onClick={() => handleMarkAsRead(notif._id)}
+                      style={{ 
+                        padding: "10px", 
+                        borderRadius: "8px", 
+                        background: notif.isRead ? "transparent" : "rgba(99,102,241,0.05)", 
+                        borderBottom: "1px solid #f1f5f9", 
+                        marginBottom: "5px", 
+                        fontSize: "13px", 
+                        color: "var(--text-main)" 
+                      }}
+                    >
+                      <p style={{ margin: 0, fontWeight: notif.isRead ? "normal" : "bold" }}>
+                        {notif.message}
+                      </p>
+
+                      <span style={{ fontSize: "10px", color: "var(--text-muted)" }}>
+                        {new Date(notif.createdAt).toLocaleDateString()}
+                      </span>
+                    </div>
+                  ))
+                )}
               </div>
+            )}
+          </div>
+
+          <div className="availability-control">
+            <span className="status-label">Status:</span>
+            <div className={`status-toggle-wrapper ${data.profile?.availability}`} onClick={handleToggle}>
+              <div className="toggle-slider">
+                <span className={`status-indicator ${data.profile?.availability}`}></span>
+              </div>
+              <span className="status-text">
+                {data.profile?.availability === 'available' ? 'Available' : 'Busy'}
+              </span>
             </div>
           </div>
-        </header>
+        </div>
+      </header>
 
         {/* Live Interview & Offer Tracking Panel inside main workflow pipeline */}
         {data.myApplications?.some(app => ['interview_scheduled', 'selected', 'rejected'].includes(app.status)) && (
@@ -4036,8 +4057,11 @@ function TrainerDashboard() {
           ) : (
             <p className="no-results-msg">No projects match your current filters.</p>
           )}
-        </div>
-      </main>
+                </div>
+
+      </>
+    )}
+</main>
     </div>
   );
 }

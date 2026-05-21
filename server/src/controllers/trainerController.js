@@ -3089,3 +3089,15 @@ exports.addCompanyFeedback = async (req, res) => {
     res.status(500).json({ success: false, message: error.message });
   }
 };
+exports.getTrainerNotifications = async (req, res) => {
+  try {
+    // This perfectly matches your schema: recipient + recipientType
+    const notifications = await Notification.find({ 
+        recipient: req.user.id, 
+        recipientType: 'trainer' 
+    }).sort({ createdAt: -1 });
+    res.status(200).json({ success: true, data: notifications });
+  } catch (err) {
+    res.status(500).json({ success: false, message: "Error" });
+  }
+};

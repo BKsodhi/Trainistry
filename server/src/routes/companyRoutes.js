@@ -346,7 +346,8 @@ const {
   // ⭐ NEW IMPORTS FOR SIDEBAR TABS & RATING SYSTEM
   getShortlistedApplications,
   getScheduledInterviews,
-  rateTrainer
+  rateTrainer,
+  getAllTrainers
 } = require('../controllers/companyController');
 
 // --- Profile & Stats ---
@@ -375,6 +376,8 @@ router.get('/projects/:projectId/applications', protect, authorize('company'), g
 router.put('/applications/:applicationId/status', protect, authorize('company'), updateApplicationStatus);
 router.post('/applications/:applicationId/schedule', protect, authorize('company'), scheduleInterview);
 router.put('/applications/:applicationId/resolve', protect, resolveDispute);
+
+router.get('/trainers', protect, authorize('company'), getAllTrainers);
 
 // ⭐ NEW FEATURE ENDPOINTS FOR SIDEBAR TABS & RATING ENGINE
 router.get('/applications/shortlisted', protect, authorize('company'), getShortlistedApplications);
