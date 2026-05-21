@@ -253,10 +253,16 @@ import ProjectDetails from "./pages/trainer/ProjectDetails";
 import Profile from "./pages/trainer/Profile"; 
 import Network from "./pages/trainer/Network";
 
-
 // Admin Import ✅
 import AdminDashboard from "./pages/admin/AdminDashboard";
-axios.defaults.baseURL = import.meta.env.VITE_API_URL || "https://trainistry-where-trainers-meet-industry.onrender.com";
+axios.interceptors.request.use((config) => {
+  const productionURL = "https://trainistry-where-trainers-meet-industry.onrender.com";
+  // If the request points to localhost, rewrite it to the production URL
+  if (config.url && config.url.includes("localhost:5000")) {
+    config.url = config.url.replace("http://localhost:5000", productionURL);
+  }
+  return config;
+});
 // Simple Protected Route Component
 const ProtectedRoute = ({ children, allowedRole }) => {
   const token = localStorage.getItem("token");

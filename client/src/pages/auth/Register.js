@@ -253,7 +253,7 @@ const Register = () => {
         payload.description = description.trim();
       }
 
-      const response = await axios.post("/api/auth/register", payload);
+      const response = await axios.post("http://localhost:5000/api/auth/register", payload);
       alert("Registration successful! Please login.");
       navigate("/login");
     } catch (err) {
